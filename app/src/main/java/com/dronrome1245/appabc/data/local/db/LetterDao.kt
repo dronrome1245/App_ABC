@@ -13,7 +13,10 @@ interface LetterDao {
 
     @Query("SELECT * FROM letters WHERE levelIntroduced <= :levelId")
     fun getLettersForLevel(levelId: Int): Flow<List<LetterEntity>>
-    
+
     @Query("SELECT * FROM letters")
     suspend fun getAllLetters(): List<LetterEntity>
+
+    @Query("DELETE FROM letters WHERE levelIntroduced = :levelId AND symbol NOT IN (:allowedSymbols)")
+    suspend fun deleteLettersOutsideLevelSet(levelId: Int, allowedSymbols: List<String>)
 }
