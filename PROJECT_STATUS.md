@@ -4,11 +4,11 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — In Planning / Kickoff.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.1 implementation / validation.**
 
-M1 принят владельцем после проверки на реальном Android-устройстве. Принятый вертикальный срез: Level 1 `А/М`, 10 вопросов, рабочая озвучка, выбор ответа, сохранение Attempt/history и основной пользовательский поток.
+M1 принят владельцем и слит в `main`.
 
-Три требования, которые были записаны в раннем M1 DoD, но фактически не реализованы, не считаются выполненными. По решению владельца D019 они явно перенесены в M2: разбивка результата по А/М, retry ошибочной target-буквы и декларация `<queries>` для `TTS_SERVICE` при сохранении TTS fallback.
+M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 
 ## Статусы M1
 
@@ -18,39 +18,71 @@ M1 принят владельцем после проверки на реаль
 - PHYSICAL_DEVICE_RUNTIME_STATUS: PASS
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
 
-## Что реализовано и принято в M1
+## M2.1 — что реализовано
 
-- Android-проект на Kotlin + Jetpack Compose;
-- главный экран;
-- упражнение «услышь название → выбери букву»;
-- Level 1 с буквами `А` и `М`;
-- 10 вопросов в одной сессии;
-- случайная перестановка двух вариантов;
-- TTS с явно заданным `spokenName`;
-- сохранение Attempt в Room с `sessionId`, `levelId`, версиями LearningPolicy/Curriculum;
-- общий экран результата;
-- чистый Kotlin LearningEngine;
-- JVM unit tests;
-- GitHub Actions: JVM unit tests + debug build;
-- ручная проверка владельцем на реальном устройстве.
+### Audio
 
-## Owner-approved перенос в M2
+- введён единый интерфейс `AudioPlayer`;
+- добавлен `HybridAudioPlayer`;
+- стратегия D020: сначала поиск локального `res/raw` asset, затем автоматический TTS fallback;
+- отсутствие локального файла не является ошибкой: используется существующий `TtsAudioPlayer`;
+- `ExerciseViewModel` зависит от `AudioPlayer`, а не напрямую от TTS;
+- `MainActivity` выполняет простую composition-root/DI-сборку зависимостей;
+- в Manifest добавлен `<queries>` для `android.intent.action.TTS_SERVICE`;
+- реальные WAV/OGG пока не добавлены, как и требовалось.
 
-Обязательные задачи следующей итерации:
+### Curriculum v2
 
-1. результат по каждой букве отдельно (`А`, `М`, далее по curriculum);
-2. retry queue / управляемый возврат ошибочной target-буквы;
-3. `<queries>` для `android.intent.action.TTS_SERVICE`, если TTS используется как fallback;
-4. гибридный `AudioPlayer`: pre-recorded local audio first + TTS fallback;
-5. расширение модели уровней Curriculum;
-6. реализация LearningEngine v1 по M2 DoD: mastery states, weighted selection, level unlock, delayed checks и тесты инвариантов.
+По owner decision D021:
 
-## Архитектурное решение M2 по аудио
+- Level 1: вводятся `А`, `М`; пул `А/М`;
+- Level 2: вводятся `О`, `У`; пул `А/М/О/У`;
+- Level 3: вводятся `С`, `Н`; пул `А/М/О/У/С/Н`;
+- 10 вопросов в каждой сессии;
+- distractors формируются из доступного изученного пула без совпадения с target;
+- `curriculumVersion = 2`;
+- Room seed синхронизируется с утверждёнными Levels 1–3 без переписывания истории Attempt.
 
-Согласно D020 основной источник озвучки — локальные заранее записанные `WAV`/`OGG` в `res/raw`. Системный TTS остаётся fallback. UI и LearningEngine должны работать через единый интерфейс `AudioPlayer` и не зависеть от конкретного Android audio API.
+### LearningPolicy v2 — level unlock
 
-## Контроль AI-процесса
+По D021:
 
-После инцидента с неполным аудитом M1 усилен milestone closure gate: перед task packet на закрытие milestone AI обязан составить построчную матрицу соответствия каждому DoD-критерию с доказательством из кода/tests/CI/runtime либо явным `DEFERRED_BY_OWNER` с ссылкой на решение в `DECISIONS.md`.
+- следующая ступень открывается после полной сессии из 10 вопросов;
+- accuracy >=80%;
+- минимум `8/10` правильных;
+- 7/10 не открывает уровень;
+- неполная сессия не открывает уровень;
+- `learningPolicyVersion = 2`;
+- исторические Attempt сохраняют свои версии.
 
-Следующая и единственная текущая задача описана в `NEXT_TASK.md`.
+## Автоматические проверки M2.1
+
+Добавлены JVM tests на:
+
+- состав Levels 1–3;
+- накопление старых букв в пуле;
+- правила distractor pool;
+- генерацию 10 валидных вопросов LearningEngine для каждого Level 1–3;
+- unlock 7/10 = false;
+- unlock 8/10 = true;
+- unlock 10/10 = true;
+- запрет unlock для неполной сессии.
+
+Текущий branch CI status обновляется после GitHub Actions run.
+
+## Что ещё не входит в готовность M2 в целом
+
+- реальные pre-recorded WAV/OGG assets;
+- runtime-проверка локального asset playback после появления файлов;
+- retry queue из D019;
+- разбивка результата/статистика по каждой букве из D019;
+- mastery states;
+- weighted selection;
+- delayed checks в полном LearningEngine v2;
+- сохранение текущего разблокированного уровня в DataStore и UI выбора уровней.
+
+## Следующий этап
+
+После успешного CI M2.1 следующая задача — M2.2: per-letter statistics на основе Room Attempt history и сохранение простого состояния progression/unlocked level в DataStore. Подробно — `NEXT_TASK.md`.
+
+Android Studio Agent по умолчанию не требуется. Он нужен только при конкретной runtime/audio/TTS/Manifest проблеме.
