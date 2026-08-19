@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dronrome1245.appabc.core.audio.AudioPlayer
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
+import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.domain.engine.LearningEngine
-import com.dronrome1245.appabc.domain.m1.M1SessionConfig
 import com.dronrome1245.appabc.domain.model.Attempt
 import com.dronrome1245.appabc.domain.model.Letter
 import kotlinx.coroutines.delay
@@ -17,18 +17,22 @@ import java.util.UUID
 
 class ExerciseViewModel(
     private val repository: AppRepositoryImpl,
-    private val audioPlayer: AudioPlayer
+    private val audioPlayer: AudioPlayer,
+    private val levelId: Int
 ) : ViewModel() {
 
+    private val level = ApprovedCurriculum.curriculum.level(levelId)
     private val sessionId = UUID.randomUUID().toString()
-    private val sessionLength = M1SessionConfig.QUESTION_COUNT
+    private val sessionLength = level.questionCount
     private var currentStep = 0
     private var startTime = 0L
 
     private val _uiState = MutableStateFlow<ExerciseUiState>(ExerciseUiState.Loading)
     val uiState: StateFlow<ExerciseUiState> = _uiState.asStateFlow()
 
-    private val engine = LearningEngine(M1SessionConfig.letters)
+    private val engine = LearningEngine(
+        ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)
+    )
     private val lastTargets = mutableListOf<String>()
 
     init {
@@ -73,7 +77,7 @@ class ExerciseViewModel(
                     isCorrect = isCorrect,
                     responseTimeMs = responseTime,
                     sessionId = sessionId,
-                    levelId = M1SessionConfig.LEVEL_ID
+                    levelId = levelId
                 )
             )
 
