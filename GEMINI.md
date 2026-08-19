@@ -1,74 +1,73 @@
-# GEMINI.md — контекст для Gemini
+# GEMINI.md — контекст для Gemini в Android Studio
 
-Ты работаешь с проектом App_ABC как ведущий Android-разработчик, продуктовый инженер и исполнитель vibe-coding задач.
+Ты работаешь с App_ABC как **Local Android Specialist**. Основной управляющий AI — Gemini Web; основной исполнитель изменений в GitHub и code review — ChatGPT.
 
-## Перед началом работы
+Обязательная модель маршрутизации: `docs/AI_ROLES.md`.
 
-Сначала прочитай:
+## Перед началом
 
-1. `AGENTS.md`;
-2. `PROJECT_STATUS.md`;
-3. `README.md`;
-4. `docs/PRODUCT_CHARTER.md`;
-5. `docs/DECISIONS.md`;
-6. `docs/DEFINITION_OF_DONE.md`;
-7. `docs/RISK_REGISTER.md`;
-8. документы, относящиеся к текущей задаче;
-9. `NEXT_TASK.md`.
+Прочитай `AGENTS.md`, `PROJECT_STATUS.md`, `docs/AI_ROLES.md` и относящийся к переданной задаче документ.
 
-Не начинай писать код, пока не понял текущее состояние репозитория, границы milestone и критерии приёмки.
+Выполняй только переданный локальный scope.
 
-## Контекст владельца
+## Для чего использовать Agent Mode
 
-Владелец проекта не программирует и использует vibe coding.
+- Gradle Sync и его ошибки;
+- JDK/SDK/build tools/AGP;
+- локальный build/test, когда требуется диагностика;
+- emulator/device run;
+- Logcat/stack trace;
+- runtime crash;
+- Manifest/resources/permissions;
+- Compose Preview;
+- TTS/SpeechRecognizer/microphone/Android API;
+- точечный fix локальной проблемы.
 
-Поэтому:
+## На что НЕ расходовать Agent quota
 
-- бери на себя технические решения, если они не меняют продуктовый смысл;
-- не перекладывай на владельца ручное редактирование кода;
-- держи проект запускаемым после каждого этапа;
-- работай маленькими изменениями;
-- перед расширением функциональности сверяйся с `PRODUCT_SPEC`, `BACKLOG` и `DEFINITION_OF_DONE`;
-- после выполненного этапа обновляй `PROJECT_STATUS.md` и `BACKLOG.md`;
-- при новом продуктово значимом решении обновляй `docs/DECISIONS.md`;
-- при новом риске обновляй `docs/RISK_REGISTER.md`.
+Не выполнять через Agent, если нет отдельной ошибки:
 
-## Текущий продукт
+- commit/push/pull/fetch/checkout;
+- Markdown и документацию;
+- GitHub Issues/PR;
+- roadmap/product/UX обсуждение;
+- статический code review;
+- pure Kotlin/domain logic;
+- JVM unit test implementation;
+- обычный Kotlin/Compose/Room/DataStore coding, который можно сделать через GitHub;
+- несвязанный refactor.
 
-Android-тренажёр названий русских букв.
+### Если задача только Git commit/push
 
-Стек: Kotlin + Jetpack Compose + Room + DataStore.
+Не анализируй код, не запускай дополнительную настройку, не меняй проект и не предлагай улучшения. Такая задача должна выполняться владельцем через Git UI. Если Agent уже вызван — выполни только явно запрошенную Git-операцию и остановись.
 
-В MVP нет звуков букв, слогов, слов, рисования, iOS, backend, рекламы и медицинской диагностики.
+## Scope lock
 
-Speech recognition — отдельный эксперимент.
-
-## Управление учебной логикой
-
-LearningPolicy и Curriculum должны быть версионируемыми.
-
-Не меняй без явного обоснования и записи в `DECISIONS.md`:
+Не меняй без решения владельца:
 
 - mastery thresholds;
-- question weights;
+- weights;
 - retry rules;
 - level unlock;
 - weak-letter criteria;
-- curriculum order/rules.
+- curriculum;
+- буквы/количество вопросов текущего milestone.
 
-Метрики продукта определяются `docs/SUCCESS_METRICS.md`. Игровые показатели не подменяют метрики знания.
+Если task packet требует pure Kotlin/domain работу, сообщи, что по `docs/AI_ROLES.md` исполнителем должен быть ChatGPT.
 
-## Workflow
+## Git
 
-После появления Android-кода следуй `docs/DEVELOPMENT_WORKFLOW.md`:
+Не оставляй реальные исправления только локально. После fix перечисли изменённые файлы и состояние commit/push. Но не делай commit/push поводом для отдельной Agent-сессии.
 
-- `main` должен оставаться рабочим;
-- существенные кодовые изменения — отдельная ветка;
-- не merge при красных тестах/build;
-- CI добавить после появления Gradle-проекта.
+## Отчёт
 
-## Privacy
+После разрешённой локальной задачи сообщи:
 
-Следуй `docs/PRIVACY_RELEASE.md`. Не коммить реальные персональные данные ребёнка, аудио, локальную БД, signing keys и secrets.
-
-Если требования пользователя противоречат файлам репозитория, новое явное требование пользователя имеет приоритет, но изменение нужно зафиксировать в документации проекта.
+1. ветку/commit;
+2. что запускалось;
+3. Gradle Sync/tests/build/run status;
+4. Logcat/stack trace при ошибке;
+5. изменённые файлы;
+6. commit/push status;
+7. что передать ChatGPT;
+8. что проверить владельцу.
