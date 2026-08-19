@@ -1,55 +1,58 @@
 package com.dronrome1245.appabc.domain.curriculum
 
-import com.dronrome1245.appabc.domain.model.Letter
+import com.dronrome1245.appabc.domain.engine.LearningEngine
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Random
 
 class CurriculumTest {
 
     @Test
-    fun approvedLevel1KeepsOwnerAcceptedLettersAndSessionLength() {
-        assertEquals(10, ApprovedCurriculum.level1.questionCount)
-        assertEquals(listOf("А", "М"), ApprovedCurriculum.level1.introducedLetters.map { it.symbol })
-        assertEquals(listOf("А", "М"), ApprovedCurriculum.curriculum.lettersAvailableAt(1).map { it.symbol })
+    fun levelsContainOwnerApprovedLettersAndTenQuestions() {
+        val curriculum = ApprovedCurriculum.curriculum
+
+        assertEquals(listOf("А", "М"), curriculum.level(1).introducedLetters.map { it.symbol })
+        assertEquals(listOf("О", "У"), curriculum.level(2).introducedLetters.map { it.symbol })
+        assertEquals(listOf("С", "Н"), curriculum.level(3).introducedLetters.map { it.symbol })
+        assertTrue(curriculum.levels.all { it.questionCount == 10 })
     }
 
     @Test
-    fun genericCurriculumAccumulatesEarlierLettersAcrossThreeLevels() {
-        val curriculum = Curriculum(
-            listOf(
-                level(1, "А", "М"),
-                level(2, "X", "Y"),
-                level(3, "Z")
-            )
-        )
+    fun studiedPoolAccumulatesPreviousLevels() {
+        val curriculum = ApprovedCurriculum.curriculum
 
         assertEquals(listOf("А", "М"), curriculum.lettersAvailableAt(1).map { it.symbol })
-        assertEquals(listOf("А", "М", "X", "Y"), curriculum.lettersAvailableAt(2).map { it.symbol })
-        assertEquals(listOf("А", "М", "X", "Y", "Z"), curriculum.lettersAvailableAt(3).map { it.symbol })
+        assertEquals(listOf("А", "М", "О", "У"), curriculum.lettersAvailableAt(2).map { it.symbol })
+        assertEquals(listOf("А", "М", "О", "У", "С", "Н"), curriculum.lettersAvailableAt(3).map { it.symbol })
     }
 
     @Test
-    fun distractorPoolUsesStudiedPoolAndExcludesTarget() {
-        val curriculum = Curriculum(
-            listOf(
-                level(1, "А", "М"),
-                level(2, "X", "Y")
-            )
-        )
+    fun distractorPoolUsesStudiedLettersAndExcludesTarget() {
+        val distractors = ApprovedCurriculum.curriculum.distractorPool(3, "С").map { it.symbol }
 
-        val distractors = curriculum.distractorPool(2, "X").map { it.symbol }
-
-        assertTrue(distractors.containsAll(listOf("А", "М", "Y")))
-        assertFalse(distractors.contains("X"))
+        assertTrue(distractors.containsAll(listOf("А", "М", "О", "У", "Н")))
+        assertFalse(distractors.contains("С"))
     }
 
-    private fun level(id: Int, vararg symbols: String) = CurriculumLevel(
-        id = id,
-        introducedLetters = symbols.map { symbol ->
-            Letter(symbol = symbol, spokenName = symbol.lowercase(), levelIntroduced = id)
-        },
-        questionCount = 10
-    )
+    @Test
+    fun learningEngineGeneratesTenValidQuestionsForEachApprovedLevel() {
+        (1..3).forEach { levelId ->
+            val pool = ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)
+            val allowed = pool.map { it.symbol }.toSet()
+            val engine = LearningEngine(pool, random = Random(levelId.toLong()))
+            val lastTargets = mutableListOf<String>()
+
+            repeat(10) {
+                val task = engine.nextTask(lastTargets)
+                assertTrue(task.target.symbol in allowed)
+                assertEquals(2, task.options.size)
+                assertTrue(task.options.any { option -> option.symbol == task.target.symbol })
+                assertTrue(task.options.all { option -> option.symbol in allowed })
+                assertEquals(2, task.options.map { option -> option.symbol }.distinct().size)
+                lastTargets += task.target.symbol
+            }
+        }
+    }
 }
