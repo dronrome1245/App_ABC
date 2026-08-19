@@ -4,21 +4,20 @@ GitHub tracking: **Issue #1 — `[Feature] M1 — первый запускае�
 
 ## Цель
 
-Создать первый рабочий Android-билд App_ABC, который можно установить/запустить на телефоне и проверить на двух буквах.
+Реализовать вертикальный срез M1: экран Home, экран тренировки (буквы А и М), экран результата и сохранение в Room.
 
-Перед началом прочитать:
+## Текущий прогресс
+- [x] Инициализация проекта (M1.1)
+- [x] Экран Home (M1.2)
+- [x] Экран Exercise с TTS и выбором букв (M1.3)
+- [x] Экран Result (M1.4)
+- [x] Интеграция Room (M1.5)
 
-- `AGENTS.md`;
-- `PROJECT_STATUS.md`;
-- `docs/PRODUCT_CHARTER.md`;
-- `docs/PRODUCT_SPEC.md`;
-- `docs/LEARNING_ENGINE.md`;
-- `docs/SUCCESS_METRICS.md`;
-- `docs/DEFINITION_OF_DONE.md`;
-- `docs/RISK_REGISTER.md`;
-- `docs/ARCHITECTURE.md`.
+## Следующий шаг
+- [ ] M1 Acceptance Test (проверка владельцем на телефоне)
+- [ ] Переход к M2: LearningEngine v1 ( mastery states, weighted selection)
 
-## Техническое задание
+## Техническое задание (M1)
 
 Создай Android-приложение в текущем репозитории.
 
