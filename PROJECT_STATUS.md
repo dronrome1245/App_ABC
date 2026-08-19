@@ -4,11 +4,11 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.1 implementation / validation.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.1 implementation complete / runtime validation pending.**
 
 M1 принят владельцем и слит в `main`.
 
-M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
+M2.1 реализован в ветке `feature/m2-audio-curriculum` и оформлен draft PR #3.
 
 ## Статусы M1
 
@@ -18,6 +18,19 @@ M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 - PHYSICAL_DEVICE_RUNTIME_STATUS: PASS
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
 
+## Статусы M2.1
+
+- IMPLEMENTATION_STATUS: COMPLETE
+- STATIC_REVIEW_STATUS: PASS
+- TESTS_CI_STATUS: PASS
+- DEBUG_BUILD_STATUS: PASS
+- HYBRID_AUDIO_FALLBACK_STATIC_PATH_STATUS: PASS
+- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_OWNER_RUN
+- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_OWNER_RUN
+- OWNER_ACCEPTANCE_STATUS: PENDING
+
+GitHub Actions PR #3 подтвердил прохождение JVM unit tests и `assembleDebug` для полного M2.1 diff.
+
 ## M2.1 — что реализовано
 
 ### Audio
@@ -25,11 +38,11 @@ M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 - введён единый интерфейс `AudioPlayer`;
 - добавлен `HybridAudioPlayer`;
 - стратегия D020: сначала поиск локального `res/raw` asset, затем автоматический TTS fallback;
-- отсутствие локального файла не является ошибкой: используется существующий `TtsAudioPlayer`;
+- отсутствие локального файла штатно ведёт в существующий `TtsAudioPlayer`;
 - `ExerciseViewModel` зависит от `AudioPlayer`, а не напрямую от TTS;
-- `MainActivity` выполняет простую composition-root/DI-сборку зависимостей;
+- `MainActivity` выполняет простой composition-root/DI;
 - в Manifest добавлен `<queries>` для `android.intent.action.TTS_SERVICE`;
-- реальные WAV/OGG пока не добавлены, как и требовалось.
+- реальные WAV/OGG не добавлены, как и требовалось.
 
 ### Curriculum v2
 
@@ -57,7 +70,7 @@ M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 
 ## Автоматические проверки M2.1
 
-Добавлены JVM tests на:
+JVM tests покрывают:
 
 - состав Levels 1–3;
 - накопление старых букв в пуле;
@@ -68,12 +81,18 @@ M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 - unlock 10/10 = true;
 - запрет unlock для неполной сессии.
 
-Текущий branch CI status обновляется после GitHub Actions run.
+CI также подтвердил debug build.
+
+## Runtime boundary
+
+В репозитории намеренно отсутствуют реальные `res/raw` WAV/OGG, поэтому branch использует fallback path. Код статически гарантирует: если `getIdentifier(..., "raw", ...)` возвращает 0, вызывается существующий TTS wrapper.
+
+Фактический запуск новой ветки на emulator/device не выполнялся в GitHub CI и не подменяется build/tests. Для полного runtime acceptance достаточно обычного owner Run; Android Studio Agent нужен только при конкретной ошибке.
 
 ## Что ещё не входит в готовность M2 в целом
 
 - реальные pre-recorded WAV/OGG assets;
-- runtime-проверка локального asset playback после появления файлов;
+- runtime-проверка local asset playback после появления файлов;
 - retry queue из D019;
 - разбивка результата/статистика по каждой букве из D019;
 - mastery states;
@@ -83,6 +102,4 @@ M2.1 реализуется в ветке `feature/m2-audio-curriculum`.
 
 ## Следующий этап
 
-После успешного CI M2.1 следующая задача — M2.2: per-letter statistics на основе Room Attempt history и сохранение простого состояния progression/unlocked level в DataStore. Подробно — `NEXT_TASK.md`.
-
-Android Studio Agent по умолчанию не требуется. Он нужен только при конкретной runtime/audio/TTS/Manifest проблеме.
+M2.2: per-letter statistics на основе Room Attempt history и сохранение простого progression/unlocked-level state в DataStore. Подробно — `NEXT_TASK.md`.
