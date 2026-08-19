@@ -20,6 +20,7 @@ import com.dronrome1245.appabc.core.audio.HybridAudioPlayer
 import com.dronrome1245.appabc.core.audio.TtsAudioPlayer
 import com.dronrome1245.appabc.core.theme.AppABCTheme
 import com.dronrome1245.appabc.data.local.db.AppDatabase
+import com.dronrome1245.appabc.data.progression.LevelProgressionStore
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
 import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.ui.exercise.ExerciseScreen
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var database: AppDatabase
     private lateinit var repository: AppRepositoryImpl
+    private lateinit var progressionStore: LevelProgressionStore
     private lateinit var audioPlayer: AudioPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +47,7 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java, "app_abc_db"
         ).build()
         repository = AppRepositoryImpl(database.attemptDao(), database.letterDao())
+        progressionStore = LevelProgressionStore(applicationContext)
 
         val ttsPlayer = TtsAudioPlayer(this)
         audioPlayer = HybridAudioPlayer(
@@ -65,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(repository, audioPlayer)
+                    AppNavigation(repository, progressionStore, audioPlayer)
                 }
             }
         }
@@ -78,23 +81,33 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(repository: AppRepositoryImpl, audioPlayer: AudioPlayer) {
+fun AppNavigation(
+    repository: AppRepositoryImpl,
+    progressionStore: LevelProgressionStore,
+    audioPlayer: AudioPlayer
+) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             HomeScreen(
-                onStartClick = { navController.navigate("exercise") },
-                viewModel = viewModel { HomeViewModel(repository) }
+                onStartClick = { levelId -> navController.navigate("exercise/$levelId") },
+                viewModel = viewModel { HomeViewModel(progressionStore) }
             )
         }
-        composable("exercise") {
+        composable(
+            "exercise/{levelId}",
+            arguments = listOf(navArgument("levelId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val levelId = backStackEntry.arguments?.getInt("levelId") ?: 1
             ExerciseScreen(
                 onFinish = { sessionId ->
                     navController.navigate("result/$sessionId") {
                         popUpTo("home")
                     }
                 },
-                viewModel = viewModel { ExerciseViewModel(repository, audioPlayer) }
+                viewModel = viewModel {
+                    ExerciseViewModel(repository, audioPlayer, levelId)
+                }
             )
         }
         composable(
@@ -103,10 +116,14 @@ fun AppNavigation(repository: AppRepositoryImpl, audioPlayer: AudioPlayer) {
         ) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             ResultScreen(
-                onRestart = { navController.navigate("home") {
-                    popUpTo("home") { inclusive = true }
-                } },
-                viewModel = viewModel { ResultViewModel(repository, sessionId) }
+                onRestart = {
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                },
+                viewModel = viewModel {
+                    ResultViewModel(repository, progressionStore, sessionId)
+                }
             )
         }
     }
