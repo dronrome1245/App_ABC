@@ -57,6 +57,13 @@ fun ResultContent(
             text = "Точность: ${state.accuracy}%",
             style = MaterialTheme.typography.bodyLarge
         )
+        state.unlockedLevel?.let { levelId ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Открыт уровень $levelId",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onRestart) {
             Text(text = "На главную")
