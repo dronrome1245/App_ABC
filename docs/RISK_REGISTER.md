@@ -106,26 +106,31 @@
   - явно писать, что приложение не диагностирует нарушения;
   - не использовать медицинские ярлыки.
 
-## R10 — Gemini/AI самовольно меняет учебный алгоритм
+## R10 — AI самовольно меняет учебный алгоритм, scope или статус milestone
 
 - Probability: High при длительном vibe coding
 - Impact: High
-- Status: Open
+- Status: Controlled
 - Меры:
-  - LearningPolicy version;
-  - `AGENTS.md` запрещает незапрошенные изменения учебной логики;
-  - изменения порогов/весов требуют записи в `DECISIONS.md`;
-  - отдельные PR/малые изменения;
-  - unit tests на инварианты.
+  - `docs/AI_ROLES.md` содержит обязательные Routing Gate, Decision Firewall, Implementation Drift Rule и Preflight Gate;
+  - `AGENTS.md` требует независимой сверки task packet с репозиторием перед изменением;
+  - task packet не является новым источником продуктовой истины;
+  - изменение порогов/весов/curriculum/DoD требует `DECISION_SOURCE` и решения владельца;
+  - код не может автоматически переписывать нормативную документацию;
+  - Gemini Web обязан проверять task packet до выдачи;
+  - ChatGPT обязан не выполнять небезопасные продуктовые пункты task packet;
+  - emulator/build/tests/physical-device/owner acceptance фиксируются отдельно;
+  - изменения поведения требуют версии и unit tests.
+- Триггер повторного открытия High-risk: AI снова фиксирует несуществующее решение владельца, закрывает milestone без DoD или Android Studio Agent выходит за локальный runtime-scope.
 
 ## R11 — main становится нерабочим после AI-изменения
 
 - Probability: Medium
 - Impact: High
-- Status: Open до появления CI
+- Status: Open до появления стабильного CI
 - Меры:
   - `main` считается всегда рабочей веткой;
-  - кодовые задачи выполнять через feature branch + PR после M1;
+  - существенные кодовые задачи выполнять через feature branch + PR;
   - CI: unit tests + debug build;
   - не merge при красной сборке.
 
@@ -185,12 +190,24 @@
   - фактическая confusion matrix имеет приоритет над предположениями;
   - корректировать последовательность по данным и при необходимости консультироваться со специалистом.
 
+## R17 — Android Studio Agent расходует лимит и меняет проект вне локальной задачи
+
+- Probability: Medium
+- Impact: Medium
+- Status: Controlled
+- Меры:
+  - Agent admission только при `ROUTING: ANDROID_STUDIO_AGENT` + `WHY_AGENT_REQUIRED`;
+  - commit/push/pull/обычный Run/pure Kotlin не маршрутизируются в Agent;
+  - Git-only request запрещает rebase/reset/force push и любые изменения проекта;
+  - `prompts/ANDROID_STUDIO_AGENT_PROMPT.md` содержит scope lock;
+  - после задачи Agent обязан остановиться и вернуть точный список изменений.
+
 ## Правило работы с рисками
 
-Перед завершением каждого milestone AI-агент должен просмотреть этот файл и проверить, появились ли:
+Перед завершением каждого milestone AI должен проверить:
 
 - новые риски;
 - сработавшие триггеры;
 - High-риски без меры контроля.
 
-Если риск меняет продуктовую/архитектурную стратегию, решение фиксировать в `DECISIONS.md`.
+Если риск меняет продуктовую/архитектурную стратегию, решение фиксировать в `DECISIONS.md` только после реального принятия владельцем.
