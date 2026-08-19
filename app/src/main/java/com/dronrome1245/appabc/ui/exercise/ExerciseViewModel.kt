@@ -2,7 +2,7 @@ package com.dronrome1245.appabc.ui.exercise
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dronrome1245.appabc.core.audio.TextToSpeechWrapper
+import com.dronrome1245.appabc.core.audio.AudioPlayer
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
 import com.dronrome1245.appabc.domain.engine.LearningEngine
 import com.dronrome1245.appabc.domain.m1.M1SessionConfig
@@ -17,7 +17,7 @@ import java.util.UUID
 
 class ExerciseViewModel(
     private val repository: AppRepositoryImpl,
-    private val tts: TextToSpeechWrapper
+    private val audioPlayer: AudioPlayer
 ) : ViewModel() {
 
     private val sessionId = UUID.randomUUID().toString()
@@ -56,7 +56,7 @@ class ExerciseViewModel(
     fun speakTarget() {
         val state = _uiState.value
         if (state is ExerciseUiState.Question) {
-            tts.speak(state.target.spokenName)
+            state.target.symbol.firstOrNull()?.let(audioPlayer::playLetterSound)
         }
     }
 
@@ -82,7 +82,7 @@ class ExerciseViewModel(
                 isCorrect = isCorrect
             )
 
-            delay(700) // Delay for feedback
+            delay(700)
             currentStep++
             nextTask()
         }
