@@ -26,35 +26,52 @@
 
 ## M1 — Первый вертикальный срез
 
-Статус: **готово (ожидает ручного теста)**.
+Статус: **DONE / OWNER ACCEPTED**.
 
 - [x] создать Android-проект;
 - [x] Home;
-- [x] Level 1: А/О;
+- [x] Level 1: А/М;
 - [x] TTS-запрос;
 - [x] выбор ответа;
 - [x] случайно менять позиции букв между вопросами;
 - [x] Room Attempt с `sessionId`;
 - [x] предусмотреть поля версии LearningPolicy/Curriculum;
-- [x] результат 8 вопросов (сессия);
-- [x] unit tests;
+- [x] результат 10 вопросов (общий итог);
+- [x] unit tests на реализованные M1-инварианты;
 - [x] debug build;
-- [ ] запуск на телефоне (acceptance владельцем);
-- [ ] ручной acceptance по `DEFINITION_OF_DONE.md`;
-- [x] Gradle-проект настроен.
+- [x] запуск на реальном телефоне;
+- [x] Owner Acceptance;
+- [x] Gradle-проект настроен;
+- [x] CI: JVM unit tests + debug build.
 
-### Gate M1 → M2
+### Owner-approved deferral D019
 
-Нельзя переходить к M2, пока владелец не проверит на реальном телефоне:
+Следующие требования ранней редакции M1 не считаются реализованными и перенесены в M2:
 
-- размер кнопок;
-- TTS;
-- скорость упражнения;
-- реакцию на ошибку;
-- отсутствие угадывания по фиксированному расположению;
-- сохранение данных.
+- [ ] разбивка результата по каждой букве;
+- [ ] retry ошибочной target-буквы через управляемую очередь;
+- [ ] `<queries>` для `android.intent.action.TTS_SERVICE` при использовании TTS fallback.
 
-## M2 — Учебный движок v1
+## M2 — Учебный движок v1 + audio/curriculum foundation
+
+Статус: **In Planning / Kickoff**.
+
+### Переносы из M1 — обязательны
+
+- [ ] разбивка результата по каждой букве;
+- [ ] retry queue / поздний возврат ошибочной target-буквы;
+- [ ] TTS service visibility declaration в Manifest при TTS fallback.
+
+### Audio foundation — D020
+
+- [ ] единый интерфейс `AudioPlayer`;
+- [ ] pre-recorded local audio first;
+- [ ] TTS fallback;
+- [ ] поддержка локальных `WAV`/`OGG` в `res/raw`;
+- [ ] Android-specific тест/проверка fallback после реализации;
+- [ ] не добавлять случайные/неутверждённые аудиофайлы как финальные ассеты.
+
+### LearningEngine v1
 
 - [ ] конфиг LearningPolicy v1;
 - [ ] `learningPolicyVersion`;
@@ -66,13 +83,17 @@
 - [ ] повторение старых букв;
 - [ ] delayed checks;
 - [ ] тесты алгоритма;
-- [ ] GitHub Actions: unit tests + debug build, если не добавлено в M1.1.
+- [ ] расширить модель Curriculum/уровней за пределы M1-only константы;
+- [x] GitHub Actions: unit tests + debug build.
 
 ### Gate M2 → M3
 
 - [ ] все инварианты LearningEngine покрыты тестами;
 - [ ] пороги централизованы;
 - [ ] алгоритм не меняется без версии/decision log;
+- [ ] owner-approved переносы D019 закрыты;
+- [ ] audio-first + TTS fallback проверены в допустимом runtime scope;
+- [ ] milestone closure evidence matrix не содержит `FAIL`/`UNKNOWN`;
 - [ ] нет High-риска LearningEngine без меры контроля.
 
 ## M3 — Статистика и Parent mode
@@ -104,7 +125,7 @@
 - [ ] согласовать порядок 33 букв;
 - [ ] проверить визуально похожие группы;
 - [ ] подобрать distractors;
-- [ ] проверить TTS-названия всех букв;
+- [ ] проверить локальное аудио/TTS fallback для всех букв;
 - [ ] определить число вариантов ответа по этапам;
 - [ ] домашнее UX-тестирование;
 - [ ] baseline и продуктовая проверка по `SUCCESS_METRICS.md`;

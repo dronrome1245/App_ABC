@@ -3,7 +3,7 @@ package com.dronrome1245.appabc.ui.result
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
-import com.dronrome1245.appabc.domain.model.Attempt
+import com.dronrome1245.appabc.domain.session.SessionProgressCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,15 +23,14 @@ class ResultViewModel(
 
     private fun loadSummary() {
         viewModelScope.launch {
-            val attempts = repository.getSessionSummary(sessionId)
-            val correct = attempts.count { it.isCorrect }
-            val total = attempts.size
-            val accuracy = if (total > 0) (correct.toFloat() / total * 100).toInt() else 0
+            val progress = SessionProgressCalculator.calculate(
+                repository.getSessionSummary(sessionId)
+            )
 
             _uiState.value = ResultUiState.Success(
-                correctAnswers = correct,
-                totalAnswers = total,
-                accuracy = accuracy
+                correctAnswers = progress.correctAnswers,
+                totalAnswers = progress.totalAnswers,
+                accuracy = progress.accuracyPercent
             )
         }
     }

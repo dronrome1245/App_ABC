@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.dronrome1245.appabc.core.audio.TextToSpeechWrapper
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
 import com.dronrome1245.appabc.domain.engine.LearningEngine
+import com.dronrome1245.appabc.domain.m1.M1SessionConfig
 import com.dronrome1245.appabc.domain.model.Attempt
 import com.dronrome1245.appabc.domain.model.Letter
 import kotlinx.coroutines.delay
@@ -20,29 +21,18 @@ class ExerciseViewModel(
 ) : ViewModel() {
 
     private val sessionId = UUID.randomUUID().toString()
-    private val sessionLength = 8 // Requirement: 5-8 steps
+    private val sessionLength = M1SessionConfig.QUESTION_COUNT
     private var currentStep = 0
     private var startTime = 0L
 
     private val _uiState = MutableStateFlow<ExerciseUiState>(ExerciseUiState.Loading)
     val uiState: StateFlow<ExerciseUiState> = _uiState.asStateFlow()
 
-    private var engine: LearningEngine? = null
+    private val engine = LearningEngine(M1SessionConfig.letters)
     private val lastTargets = mutableListOf<String>()
 
     init {
-        loadLettersAndStart()
-    }
-
-    private fun loadLettersAndStart() {
-        viewModelScope.launch {
-            repository.getLettersForLevel(1).collect { letters ->
-                if (letters.isNotEmpty()) {
-                    engine = LearningEngine(letters)
-                    nextTask()
-                }
-            }
-        }
+        nextTask()
     }
 
     private fun nextTask() {
@@ -51,7 +41,7 @@ class ExerciseViewModel(
             return
         }
 
-        val task = engine?.nextTask(lastTargets) ?: return
+        val task = engine.nextTask(lastTargets)
         lastTargets.add(task.target.symbol)
         _uiState.value = ExerciseUiState.Question(
             target = task.target,
@@ -83,7 +73,7 @@ class ExerciseViewModel(
                     isCorrect = isCorrect,
                     responseTimeMs = responseTime,
                     sessionId = sessionId,
-                    levelId = 1
+                    levelId = M1SessionConfig.LEVEL_ID
                 )
             )
 
