@@ -1,13 +1,49 @@
+# Android Studio / IntelliJ
 .idea/
 *.iml
+
+# Gradle / Kotlin
 .gradle/
 build/
 **/build/
-local.properties
 .kotlin/
+
+# Local Android SDK config
+local.properties
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Signing / secrets
 *.jks
 *.keystore
 keystore.properties
+.env
+.env.*
+secrets.properties
+
+# Logs
 *.log
+
+# Local databases / exports / real user data
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+exports/
+local-data/
+test-data-private/
+
+# Audio / recordings: real child voice must never be committed
+recordings/
+private-audio/
+*.m4a
+*.aac
+*.wav
+*.3gp
+
+# Temporary files
+*.tmp
+*.bak
