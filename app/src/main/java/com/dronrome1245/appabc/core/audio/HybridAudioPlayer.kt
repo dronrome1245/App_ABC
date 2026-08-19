@@ -21,19 +21,12 @@ class HybridAudioPlayer(
 
     override fun playLetterSound(letter: Char) {
         val fallback = { tts.speak(spokenNameProvider(letter)) }
-        val resourceName = rawResourceNameProvider(letter)
-        playRawOrFallback(resourceName, fallback)
+        playRawOrFallback(rawResourceNameProvider(letter), fallback)
     }
 
     override fun playFeedback(isCorrect: Boolean) {
-        val resourceName = if (isCorrect) {
-            AudioAssetCatalog.CORRECT_FEEDBACK
-        } else {
-            AudioAssetCatalog.INCORRECT_FEEDBACK
-        }
-        val fallback = {
-            tts.speak(if (isCorrect) "Верно" else "Попробуй ещё")
-        }
+        val resourceName = if (isCorrect) AudioAssetCatalog.CORRECT_FEEDBACK else AudioAssetCatalog.INCORRECT_FEEDBACK
+        val fallback = { tts.speak(if (isCorrect) "Верно" else "Попробуй ещё") }
         playRawOrFallback(resourceName, fallback)
     }
 
@@ -55,11 +48,7 @@ class HybridAudioPlayer(
             return
         }
 
-        val resourceId = appContext.resources.getIdentifier(
-            resourceName,
-            "raw",
-            appContext.packageName
-        )
+        val resourceId = appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
         if (resourceId == 0) {
             fallback()
             return
@@ -74,16 +63,12 @@ class HybridAudioPlayer(
 
             activePlayer = player
             player.setOnCompletionListener { completed ->
-                if (activePlayer === completed) {
-                    activePlayer = null
-                }
+                if (activePlayer === completed) activePlayer = null
                 completed.release()
             }
             player.setOnErrorListener { failed, what, extra ->
                 Log.e(TAG, "Local audio playback failed: what=$what extra=$extra")
-                if (activePlayer === failed) {
-                    activePlayer = null
-                }
+                if (activePlayer === failed) activePlayer = null
                 failed.release()
                 fallback()
                 true
@@ -112,16 +97,17 @@ class HybridAudioPlayer(
     }
 }
 
-/**
- * Stable resource-name convention. Real WAV/OGG files can be added later without changing callers.
- */
 object AudioAssetCatalog {
     const val CORRECT_FEEDBACK = "sound_feedback_correct"
     const val INCORRECT_FEEDBACK = "sound_feedback_incorrect"
 
     private val letterResources = mapOf(
         'А' to "sound_letter_a",
-        'М' to "sound_letter_m"
+        'М' to "sound_letter_m",
+        'О' to "sound_letter_o",
+        'У' to "sound_letter_u",
+        'С' to "sound_letter_s",
+        'Н' to "sound_letter_n"
     )
 
     fun resourceNameForLetter(letter: Char): String? = letterResources[letter.uppercaseChar()]

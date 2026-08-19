@@ -1,5 +1,7 @@
 package com.dronrome1245.appabc.domain.model
 
+import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
+import com.dronrome1245.appabc.domain.learning.LearningPolicyConfig
 import java.time.Instant
 
 /**
@@ -14,6 +16,6 @@ data class Attempt(
     val timestamp: Instant = Instant.now(),
     val sessionId: String,
     val levelId: Int,
-    val learningPolicyVersion: Int = 1,
-    val curriculumVersion: Int = 1
+    val learningPolicyVersion: Int = LearningPolicyConfig.VERSION,
+    val curriculumVersion: Int = ApprovedCurriculum.VERSION
 )

@@ -21,7 +21,7 @@ import com.dronrome1245.appabc.core.audio.TtsAudioPlayer
 import com.dronrome1245.appabc.core.theme.AppABCTheme
 import com.dronrome1245.appabc.data.local.db.AppDatabase
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
-import com.dronrome1245.appabc.domain.m1.M1SessionConfig
+import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.ui.exercise.ExerciseScreen
 import com.dronrome1245.appabc.ui.exercise.ExerciseViewModel
 import com.dronrome1245.appabc.ui.home.HomeScreen
@@ -51,8 +51,7 @@ class MainActivity : ComponentActivity() {
             context = this,
             tts = ttsPlayer,
             spokenNameProvider = { symbol ->
-                M1SessionConfig.letters.firstOrNull { it.symbol == symbol.toString() }?.spokenName
-                    ?: symbol.toString()
+                ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString()
             }
         )
 
