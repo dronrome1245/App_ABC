@@ -7,6 +7,7 @@ package com.dronrome1245.appabc.core.audio
 interface AudioPlayer {
     fun playLetterSound(letter: Char)
     fun playFeedback(isCorrect: Boolean)
+    fun playLevelComplete()
     fun stop()
     fun release()
 }

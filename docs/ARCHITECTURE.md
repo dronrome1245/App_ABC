@@ -59,106 +59,33 @@ Migration `1 -> 2` не destructive и делает backfill новых табл
 
 Attempt должен поддерживать метрики из `SUCCESS_METRICS.md`.
 
-Минимальные поля:
-
-- id;
-- timestamp;
-- sessionId;
-- levelId;
-- exerciseType при необходимости;
-- targetLetter;
-- selectedLetter;
-- isCorrect;
-- responseTimeMs;
-- learningPolicyVersion;
-- curriculumVersion.
-
 ### Версии
 
-Отдельно отслеживать:
-
-- Room `databaseSchemaVersion`;
-- `learningPolicyVersion`;
-- `curriculumVersion`.
-
-Не использовать destructive migration для накопленной реальной статистики без явного решения владельца.
-
-После появления стабильной схемы migrations должны иметь тесты/ручное migration evidence до итогового milestone acceptance.
+Отдельно отслеживать Room `databaseSchemaVersion`, `learningPolicyVersion` и `curriculumVersion`. Не использовать destructive migration для накопленной статистики без явного решения владельца.
 
 ## Session
 
-Каждая тренировка имеет `sessionId`.
-
-Это позволяет:
-
-- отличать внутрисессионное повторение от межсессионного;
-- измерять реальные интервалы;
-- рассчитывать delayed retention;
-- анализировать усталость внутри сессии;
-- строить Session Summary и историю завершённых сессий.
+Каждая тренировка имеет `sessionId`, что позволяет отличать внутрисессионное повторение от межсессионного, рассчитывать retention и строить Session Summary.
 
 ## DataStore
 
-Подходит для:
-
-- текущего/max разблокированного уровня;
-- настроек озвучки;
-- onboarding;
-- размера рекомендуемой сессии;
-- feature flags;
-- Parent mode settings, если это простые значения.
-
-Не хранить в DataStore подробную историю попыток.
+Используется для текущего/max разблокированного уровня и простых настроек. Подробная история попыток в DataStore не хранится.
 
 ## LearningEngine
 
-Чистый Kotlin без Compose и Android Context.
-
-Получает:
-
-- набор букв curriculum;
-- LearningPolicy config;
-- статистику/историю;
-- retry queue;
-- последние target'ы;
-- источник случайности.
-
-Возвращает следующую цель/структуру задания.
-
-В unit tests должен поддерживаться фиксированный seed/random provider для воспроизводимости.
+Чистый Kotlin без Compose и Android Context. Curriculum, LearningPolicy, retry и статистические данные передаются в domain layer; UI не выбирает следующий вопрос самостоятельно.
 
 ## LearningPolicy config
 
-Пороги и веса не должны быть разбросаны по UI/классам.
-
-Для M2.1 создан централизованный `LearningPolicyConfig` с `learningPolicyVersion = 2` и owner-approved level unlock `8/10 = 80%` по D021.
-
-Остальные mastery/weighted/retry параметры реализуются последующими slices M2 и требуют сохранения version discipline.
+Для M2 используется `learningPolicyVersion = 2` и owner-approved level unlock `8/10 = 80%` по D021. Остальные mastery/weighted/retry параметры являются отдельными обязательными slices M2.
 
 ## Curriculum config
 
-Curriculum хранится централизованно в pure Kotlin domain-модели.
-
-Для каждой буквы минимум:
-
-- symbol;
-- spokenName;
-- stageIntroduced;
-- confusableWith/preferredDistractors при необходимости.
-
-`curriculumVersion = 2` содержит утверждённые Levels 1–3 по D021. Старые буквы входят в пул следующего уровня.
+`curriculumVersion = 2` содержит Levels 1–3 по D021: А/М, затем О/У, затем С/Н; старые буквы остаются в рабочем пуле.
 
 ## UI
 
-Compose получает состояние из ViewModel.
-
-Учебную логику не хранить внутри `@Composable`.
-
-Позиция вариантов ответа должна перемешиваться независимо от target, чтобы UI не становился скрытой подсказкой.
-
-Детский и родительский потоки логически разделить, но не усложнять навигацию.
-
-M2.2 Session Summary получает подготовленную ViewModel-модель и показывает общий счёт, pass/fail и D019 per-letter breakdown; сам Compose не агрегирует Attempt history.
+Compose получает состояние из ViewModel. M2.2 Session Summary показывает общий счёт, pass/fail и D019 per-letter breakdown; агрегация Attempt history не выполняется внутри Composable.
 
 ## Audio — D020
 
@@ -166,54 +93,33 @@ UI/ViewModel работает через интерфейс `AudioPlayer` и н�
 
 `HybridAudioPlayer` реализует стратегию:
 
-1. определить ожидаемое имя локального ресурса для буквы;
-2. найти asset в `res/raw`;
-3. если asset существует — воспроизвести его через Android `MediaPlayer`;
-4. если asset отсутствует или воспроизведение завершается ошибкой — использовать существующий `TextToSpeechWrapper` как fallback.
+1. определить имя локального `res/raw` ресурса через `AudioAssetCatalog`;
+2. найти Android raw resource;
+3. воспроизвести его через `MediaPlayer`;
+4. если mapping/resource отсутствует, `MediaPlayer.create()` неудачен или playback завершается ошибкой — использовать существующий `TextToSpeechWrapper` как fallback.
 
-Пока реальные WAV/OGG не добавлены, fallback является штатным поведением, а не исключением.
+Начиная с M2.3 приложение содержит OGG Vorbis mono 22.05 kHz assets для `А`, `М`, `О`, `У`, `С`, `Н`, а также `sound_correct`, `sound_wrong` и `sound_level_complete`. `ExerciseViewModel` запускает feedback после ответа, `ResultViewModel` — completion cue на валидном Session Summary.
 
-Для TTS service visibility Android Manifest содержит `<queries>` с `android.intent.action.TTS_SERVICE`.
+Для TTS service visibility Android Manifest содержит `<queries>` с `android.intent.action.TTS_SERVICE`. `spokenName` хранится в Curriculum, поэтому fallback не зависит от чтения одиночного Unicode-символа.
 
-Для буквы `spokenName` хранится в Curriculum (`М` / `эм`), чтобы fallback не зависел от произношения одиночного Unicode-символа.
-
-Низкоуровневый `TtsAudioPlayer` не удаляется и остаётся fallback engine.
+Качество локального голоса и фактический local-first runtime остаются owner smoke evidence; наличие файлов и mapping подтверждаются кодом/tests/build, но не подменяют проверку на устройстве.
 
 ## Speech recognition
 
-Отдельный модуль/feature flag. Не смешивать с базовым LearningEngine до тестирования.
-
-До M6 приложение не должно запрашивать микрофон без явной необходимости.
+Отдельный модуль/feature flag. До M6 приложение не должно запрашивать микрофон без явной необходимости.
 
 ## DI
 
-Hilt/Koin на старте не нужен, если зависимости можно передать просто и понятно.
-
-Текущий composition root — `MainActivity`: там создаются Room database/repositories, `LevelProgressionStore`, `TtsAudioPlayer` и `HybridAudioPlayer`, после чего зависимости передаются в ViewModel.
-
-Подключить DI framework позднее только если он реально уменьшит сложность.
+Hilt/Koin не нужен, пока зависимости удобно создаются в `MainActivity`. Composition root создаёт Room repositories, `LevelProgressionStore`, `TtsAudioPlayer` и `HybridAudioPlayer`.
 
 ## Сеть
 
-Собственный backend для MVP не нужен.
-
-По умолчанию нет analytics/crash SDK. Их добавление требует отдельного privacy/product решения.
+Собственный backend не нужен. По умолчанию нет analytics/crash SDK; их добавление требует отдельного privacy/product решения.
 
 ## CI
 
-GitHub Actions должен проверять:
-
-- JVM unit tests;
-- debug build;
-- позднее lint при необходимости.
+GitHub Actions проверяет JVM unit tests и debug build.
 
 ## Качество
 
-На каждом этапе:
-
-- unit tests учебного алгоритма/агрегации;
-- debug build;
-- ручной запуск при runtime-зависимых изменениях;
-- отсутствие crash в основном сценарии;
-- соответствие `DEFINITION_OF_DONE.md`;
-- проверка новых рисков по `RISK_REGISTER.md`.
+На каждом этапе обязательны доступные unit tests, debug build, ручной runtime для Android-зависимых изменений, соответствие DoD и проверка новых рисков.

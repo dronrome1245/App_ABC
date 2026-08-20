@@ -35,7 +35,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var database: AppDatabase
     private lateinit var repository: AppRepositoryImpl
     private lateinit var progressRepository: ProgressRepository
@@ -44,34 +43,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        database = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "app_abc_db"
-        ).addMigrations(DatabaseMigrations.MIGRATION_1_2).build()
+        database = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "app_abc_db")
+            .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+            .build()
         repository = AppRepositoryImpl(database.attemptDao(), database.letterDao())
         progressRepository = ProgressRepository(database)
         progressionStore = LevelProgressionStore(applicationContext)
-
         val ttsPlayer = TtsAudioPlayer(this)
         audioPlayer = HybridAudioPlayer(
             context = this,
             tts = ttsPlayer,
-            spokenNameProvider = { symbol ->
-                ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString()
-            }
+            spokenNameProvider = { symbol -> ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString() }
         )
-
-        MainScope().launch {
-            repository.ensureInitialLetters()
-        }
-
+        MainScope().launch { repository.ensureInitialLetters() }
         setContent {
             AppABCTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     AppNavigation(repository, progressRepository, progressionStore, audioPlayer)
                 }
             }
@@ -85,55 +72,25 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(
-    repository: AppRepositoryImpl,
-    progressRepository: ProgressRepository,
-    progressionStore: LevelProgressionStore,
-    audioPlayer: AudioPlayer
-) {
+fun AppNavigation(repository: AppRepositoryImpl, progressRepository: ProgressRepository, progressionStore: LevelProgressionStore, audioPlayer: AudioPlayer) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            HomeScreen(
-                onStartClick = { levelId -> navController.navigate("exercise/$levelId") },
-                viewModel = viewModel { HomeViewModel(progressionStore) }
-            )
+            HomeScreen(onStartClick = { levelId -> navController.navigate("exercise/$levelId") }, viewModel = viewModel { HomeViewModel(progressionStore) })
         }
-        composable(
-            "exercise/{levelId}",
-            arguments = listOf(navArgument("levelId") { type = NavType.IntType })
-        ) { backStackEntry ->
+        composable("exercise/{levelId}", arguments = listOf(navArgument("levelId") { type = NavType.IntType })) { backStackEntry ->
             val levelId = backStackEntry.arguments?.getInt("levelId") ?: 1
             ExerciseScreen(
-                onFinish = { sessionId ->
-                    navController.navigate("result/$sessionId") {
-                        popUpTo("home")
-                    }
-                },
-                viewModel = viewModel {
-                    ExerciseViewModel(repository, audioPlayer, levelId)
-                }
+                onFinish = { sessionId -> navController.navigate("result/$sessionId") { popUpTo("home") } },
+                viewModel = viewModel { ExerciseViewModel(repository, audioPlayer, levelId) }
             )
         }
-        composable(
-            "result/{sessionId}",
-            arguments = listOf(navArgument("sessionId") { type = NavType.StringType })
-        ) { backStackEntry ->
+        composable("result/{sessionId}", arguments = listOf(navArgument("sessionId") { type = NavType.StringType })) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             ResultScreen(
-                onRepeatLevel = { levelId ->
-                    navController.navigate("exercise/$levelId") {
-                        popUpTo("home")
-                    }
-                },
-                onContinue = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                viewModel = viewModel {
-                    ResultViewModel(progressRepository, progressionStore, sessionId)
-                }
+                onRepeatLevel = { levelId -> navController.navigate("exercise/$levelId") { popUpTo("home") } },
+                onContinue = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                viewModel = viewModel { ResultViewModel(progressRepository, progressionStore, audioPlayer, sessionId) }
             )
         }
     }

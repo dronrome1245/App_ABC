@@ -47,11 +47,9 @@
 
 ## M2 — Учебный движок v1/v2 и расширение curriculum
 
-Статус: **M2.3 KICKOFF**.
+Статус: **M2.3 OWNER SMOKE PASS / M2.4 ACTIVE; M2 OVERALL NOT COMPLETE**.
 
-### M2.1 — Hybrid audio + Curriculum Levels 1–3
-
-Статус: **MERGED TO MAIN / AUTOMATED GATES PASS / RUNTIME RECHECK TRACKED FOR M2 ACCEPTANCE**.
+### M2.1 — Hybrid audio foundation + Curriculum Levels 1–3
 
 - [x] интерфейс `AudioPlayer`;
 - [x] `HybridAudioPlayer`: local `res/raw` first + TTS fallback;
@@ -65,59 +63,64 @@
 - [x] старые буквы сохраняются в пуле следующих уровней;
 - [x] 10 вопросов на сессию;
 - [x] `learningPolicyVersion = 2`;
-- [x] level unlock policy: >=80% на полной сессии 10 вопросов (8/10);
-- [x] JVM tests на levels/pool/distractors/session generation/unlock;
+- [x] level unlock >=80% на полной сессии 10 вопросов (8/10);
 - [x] хранение current/max unlocked level в Preferences DataStore;
-- [x] применение LevelUnlockPolicy к progression state;
 - [x] UI выбора разблокированного уровня;
 - [x] runtime передача выбранного `levelId` в Exercise.
 
-### M2.2 — Per-letter statistics + Room session summary
-
-Статус: **IMPLEMENTATION COMPLETE / CI PASS / RUNTIME SMOKE PENDING**.
+### M2.2 — Per-letter statistics / Room 2
 
 - [x] статистика по каждой букве из Room Attempt history;
 - [x] разбивка результата по буквам (D019);
-- [x] attempts/correct/errors по текущей сессии;
-- [x] average response time aggregate;
 - [x] persistent `LetterProgressEntity`;
-- [x] persistent `SessionResultEntity` / session history;
-- [x] `ProgressRepository` и идемпотентная транзакционная финализация сессии;
-- [x] Room schema version 2;
-- [x] migration 1->2 без destructive migration;
-- [x] backfill исторических Attempt в новые агрегаты;
+- [x] `SessionResultEntity` и история завершённых сессий;
+- [x] migration 1->2 + backfill старой истории;
+- [x] response-time aggregate;
 - [x] переиспользование существующего `LevelProgressionStore`;
-- [x] JVM tests агрегации и per-letter breakdown;
-- [x] debug build / CI;
-- [ ] owner runtime smoke M2.2.
+- [x] JVM tests агрегации.
 
-### M2.3 — Local audio assets + combined M2 smoke
+### M2.3 — Local assets + combined smoke
 
-- [ ] добавить утверждённые WAV/OGG для текущих букв Curriculum v2;
-- [ ] проверить local-audio-first;
-- [ ] проверить TTS fallback;
-- [ ] проверить существующий UI выбора уровней после unlock;
-- [ ] пройти 10 вопросов и проверить per-letter Session Summary;
-- [ ] проверить сохранность Room/DataStore после перезапуска;
-- [ ] проверить migration 1->2 на существующей установке при наличии schema v1.
+- [x] local OGG assets для `А/М/О/У/С/Н`;
+- [x] `sound_correct`;
+- [x] `sound_wrong`;
+- [x] `sound_level_complete`;
+- [x] mapping Curriculum v2 -> local raw resource;
+- [x] feedback sound hook после ответа;
+- [x] Session Summary completion sound hook;
+- [x] JVM tests mapping/fallback policy;
+- [x] owner smoke: качество локальной озвучки — PASS;
+- [x] owner smoke: levels/unlock — PASS;
+- [x] owner smoke: per-letter Summary — PASS;
+- [x] owner smoke: persistence — PASS;
+- [ ] owner/device migration 1->2 — NOT_TESTED; закрыть automated migration evidence до M2 closure.
 
-### Остальной M2 LearningEngine
+### M2.4 — Remaining LearningEngine DoD
+
+Статус: **ACTIVE**.
 
 - [ ] retry queue (D019);
-- [ ] mastery states;
+- [ ] ошибочная target возвращается после 2–4 других заданий при достаточном пуле;
+- [ ] retry не бесконечен и не ломает max-series invariant;
+- [ ] mastery states `NEW / LEARNING / FAMILIAR / STABLE`;
 - [ ] weighted selection;
-- [ ] delayed checks;
-- [ ] weak-letter weighting;
-- [ ] full LearningPolicy config без magic numbers;
-- [ ] тесты всех инвариантов LearningEngine.
+- [ ] weak-letter / recent-error / long-not-seen weighting;
+- [ ] сильные старые буквы сохраняют ненулевой шанс;
+- [ ] delayed checks / delayed success;
+- [ ] centralized LearningPolicy config без magic numbers;
+- [ ] deterministic tests всех обязательных LearningEngine invariants;
+- [ ] automated migration 1->2 evidence с сохранением/backfill истории.
 
 ### Gate M2 → M3
 
 - [ ] все инварианты LearningEngine покрыты тестами;
 - [ ] пороги централизованы;
 - [ ] алгоритм не меняется без версии/decision log;
-- [ ] переносы D019 закрыты;
-- [ ] runtime evidence по M2 собран;
+- [ ] переносы D019 полностью закрыты, включая retry;
+- [ ] migration 1->2 имеет достаточное evidence;
+- [ ] runtime evidence M2 собран;
+- [ ] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
+- [ ] owner acceptance;
 - [ ] нет High-риска LearningEngine без меры контроля.
 
 ## M3 — Статистика и Parent mode

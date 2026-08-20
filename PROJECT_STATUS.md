@@ -4,81 +4,112 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.3 KICKOFF.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.3 OWNER SMOKE PASS / M2.4 KICKOFF.**
 
-M2.1 находится в `main`. M2.2 реализован в ветке `feature/m2-room-letter-stats` и PR #4; автоматические gate M2.2 пройдены. Ручной runtime/smoke evidence M2.1–M2.2 сохраняется для итогового M2 acceptance и будет собран в M2.3.
+M2.1 и M2.2 находятся в `main`. M2.3 реализован в `feature/m2-3-audio-assets-smoke` / PR #5 и проверен владельцем на реальном Android-устройстве.
 
-## Статусы M2.2
+M2 целиком пока не закрыт: по `docs/DEFINITION_OF_DONE.md` остаются обязательными retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting, тесты инвариантов и Milestone Closure Evidence Audit.
 
-- IMPLEMENTATION_STATUS: COMPLETE
+## Статусы M2.3
+
+- M2_2_MERGE_STATUS: MERGED_TO_MAIN
+- M2_3_IMPLEMENTATION_STATUS: COMPLETE
 - STATIC_REVIEW_STATUS: PASS
 - TESTS_CI_STATUS: PASS
 - DEBUG_BUILD_STATUS: PASS
-- DATABASE_SCHEMA_VERSION: 2
-- ROOM_MIGRATION_1_2_STATUS: IMPLEMENTED
-- HISTORICAL_ATTEMPT_BACKFILL_STATUS: IMPLEMENTED
-- D019_PER_LETTER_RESULT_STATUS: IMPLEMENTED
-- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_M2.3_SMOKE
-- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_M2.3_SMOKE
-- OWNER_ACCEPTANCE_STATUS: PENDING_FOR_M2
+- AUDIO_RESOURCE_BUILD_VALIDATION_STATUS: PASS
+- AUDIO_ASSETS_STATUS: IMPLEMENTED
+- CURRICULUM_V2_LOCAL_AUDIO_MAPPING_STATUS: IMPLEMENTED
+- ANSWER_FEEDBACK_AUDIO_STATUS: IMPLEMENTED
+- SESSION_COMPLETE_AUDIO_STATUS: IMPLEMENTED
+- TTS_FALLBACK_STATUS: PRESERVED
+- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
+- SESSION_RULE: 10 QUESTIONS / 80% UNLOCK (UNCHANGED)
+- LOCAL_ANDROID_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- PHYSICAL_DEVICE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- AUDIO_QUALITY_ACCEPTANCE_STATUS: PASS — OWNER_EVIDENCE
+- LEVELS_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- SESSION_SUMMARY_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- PERSISTENCE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED
+- OWNER_ACCEPTANCE_STATUS: M2.3_ACCEPTED / M2_OVERALL_PENDING
 
-GitHub Actions PR #4 подтвердил прохождение JVM unit tests и `assembleDebug` на коде M2.2.
+Owner smoke report от 2026-08-20:
 
-## M2.2 — реализовано
+- `AUDIO: PASS`;
+- `LEVELS: PASS`;
+- `SUMMARY: PASS`;
+- `PERSISTENCE: PASS`;
+- `MIGRATION_1_2: NOT_TESTED`.
 
-### Room / persistence
+`MIGRATION_1_2: NOT_TESTED` означает только отсутствие реального device-upgrade evidence со schema v1. Migration 1→2 остаётся реализованной в коде с backfill; этот пробел evidence должен быть закрыт до финального M2 acceptance тестом миграции либо реальным обновлением старой установки.
 
-- сырые `Attempt` остаются единственным детальным источником истории;
-- добавлен `LetterProgressEntity` как производный устойчивый агрегат по букве;
-- добавлен `SessionResultEntity` для истории завершённых сессий с уникальным `sessionId`;
-- добавлены `LetterProgressDao` и `SessionResultDao`;
-- добавлен `ProgressRepository`;
-- финализация сессии выполняется в Room transaction и идемпотентна по `sessionId`;
-- `databaseSchemaVersion = 2`;
-- migration `1 -> 2` не destructive;
-- migration backfill агрегирует существующие M1/M2.1 `Attempt` в новые таблицы без изменения исторических строк.
+## M2.2 — в main
 
-### Session Summary / D019
+- Room `databaseSchemaVersion = 2`;
+- migration `1 -> 2` с backfill старых Attempt;
+- persistent `LetterProgressEntity` и `SessionResultEntity`;
+- `ProgressRepository`;
+- D019 per-letter Session Summary;
+- repeat/continue actions.
 
-После завершения сессии доступны:
+## M2.3 — реализовано и runtime-проверено
 
-- общий счёт `X / 10`;
-- точность;
-- pass/fail по D021 (`>=8/10`);
-- сообщение об открытии следующего уровня;
-- разбивка по каждой target-букве текущей сессии: attempts/correct/errors;
-- понятная success/error индикация;
-- `Повторить уровень`;
-- `Далее` / `К выбору уровней`.
+### Local audio / D020
 
-Перенос D019 по per-letter session result технически закрыт. Retry queue из D019 остаётся отдельным обязательным пунктом M2.
+В `app/src/main/res/raw/` добавлены mono OGG Vorbis, 22.05 kHz:
 
-### Автоматические проверки
+- `sound_letter_a.ogg` — `А` / «а»;
+- `sound_letter_m.ogg` — `М` / «эм»;
+- `sound_letter_o.ogg` — `О` / «о»;
+- `sound_letter_u.ogg` — `У` / «у»;
+- `sound_letter_s.ogg` — `С` / «эс»;
+- `sound_letter_n.ogg` — `Н` / «эн»;
+- `sound_correct.ogg`;
+- `sound_wrong.ogg`;
+- `sound_level_complete.ogg`.
 
-JVM tests покрывают:
+`AudioAssetCatalog` содержит case-insensitive mapping для `А/М/О/У/С/Н`. При отсутствии mapping/resource или ошибке `MediaPlayer` сохраняется TTS fallback.
 
-- расчёт per-letter breakdown;
-- объединение новой статистики с существующим `LetterProgressEntity`;
-- correct/attempt counts;
-- average response time;
-- last seen timestamp.
+### UI audio hooks
 
-CI также подтвердил debug build с Room/KSP schema version 2.
+- после ответа вызывается `AudioPlayer.playFeedback(isCorrect)`;
+- на Session Summary вызывается `AudioPlayer.playLevelComplete()`;
+- аудио не меняет LearningEngine, число вопросов или level unlock.
 
-## Runtime boundary
+### Автоматическая и ручная проверка
 
-Изменения M2.2 затрагивают Room migration и Compose ResultScreen. Автоматические проверки не заменяют запуск на устройстве. В M2.3 нужен обычный owner smoke test: обновление существующей установки, прохождение 10 вопросов, проверка per-letter breakdown, повторного запуска и сохранности прогресса.
+- JVM tests: PASS;
+- `assembleDebug`: PASS;
+- Android CI: PASS;
+- локальная озвучка/feedback/completion на телефоне: PASS;
+- levels/unlock на телефоне: PASS;
+- D019 per-letter Summary на телефоне: PASS;
+- persistence Room/DataStore после перезапуска: PASS;
+- migration 1→2 на реальной schema v1: NOT_TESTED.
 
-## Активный slice — M2.3
+## Активный slice — M2.4 LearningEngine adaptive policy
 
-M2.3: добавить утверждённые локальные WAV/OGG assets в `res/raw`, проверить local-audio-first + TTS fallback, проверить уже существующий экран выбора уровней и выполнить объединённый ручной smoke test M2.1–M2.2.
-
-## Что ещё остаётся обязательным в M2
+Следующий обязательный slice M2 должен закрыть оставшиеся критерии LearningEngine:
 
 - retry queue из D019;
-- mastery states;
-- weighted selection;
-- delayed checks;
-- weak-letter weighting;
-- реальные pre-recorded WAV/OGG assets и runtime-проверка local-audio-first;
-- итоговый M2 closure audit и owner acceptance.
+- возврат ошибочной target-буквы после 2–4 других заданий, если пул позволяет;
+- mastery states `NEW / LEARNING / FAMILIAR / STABLE`;
+- weighted selection с ненулевым шансом сильных букв;
+- повышенный вес новых/слабых/недавно ошибочных/давно не показанных букв;
+- delayed checks и delayed-success tracking;
+- централизованную LearningPolicy config без magic numbers;
+- deterministic JVM tests обязательных инвариантов;
+- отдельное доказательство migration 1→2 до финального M2 closure.
+
+Точные правила брать из `docs/LEARNING_ENGINE.md`, `docs/SUCCESS_METRICS.md` и действующих решений; не менять Curriculum v2, 10 вопросов и 80% unlock без нового owner decision.
+
+## Gate M2 → M3
+
+До M3 остаются обязательными:
+
+- M2.4 implementation + tests;
+- migration 1→2 evidence;
+- Milestone Closure Evidence Audit по каждой строке M2 DoD;
+- отсутствие `FAIL` / `UNKNOWN`;
+- owner acceptance всего M2.

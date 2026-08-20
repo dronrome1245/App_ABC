@@ -20,72 +20,43 @@ class ExerciseViewModel(
     private val audioPlayer: AudioPlayer,
     private val levelId: Int
 ) : ViewModel() {
-
     private val level = ApprovedCurriculum.curriculum.level(levelId)
     private val sessionId = UUID.randomUUID().toString()
     private val sessionLength = level.questionCount
     private var currentStep = 0
     private var startTime = 0L
-
     private val _uiState = MutableStateFlow<ExerciseUiState>(ExerciseUiState.Loading)
     val uiState: StateFlow<ExerciseUiState> = _uiState.asStateFlow()
-
-    private val engine = LearningEngine(
-        ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)
-    )
+    private val engine = LearningEngine(ApprovedCurriculum.curriculum.lettersAvailableAt(levelId))
     private val lastTargets = mutableListOf<String>()
 
-    init {
-        nextTask()
-    }
+    init { nextTask() }
 
     private fun nextTask() {
         if (currentStep >= sessionLength) {
             _uiState.value = ExerciseUiState.Finished(sessionId)
             return
         }
-
         val task = engine.nextTask(lastTargets)
         lastTargets.add(task.target.symbol)
-        _uiState.value = ExerciseUiState.Question(
-            target = task.target,
-            options = task.options,
-            currentStep = currentStep + 1,
-            totalSteps = sessionLength
-        )
+        _uiState.value = ExerciseUiState.Question(task.target, task.options, currentStep + 1, sessionLength)
         startTime = System.currentTimeMillis()
         speakTarget()
     }
 
     fun speakTarget() {
         val state = _uiState.value
-        if (state is ExerciseUiState.Question) {
-            state.target.symbol.firstOrNull()?.let(audioPlayer::playLetterSound)
-        }
+        if (state is ExerciseUiState.Question) state.target.symbol.firstOrNull()?.let(audioPlayer::playLetterSound)
     }
 
     fun onAnswer(selected: Letter) {
         val state = _uiState.value as? ExerciseUiState.Question ?: return
         val isCorrect = selected.symbol == state.target.symbol
         val responseTime = System.currentTimeMillis() - startTime
-
         viewModelScope.launch {
-            repository.saveAttempt(
-                Attempt(
-                    targetLetter = state.target.symbol,
-                    selectedLetter = selected.symbol,
-                    isCorrect = isCorrect,
-                    responseTimeMs = responseTime,
-                    sessionId = sessionId,
-                    levelId = levelId
-                )
-            )
-
-            _uiState.value = state.copy(
-                selectedLetter = selected,
-                isCorrect = isCorrect
-            )
-
+            repository.saveAttempt(Attempt(targetLetter = state.target.symbol, selectedLetter = selected.symbol, isCorrect = isCorrect, responseTimeMs = responseTime, sessionId = sessionId, levelId = levelId))
+            _uiState.value = state.copy(selectedLetter = selected, isCorrect = isCorrect)
+            audioPlayer.playFeedback(isCorrect)
             delay(700)
             currentStep++
             nextTask()
@@ -95,13 +66,6 @@ class ExerciseViewModel(
 
 sealed class ExerciseUiState {
     object Loading : ExerciseUiState()
-    data class Question(
-        val target: Letter,
-        val options: List<Letter>,
-        val currentStep: Int,
-        val totalSteps: Int,
-        val selectedLetter: Letter? = null,
-        val isCorrect: Boolean? = null
-    ) : ExerciseUiState()
+    data class Question(val target: Letter, val options: List<Letter>, val currentStep: Int, val totalSteps: Int, val selectedLetter: Letter? = null, val isCorrect: Boolean? = null) : ExerciseUiState()
     data class Finished(val sessionId: String) : ExerciseUiState()
 }
