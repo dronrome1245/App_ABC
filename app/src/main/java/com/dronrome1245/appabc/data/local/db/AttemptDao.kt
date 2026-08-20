@@ -15,4 +15,7 @@ interface AttemptDao {
 
     @Query("SELECT * FROM attempts WHERE sessionId = :sessionId")
     suspend fun getAttemptsBySession(sessionId: String): List<AttemptEntity>
+
+    @Query("SELECT * FROM attempts WHERE targetLetter IN (:letters) ORDER BY timestamp ASC, id ASC")
+    suspend fun getAttemptsForLetters(letters: List<String>): List<AttemptEntity>
 }
