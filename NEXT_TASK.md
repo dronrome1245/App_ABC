@@ -1,70 +1,80 @@
-# NEXT_TASK.md — M2.3 Owner smoke test
+# NEXT_TASK.md — M2.4 LearningEngine adaptive policy
 
 ## Единственная следующая задача
 
-**Провести объединённый ручной smoke test M2.1–M2.3 на реальном Android-устройстве и зафиксировать наблюдаемое поведение.**
+**Закрыть оставшиеся обязательные критерии Milestone 2 по LearningEngine: retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting и deterministic invariant tests.**
 
-## Перед запуском
+## Основание
 
-1. В Android Studio сделать Fetch/Pull.
-2. Переключиться на `feature/m2-3-audio-assets-smoke`.
-3. Убедиться, что приложение устанавливается поверх существующей версии, если требуется проверить migration 1->2; для отдельной чистой проверки можно использовать чистую установку после migration-теста.
-4. Запустить обычной кнопкой Run. Android Studio Agent по умолчанию не нужен.
+M2.3 owner smoke от 2026-08-20:
 
-## Чеклист M2 smoke
+- `AUDIO: PASS`;
+- `LEVELS: PASS`;
+- `SUMMARY: PASS`;
+- `PERSISTENCE: PASS`;
+- `MIGRATION_1_2: NOT_TESTED`.
 
-### A. Audio / D020
+M2.3 runtime-гейт пройден. Переход к M3 пока запрещён, потому что `docs/DEFINITION_OF_DONE.md` содержит незакрытые обязательные критерии LearningEngine.
 
-- [ ] Level 1: `А` произносится локальным asset.
-- [ ] Level 1: `М` произносится локальным asset.
-- [ ] После открытия Level 2 проверить `О` и `У`.
-- [ ] После открытия Level 3 проверить `С` и `Н`.
-- [ ] Верный ответ сопровождается коротким `sound_correct`.
-- [ ] Ошибка сопровождается мягким `sound_wrong`.
-- [ ] При открытии Session Summary звучит `sound_level_complete`.
-- [ ] Звуки не обрезают/не блокируют переход к следующему вопросу.
-- [ ] Голос названий букв понятный и приемлемый для домашнего использования.
+## Scope M2.4
 
-### B. TTS fallback
+1. Реализовать retry queue по D019 / `LEARNING_ENGINE.md`:
+   - после ошибки target помещается в retry queue;
+   - при достаточном пуле возвращается примерно через 2–4 других задания;
+   - не создаёт немедленного или бесконечного цикла;
+   - сохраняет ограничение на длинную серию одной target-буквы.
+2. Реализовать mastery states:
+   - `NEW`;
+   - `LEARNING`;
+   - `FAMILIAR`;
+   - `STABLE`;
+   - переходы и критерии должны соответствовать действующей LearningPolicy/Success Metrics, без новых неутверждённых magic numbers.
+3. Реализовать weighted selection:
+   - новые/слабые буквы получают повышенный вес;
+   - недавняя ошибка повышает вес;
+   - давно не показанная буква получает приоритет;
+   - сильная старая буква сохраняет ненулевую вероятность появления.
+4. Реализовать delayed checks / delayed success:
+   - внутрисессионная delayed-проверка валидна при минимум 2 других заданиях между предъявлениями target;
+   - межсессионные интервалы учитывать только когда данные реально существуют;
+   - delayed success не меняет D021 level unlock 8/10.
+5. Централизовать LearningPolicy config:
+   - никаких новых порогов/весов в UI;
+   - изменения нормативных значений только через действующее решение и version discipline.
+6. Добавить deterministic JVM tests:
+   - ошибка возвращает target позднее;
+   - retry не бесконечен;
+   - нет запрещённой длинной серии одной цели;
+   - слабая буква получает повышенный вес;
+   - сильная буква имеет ненулевой шанс;
+   - старая буква не исчезает после открытия новой;
+   - delayed success считается только при допустимом интервале;
+   - изменение версии политики не происходит неявно.
+7. Закрыть migration evidence:
+   - добавить automated migration test 1→2 с сохранением/backfill исторических `Attempt`, если это возможно в текущем test stack;
+   - реальный device migration остаётся `NOT_TESTED`, пока нет schema-v1 установки, но automated migration evidence должен устранить `UNKNOWN` перед closure audit.
 
-Для штатного приложения все шесть текущих букв имеют local asset. Fallback архитектурно сохранён и покрыт JVM policy-test. Не удалять asset из рабочей ветки ради smoke.
+## Не менять
 
-- [ ] Обычная работа приложения не требует облака.
-- [ ] При наблюдаемой ошибке local playback приложение не падает; сообщить экран/букву и Logcat, если он уже открыт.
+- Curriculum v2: Levels 1–3 `А/М`, `О/У`, `С/Н`;
+- 10 вопросов на сессию;
+- level unlock `>=80%` / `8 из 10`;
+- Room schema 2 без отдельной необходимости;
+- local-audio-first + TTS fallback;
+- M3 не начинать.
 
-### C. Levels / Curriculum
+## Decision / normative sources
 
-- [ ] Level 1 доступен по умолчанию.
-- [ ] Сессия содержит ровно 10 вопросов.
-- [ ] Результат 7/10 не открывает следующий уровень.
-- [ ] Результат 8/10 или выше открывает следующий уровень.
-- [ ] После unlock Level 2 доступны `А/М/О/У`.
-- [ ] После unlock Level 3 доступны `А/М/О/У/С/Н`.
+- D019 — retry queue обязателен в M2;
+- D021 — 10 вопросов и 80% unlock;
+- `docs/LEARNING_ENGINE.md` — алгоритм, states, retry/delayed rules, invariants;
+- `docs/SUCCESS_METRICS.md` — mastery/knowledge metrics;
+- `docs/DEFINITION_OF_DONE.md` — M2 closure gate.
 
-### D. Session Summary / D019 / M2.2
+## После M2.4
 
-- [ ] Общий итог показывает `X / 10`.
-- [ ] По каждой показанной target-букве есть отдельная строка correct/attempts.
-- [ ] Ошибки визуально различимы.
-- [ ] `Повторить уровень` запускает тот же уровень.
-- [ ] `Далее / К выбору уровней` возвращает к корректному списку уровней.
+Провести обязательный Milestone Closure Evidence Audit по каждой строке M2 DoD. Только при отсутствии `FAIL`/`UNKNOWN` запросить owner acceptance M2 и переходить к M3.
 
-### E. Persistence / Room 2 / DataStore
+## Android Studio Agent
 
-- [ ] Закрыть приложение после завершённой сессии.
-- [ ] Открыть снова — unlocked/selected level сохранился.
-- [ ] История/статистика не обнулилась.
-- [ ] Если на устройстве была schema v1: обновление проходит без crash и старые Attempt учитываются после migration/backfill.
-
-## Что прислать ChatGPT после smoke
-
-- `AUDIO: PASS/FAIL` + какие буквы/звуки проблемны;
-- `LEVELS: PASS/FAIL`;
-- `SUMMARY: PASS/FAIL`;
-- `PERSISTENCE: PASS/FAIL`;
-- `MIGRATION_1_2: PASS/NOT_TESTED/FAIL`;
-- при ошибке — точное наблюдаемое поведение и Logcat, если он уже открыт.
-
-## Важно для Milestone 2
-
-Успешный M2.3 smoke **не закрывает весь M2 автоматически**. По текущему DoD после него ещё остаются retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting и closure audit. Переход к M3 запрещён до выполнения этих требований или отдельного явного решения владельца об изменении M2 gate.
+По умолчанию не нужен. Pure Kotlin LearningEngine, JVM tests и Room migration tests выполнять обычным repository/CI workflow. Подключать Android Studio Agent только при конкретной Android runtime/Room instrumentation проблеме.
