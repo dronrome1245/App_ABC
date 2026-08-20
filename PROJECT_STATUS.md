@@ -4,112 +4,75 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.3 OWNER SMOKE PASS / M2.4 KICKOFF.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.4 IMPLEMENTATION COMPLETE / CI VALIDATION PENDING.**
 
-M2.1 и M2.2 находятся в `main`. M2.3 реализован в `feature/m2-3-audio-assets-smoke` / PR #5 и проверен владельцем на реальном Android-устройстве.
+M2.1–M2.3 находятся в `main`. M2.3 прошёл owner smoke на физическом устройстве: AUDIO/LEVELS/SUMMARY/PERSISTENCE = PASS; device migration 1→2 = NOT_TESTED.
 
-M2 целиком пока не закрыт: по `docs/DEFINITION_OF_DONE.md` остаются обязательными retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting, тесты инвариантов и Milestone Closure Evidence Audit.
+M2.4 реализует owner-approved LearningPolicy v3 по D022 и готовится к автоматической валидации.
 
-## Статусы M2.3
+## M2.4 — реализовано
 
-- M2_2_MERGE_STATUS: MERGED_TO_MAIN
-- M2_3_IMPLEMENTATION_STATUS: COMPLETE
-- STATIC_REVIEW_STATUS: PASS
-- TESTS_CI_STATUS: PASS
-- DEBUG_BUILD_STATUS: PASS
-- AUDIO_RESOURCE_BUILD_VALIDATION_STATUS: PASS
-- AUDIO_ASSETS_STATUS: IMPLEMENTED
-- CURRICULUM_V2_LOCAL_AUDIO_MAPPING_STATUS: IMPLEMENTED
-- ANSWER_FEEDBACK_AUDIO_STATUS: IMPLEMENTED
-- SESSION_COMPLETE_AUDIO_STATUS: IMPLEMENTED
-- TTS_FALLBACK_STATUS: PRESERVED
-- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
-- SESSION_RULE: 10 QUESTIONS / 80% UNLOCK (UNCHANGED)
-- LOCAL_ANDROID_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
-- PHYSICAL_DEVICE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
-- AUDIO_QUALITY_ACCEPTANCE_STATUS: PASS — OWNER_EVIDENCE
-- LEVELS_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
-- SESSION_SUMMARY_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
-- PERSISTENCE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+### LearningPolicy v3
+
+- `learningPolicyVersion = 3`;
+- mastery states: `INTRODUCED / PRACTICING / MASTERED`;
+- `INTRODUCED`: <3 попыток;
+- `MASTERED`: >=5 попыток и recent accuracy >=85%;
+- recent window: до последних 10 попыток;
+- `MASTERED` weight = 1.0;
+- `INTRODUCED` weight = 2.0;
+- `PRACTICING` weight = 2.0…3.0 по recent error ratio;
+- 10 вопросов и unlock >=80% / 8 из 10 не изменены.
+
+### AdaptiveSessionGenerator
+
+- pure Kotlin;
+- исторические Attempt загружаются до первого вопроса;
+- weighted target selection использует persistent history;
+- сильные буквы имеют ненулевой шанс;
+- одна target не появляется более двух раз подряд;
+- distractor не совпадает с target;
+- confusion pair обновляется при ошибке.
+
+### Retry / delayed checks
+
+- `InSessionRetryQueue`;
+- после ошибки target при наличии места возвращается через 2–4 других вопроса;
+- пока target ждёт retry, обычный weighted flow её не выбирает;
+- длина сессии остаётся 10;
+- late-session error не расширяет сессию, если spacing >=2 физически не помещается;
+- delayed success считается только при spacing >=2.
+
+### Room migration evidence
+
+Добавлен JVM Robolectric test, который:
+
+- создаёт реальную SQLite-базу schema v1;
+- вставляет исторические Attempt;
+- выполняет фактический `MIGRATION_1_2`;
+- проверяет сохранность Attempt;
+- проверяет backfill `letter_progress`;
+- проверяет backfill `session_results`.
+
+Device migration 1→2 остаётся `NOT_TESTED`; automated evidence будет переведено в PASS только после CI.
+
+## Статусы
+
+- M2_4_IMPLEMENTATION_STATUS: COMPLETE
+- LEARNING_POLICY_VERSION: 3
+- ADAPTIVE_GENERATOR_STATUS: IMPLEMENTED
+- RETRY_QUEUE_STATUS: IMPLEMENTED
+- MASTERY_STATES_STATUS: IMPLEMENTED
+- WEIGHTED_SELECTION_STATUS: IMPLEMENTED
+- DELAYED_CHECK_STATUS: IMPLEMENTED
+- CONFUSION_TRACKING_STATUS: IMPLEMENTED
+- JVM_INVARIANT_TESTS_STATUS: ADDED / CI_PENDING
+- MIGRATION_1_2_AUTOMATED_TEST_STATUS: ADDED / CI_PENDING
 - MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED
-- OWNER_ACCEPTANCE_STATUS: M2.3_ACCEPTED / M2_OVERALL_PENDING
+- TESTS_CI_STATUS: PENDING
+- DEBUG_BUILD_STATUS: PENDING
+- OWNER_ACCEPTANCE_STATUS: M2_OVERALL_PENDING
 
-Owner smoke report от 2026-08-20:
+## Следующий gate
 
-- `AUDIO: PASS`;
-- `LEVELS: PASS`;
-- `SUMMARY: PASS`;
-- `PERSISTENCE: PASS`;
-- `MIGRATION_1_2: NOT_TESTED`.
-
-`MIGRATION_1_2: NOT_TESTED` означает только отсутствие реального device-upgrade evidence со schema v1. Migration 1→2 остаётся реализованной в коде с backfill; этот пробел evidence должен быть закрыт до финального M2 acceptance тестом миграции либо реальным обновлением старой установки.
-
-## M2.2 — в main
-
-- Room `databaseSchemaVersion = 2`;
-- migration `1 -> 2` с backfill старых Attempt;
-- persistent `LetterProgressEntity` и `SessionResultEntity`;
-- `ProgressRepository`;
-- D019 per-letter Session Summary;
-- repeat/continue actions.
-
-## M2.3 — реализовано и runtime-проверено
-
-### Local audio / D020
-
-В `app/src/main/res/raw/` добавлены mono OGG Vorbis, 22.05 kHz:
-
-- `sound_letter_a.ogg` — `А` / «а»;
-- `sound_letter_m.ogg` — `М` / «эм»;
-- `sound_letter_o.ogg` — `О` / «о»;
-- `sound_letter_u.ogg` — `У` / «у»;
-- `sound_letter_s.ogg` — `С` / «эс»;
-- `sound_letter_n.ogg` — `Н` / «эн»;
-- `sound_correct.ogg`;
-- `sound_wrong.ogg`;
-- `sound_level_complete.ogg`.
-
-`AudioAssetCatalog` содержит case-insensitive mapping для `А/М/О/У/С/Н`. При отсутствии mapping/resource или ошибке `MediaPlayer` сохраняется TTS fallback.
-
-### UI audio hooks
-
-- после ответа вызывается `AudioPlayer.playFeedback(isCorrect)`;
-- на Session Summary вызывается `AudioPlayer.playLevelComplete()`;
-- аудио не меняет LearningEngine, число вопросов или level unlock.
-
-### Автоматическая и ручная проверка
-
-- JVM tests: PASS;
-- `assembleDebug`: PASS;
-- Android CI: PASS;
-- локальная озвучка/feedback/completion на телефоне: PASS;
-- levels/unlock на телефоне: PASS;
-- D019 per-letter Summary на телефоне: PASS;
-- persistence Room/DataStore после перезапуска: PASS;
-- migration 1→2 на реальной schema v1: NOT_TESTED.
-
-## Активный slice — M2.4 LearningEngine adaptive policy
-
-Следующий обязательный slice M2 должен закрыть оставшиеся критерии LearningEngine:
-
-- retry queue из D019;
-- возврат ошибочной target-буквы после 2–4 других заданий, если пул позволяет;
-- mastery states `NEW / LEARNING / FAMILIAR / STABLE`;
-- weighted selection с ненулевым шансом сильных букв;
-- повышенный вес новых/слабых/недавно ошибочных/давно не показанных букв;
-- delayed checks и delayed-success tracking;
-- централизованную LearningPolicy config без magic numbers;
-- deterministic JVM tests обязательных инвариантов;
-- отдельное доказательство migration 1→2 до финального M2 closure.
-
-Точные правила брать из `docs/LEARNING_ENGINE.md`, `docs/SUCCESS_METRICS.md` и действующих решений; не менять Curriculum v2, 10 вопросов и 80% unlock без нового owner decision.
-
-## Gate M2 → M3
-
-До M3 остаются обязательными:
-
-- M2.4 implementation + tests;
-- migration 1→2 evidence;
-- Milestone Closure Evidence Audit по каждой строке M2 DoD;
-- отсутствие `FAIL` / `UNKNOWN`;
-- owner acceptance всего M2.
+После зелёного CI M2.4 переходит в COMPLETE/PASS, а единственной следующей задачей становится M2.5 Milestone 2 Closure Audit. M3 не начинать до аудита и owner acceptance всего M2.
