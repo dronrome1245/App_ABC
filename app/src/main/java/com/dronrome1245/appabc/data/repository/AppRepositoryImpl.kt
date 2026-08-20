@@ -30,16 +30,14 @@ class AppRepositoryImpl(
         )
     }
 
-    fun getLettersForLevel(levelId: Int): Flow<List<Letter>> {
-        return letterDao.getLettersForLevel(levelId).map { entities ->
-            entities.map { it.toDomain() }
-        }
-    }
+    fun getLettersForLevel(levelId: Int): Flow<List<Letter>> =
+        letterDao.getLettersForLevel(levelId).map { entities -> entities.map { it.toDomain() } }
+
+    suspend fun getAttemptsForLetters(symbols: List<String>): List<Attempt> =
+        attemptDao.getAttemptsForLetters(symbols).map { it.toDomain() }
 
     suspend fun ensureInitialLetters() {
-        val approvedLevels = ApprovedCurriculum.curriculum.levels
-
-        approvedLevels.forEach { level ->
+        ApprovedCurriculum.curriculum.levels.forEach { level ->
             val levelLetters = level.introducedLetters.map { letter ->
                 LetterEntity(
                     symbol = letter.symbol,
@@ -47,20 +45,16 @@ class AppRepositoryImpl(
                     levelIntroduced = letter.levelIntroduced
                 )
             }
-
-            letterDao.deleteLettersOutsideLevelSet(
-                levelId = level.id,
-                allowedSymbols = levelLetters.map { it.symbol }
-            )
+            letterDao.deleteLettersOutsideLevelSet(level.id, levelLetters.map { it.symbol })
             letterDao.insertLetters(levelLetters)
         }
     }
 
-    suspend fun getSessionSummary(sessionId: String): List<Attempt> {
-        return attemptDao.getAttemptsBySession(sessionId).map { it.toDomain() }
-    }
+    suspend fun getSessionSummary(sessionId: String): List<Attempt> =
+        attemptDao.getAttemptsBySession(sessionId).map { it.toDomain() }
 
     private fun LetterEntity.toDomain() = Letter(symbol, spokenName, levelIntroduced)
+
     private fun AttemptEntity.toDomain() = Attempt(
         id = id,
         targetLetter = targetLetter,
