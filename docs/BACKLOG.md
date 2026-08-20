@@ -47,7 +47,7 @@
 
 ## M2 — LearningEngine + audio/curriculum foundation
 
-Статус: **M2.4 COMPLETE / M2.5 CLOSURE AUDIT ACTIVE; M2 OVERALL PENDING OWNER ACCEPTANCE**.
+Статус: **DONE (100%) / OWNER ACCEPTED**.
 
 ### M2.1 — Hybrid audio foundation + Curriculum Levels 1–3
 
@@ -85,6 +85,7 @@
 - [x] owner smoke: levels/unlock — PASS;
 - [x] owner smoke: per-letter Summary — PASS;
 - [x] owner smoke: persistence — PASS;
+- [x] automated migration 1→2 evidence — PASS;
 - [ ] device migration 1→2 — NOT_TESTED; не выдавать за device PASS.
 
 ### M2.4 — Adaptive LearningPolicy v3
@@ -114,16 +115,15 @@
 
 ### M2.5 — Closure Audit
 
-Статус: **NEXT / ACTIVE AFTER M2.4**.
+Статус: **COMPLETE / PASS 7 OF 7 / OWNER ACCEPTED**.
 
-- [ ] построчный evidence audit каждого M2 DoD criterion;
-- [ ] проверить documentation/code drift;
-- [ ] подтвердить все обязательные LearningEngine invariants;
-- [ ] подтвердить переносы D019;
-- [ ] зафиксировать automated migration evidence и отдельно device `NOT_TESTED`;
-- [ ] исключить `FAIL` / `UNKNOWN`;
-- [ ] запросить owner acceptance всего M2;
-- [ ] после owner acceptance перевести M2 в DONE и только затем открыть M3.
+- [x] построчный evidence audit M2 DoD;
+- [x] documentation/code drift проверен;
+- [x] обязательные LearningEngine invariants подтверждены;
+- [x] переносы D019 закрыты;
+- [x] automated migration evidence зафиксирован, device `NOT_TESTED` отделён;
+- [x] `FAIL` / `UNKNOWN` отсутствуют;
+- [x] owner acceptance всего M2 — ACCEPTED.
 
 ### Gate M2 → M3
 
@@ -133,11 +133,24 @@
 - [x] retry D019 реализован;
 - [x] per-letter D019 реализован;
 - [x] automated migration 1→2 evidence;
-- [x] runtime evidence M2.3 собрано;
-- [ ] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
-- [ ] owner acceptance M2.
+- [x] runtime evidence M2 собрано;
+- [x] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
+- [x] owner acceptance M2.
 
 ## M3 — Статистика и Parent mode
+
+Статус: **In Planning / Kickoff — кодирование не начато**.
+
+Kickoff:
+
+- [ ] архитектурный дизайн Parent Dashboard / родительского профиля;
+- [ ] data-flow и query plan для статистики;
+- [ ] versioned proposal расширения Curriculum до полного русского алфавита;
+- [ ] архитектура spaced repetition across days / sessions;
+- [ ] M3 DoD и test plan;
+- [ ] owner approval архитектурного scope до начала реализации.
+
+Предварительный implementation backlog после утверждения scope:
 
 - [ ] экран прогресса;
 - [ ] статистика буквы;
@@ -171,6 +184,8 @@
 - [ ] домашнее UX-тестирование;
 - [ ] baseline и продуктовая проверка по `SUCCESS_METRICS.md`;
 - [ ] устранить High-риски полного curriculum.
+
+Примечание: M3 Kickoff может подготовить архитектуру и versioned proposal полного Curriculum, но фактический полный порядок/внедрение 33 букв не считается утверждённым до отдельного owner decision.
 
 ## M6 — Speech recognition experiment
 

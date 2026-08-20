@@ -4,13 +4,13 @@
 
 ## Текущий статус
 
-**Milestone 1 — DONE / OWNER ACCEPTED. Milestone 2 — In Planning / Kickoff.**
+**Milestone 1 — DONE / OWNER ACCEPTED. Milestone 2 — DONE / OWNER ACCEPTED. Milestone 3 — In Planning / Kickoff.**
 
 M1 принят владельцем на реальном Android-устройстве: Level 1 `А/М`, 10 вопросов, рабочая озвучка, выбор ответа, сохранение истории и основной пользовательский поток.
 
-По решению владельца D019 три требования раннего M1 DoD явно перенесены в M2 и не считаются реализованными в M1: разбивка результата по каждой букве, retry ошибочной target-буквы и TTS service visibility declaration в Manifest при использовании TTS fallback.
+M2 закрыт после M2.5 Closure Evidence Audit: 7/7 критериев PASS, CI и `assembleDebug` PASS, owner device smoke PASS, owner acceptance ACCEPTED. В M2 реализованы hybrid local-audio-first/TTS-fallback, Curriculum Levels 1–3, per-letter Session Summary/Room persistence, adaptive LearningPolicy v3 с mastery/weighted selection/retry/delayed checks и automated migration 1→2 test.
 
-Для M2 принято D020: основной источник озвучки — локальные pre-recorded `WAV`/`OGG` assets, системный TTS — fallback через единый `AudioPlayer`.
+M3 пока не кодируется. Активен только Kickoff: архитектура Parent Dashboard/родительской статистики, proposal расширения Curriculum до полного русского алфавита и long-term spaced repetition between days. Новые curriculum/policy параметры требуют отдельного owner decision и version update.
 
 Подробно: [PROJECT_STATUS.md](PROJECT_STATUS.md) и [NEXT_TASK.md](NEXT_TASK.md).
 

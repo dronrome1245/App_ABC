@@ -1,92 +1,63 @@
 # PROJECT_STATUS.md
 
-Дата обновления: 2026-08-20
+Дата обновления: 2026-08-21
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.4 COMPLETE / M2.5 CLOSURE AUDIT KICKOFF.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — In Planning / Kickoff.**
 
-M2.1–M2.3 находятся в `main`. M2.3 прошёл owner smoke на физическом устройстве: AUDIO/LEVELS/SUMMARY/PERSISTENCE = PASS; device migration 1→2 = NOT_TESTED.
+Milestone 2 официально закрыт после завершения M2.5 Closure Evidence Audit и явной приёмки владельцем. Все 7 критериев M2.5 имеют статус PASS; обязательные переносы D019 закрыты; LearningPolicy v3/D022, Curriculum v2, hybrid audio, per-letter statistics, persistence и adaptive retry/weighting входят в принятый контур M2.
 
-M2.4 реализован в `feature/m2-learning-engine-policy` / PR #6. LearningPolicy v3 зафиксирован owner decision D022. Автоматические gate M2.4 пройдены: JVM tests, реальный SQLite migration test 1→2 и `assembleDebug` — PASS.
+## Milestone 2 — финальные статусы
 
-## Статусы M2.4
-
-- M2_4_IMPLEMENTATION_STATUS: COMPLETE
-- LEARNING_POLICY_VERSION: 3
-- ADAPTIVE_GENERATOR_STATUS: PASS — CODE/TEST
-- RETRY_QUEUE_STATUS: PASS — CODE/TEST
-- MASTERY_STATES_STATUS: PASS — CODE/TEST
-- WEIGHTED_SELECTION_STATUS: PASS — CODE/TEST
-- DELAYED_CHECK_STATUS: PASS — CODE/TEST
-- CONFUSION_TRACKING_STATUS: PASS — CODE/TEST
-- JVM_INVARIANT_TESTS_STATUS: PASS — CI
-- MIGRATION_1_2_AUTOMATED_TEST_STATUS: AUTOMATED_TEST_PASS
-- MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED
+- MILESTONE_2_STATUS: DONE (100%)
+- M2_5_CLOSURE_AUDIT_STATUS: PASS — 7/7
+- STATIC_REVIEW_STATUS: PASS
 - TESTS_CI_STATUS: PASS
 - DEBUG_BUILD_STATUS: PASS
-- OWNER_ACCEPTANCE_STATUS: M2_OVERALL_PENDING
+- LOCAL_ANDROID_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- PHYSICAL_DEVICE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- MIGRATION_1_2_STATUS: AUTOMATED_TEST_PASS
+- MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED
+- LEARNING_POLICY_VERSION: 3
+- CURRICULUM_VERSION: 2
+- DATABASE_SCHEMA_VERSION: 2
 
-## LearningPolicy v3 — D022
+`MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED` сохраняется как точное описание отсутствия отдельного device-upgrade прогона schema v1→v2. Это не является `UNKNOWN` для migration-кода: реальный SQLite automated migration test применяет `MIGRATION_1_2`, сохраняет исторические `Attempt` и проверяет backfill `letter_progress`/`session_results`; данный evidence принят в M2.5 Closure Audit.
 
-- mastery states: `INTRODUCED / PRACTICING / MASTERED`;
-- `INTRODUCED`: <3 попыток;
-- `PRACTICING`: от 3 попыток до выполнения критерия `MASTERED`;
-- `MASTERED`: >=5 попыток и recent accuracy >=85%;
-- recent window: до последних 10 попыток;
-- `MASTERED` weight = 1.0;
-- `INTRODUCED` weight = 2.0;
-- `PRACTICING` weight = 2.0…3.0 по recent error ratio;
-- 10 вопросов и unlock >=80% / 8 из 10 не изменены;
-- исторические Attempt прежних policy versions не переписываются.
+## M2.5 Closure Evidence Audit — PASS
 
-## AdaptiveSessionGenerator
+Проверены и приняты семь контуров evidence:
 
-- pure Kotlin;
-- persistent Attempt history загружается до первого вопроса;
-- weighted target selection использует историю по активным буквам;
-- сильные буквы имеют ненулевой шанс;
-- одна target не появляется более двух раз подряд;
-- distractor не совпадает с target;
-- confusion pair обновляется при ошибке;
-- фиксированный `Random` обеспечивает deterministic tests.
+1. Domain/architecture: учебный алгоритм отделён от UI; LearningPolicy версионируется; thresholds/weights централизованы — PASS.
+2. Adaptive learning: mastery states, weighted selection, retry spacing и delayed checks реализованы и покрыты deterministic JVM tests — PASS.
+3. Curriculum/session invariants: Levels 1–3, старые буквы в накопленном пуле, distractor != target, 10 вопросов и unlock >=80% сохранены — PASS.
+4. Audio: local `res/raw` first, TTS fallback, TTS service visibility и feedback/completion sounds — PASS, включая owner device smoke.
+5. D019/session result: per-letter Session Summary и поздний retry ошибочной target-буквы реализованы — PASS.
+6. Persistence/migration: Room schema 2, Attempt history, LetterProgress/SessionResult, DataStore progression и automated migration 1→2 backfill test — PASS.
+7. Integration/acceptance: static review, JVM tests, `assembleDebug`, CI, physical-device smoke и owner acceptance — PASS.
 
-## Retry / delayed checks
+## Принятый контур M2
 
-- после ошибки target ставится в `InSessionRetryQueue`;
-- при достаточном остатке 10-вопросной сессии target возвращается после 2–4 других вопросов;
-- до due retry target исключена из обычного weighted flow;
-- retry не увеличивает длину сессии и не создаёт бесконечного цикла;
-- delayed success валиден только при spacing >=2 других вопросов.
+- `AudioPlayer` + `HybridAudioPlayer`: pre-recorded local audio first, Android TTS fallback;
+- Curriculum v2: Level 1 `А/М`, Level 2 `О/У`, Level 3 `С/Н`, накопленный пул букв;
+- 10 вопросов на сессию, level unlock `>=80%` / `8 из 10`;
+- Room schema 2, сырые `Attempt`, persistent per-letter/session aggregates;
+- D019 per-letter Session Summary;
+- LearningPolicy v3 / D022: `INTRODUCED / PRACTICING / MASTERED`;
+- adaptive weighted selection, retry queue 2–4 других вопроса, delayed checks spacing >=2;
+- deterministic invariant tests и automated Room migration evidence;
+- owner smoke M2.3: AUDIO / LEVELS / SUMMARY / PERSISTENCE = PASS.
 
-## Migration 1→2 evidence
+## Активный этап — Milestone 3 Kickoff
 
-JVM Robolectric test создаёт реальную SQLite schema v1, записывает исторические `Attempt`, применяет фактический `DatabaseMigrations.MIGRATION_1_2` и проверяет:
+M3 находится только в стадии планирования. До отдельного owner-approved architecture/scope решения код M3 не начинать.
 
-- исходные Attempt сохранены;
-- `letter_progress` backfill содержит корректные attempts/correct/lastSeen/averageResponseTime;
-- `session_results` backfill содержит корректные totals/correct/passed.
+Kickoff должен подготовить архитектурный план для:
 
-Статус migration-кода: **AUTOMATED_TEST_PASS**. Реальный апгрейд schema v1 на физическом устройстве по-прежнему честно отмечен `NOT_TESTED`, а не PASS.
-
-## Автоматические проверки M2.4
-
-GitHub Actions PR #6:
-
-- JVM unit tests — PASS;
-- deterministic adaptive invariants — PASS;
-- migration 1→2 SQLite test — PASS;
-- `assembleDebug` — PASS.
-
-Первый CI attempt не дошёл до тестов из-за ошибочно указанной несуществующей зависимости Robolectric `4.13.2`; после исправления на опубликованную `4.13` финальный прогон полностью зелёный.
-
-## Активный slice — M2.5 Closure Audit
-
-Следующий и финальный шаг Milestone 2 — обязательный построчный Closure Evidence Audit по разделу M2 в `docs/DEFINITION_OF_DONE.md`.
-
-M3 не начинать до:
-
-- аудита каждой строки M2 DoD;
-- отсутствия `FAIL` / `UNKNOWN`;
-- проверки documentation drift;
-- owner acceptance всего Milestone 2.
+- Parent Dashboard / родительского профиля и экрана статистики;
+- полного набора метрик по буквам и confusion matrix;
+- планируемого расширения Curriculum до полного русского алфавита с отдельным versioned owner decision о порядке/группах;
+- долгосрочного spaced repetition между днями/сессиями и необходимых временных метрик;
+- границ Room/DataStore и UI для M3 без изменения принятого LearningPolicy v3 до нового решения.

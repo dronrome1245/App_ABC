@@ -1,56 +1,74 @@
-# NEXT_TASK.md — M2.5 Closure Audit Milestone 2
+# NEXT_TASK.md — Milestone 3 Kickoff
 
 ## Единственная следующая задача
 
-**Провести обязательный Milestone 2 Closure Evidence Audit по каждой строке `docs/DEFINITION_OF_DONE.md`, подтвердить все инварианты LearningEngine и подготовить M2 к owner acceptance.**
+**Milestone 3 Kickoff: спланировать и зафиксировать архитектурный scope Parent Dashboard/родительской статистики, подготовить versioned план расширения Curriculum до полного русского алфавита и спроектировать долгосрочное spaced repetition между днями/сессиями.**
 
-## Перед стартом
+## Статус перед стартом
 
-M2.5 начинается только после зелёного CI M2.4:
+- Milestone 1: DONE (100%).
+- Milestone 2: DONE (100%) / OWNER ACCEPTED.
+- M2.5 Closure Evidence Audit: PASS — 7/7.
+- LearningPolicy v3: accepted.
+- Curriculum v2: accepted.
+- Room schema: 2.
 
-- `./gradlew test` PASS;
-- `./gradlew assembleDebug` PASS;
-- automated migration 1→2 test PASS.
+## Scope M3 Kickoff — только планирование и архитектура
 
-## Scope M2.5
+1. Parent Dashboard / родительский профиль:
+   - определить экраны и navigation boundary;
+   - определить, какие метрики показываются родителю;
+   - recent accuracy, response time, mastery state, confusion matrix, слабые буквы, история сессий;
+   - определить ручной выбор букв, настройки и reset flow;
+   - не загромождать детский training flow.
+2. Data architecture статистики:
+   - определить, какие данные читаются из существующих `Attempt`, `LetterProgressEntity`, `SessionResultEntity`;
+   - определить, нужны ли новые derived views/queries/entities;
+   - не повышать Room schema без отдельной необходимости и migration plan.
+3. Curriculum полного алфавита:
+   - подготовить proposal для versioned Curriculum, включающего все 33 русские буквы;
+   - определить порядок/группы ввода, distractor strategy и визуально похожие пары;
+   - учесть фактическую confusion matrix конкретного ребёнка;
+   - не менять `curriculumVersion = 2` и текущие Levels 1–3 до отдельного owner decision.
+4. Spaced Repetition across days:
+   - спроектировать межсессионные интервалы и retention metrics;
+   - использовать реальные timestamps Attempt, а не искусственные календарные блокировки;
+   - определить правила 6h+/24h+/7d+ и связь с mastery без изменения LearningPolicy v3 до утверждения новой версии;
+   - описать deterministic test strategy для времени/интервалов.
+5. Подготовить архитектурный пакет M3:
+   - proposed scope и out-of-scope;
+   - data-flow Parent Dashboard;
+   - требуемые Decision Log записи;
+   - предполагаемые изменения Room/DataStore/API между слоями;
+   - UX wire-level описание без реализации;
+   - DoD и test plan для M3.
 
-1. Построчно сопоставить каждый критерий раздела M2 в `docs/DEFINITION_OF_DONE.md` с evidence.
-2. Для каждой строки использовать только статусы:
-   - `PASS — CODE/TEST/CI/RUNTIME/OWNER_EVIDENCE`;
-   - `DEFERRED_BY_OWNER — <DECISION_ID>`;
-   - `FAIL`;
-   - `UNKNOWN`.
-3. Отдельно проверить обязательные инварианты:
-   - учебный алгоритм отделён от UI;
-   - LearningPolicy версионируется;
-   - пороги/веса централизованы;
-   - mastery states реализованы;
-   - weighted selection реализован;
-   - retry queue возвращает ошибочную target позднее и не зацикливается;
-   - старая буква не исчезает после открытия новой;
-   - delayed checks реализованы;
-   - per-letter Session Summary D019 работает;
-   - AudioPlayer local-first + TTS fallback работает;
-   - TTS service visibility присутствует;
-   - Curriculum v2 версионируется;
-   - переносы D019 закрыты.
-4. Зафиксировать migration evidence:
-   - automated migration 1→2 test должен быть PASS;
-   - реальный device migration может остаться `NOT_TESTED`, если automated evidence исключает UNKNOWN для migration-кода; явно не выдавать это за device PASS.
-5. Проверить `PROJECT_STATUS.md`, `BACKLOG.md`, `DECISIONS.md`, `LEARNING_ENGINE.md`, `SUCCESS_METRICS.md` на отсутствие drift.
-6. Если аудит не содержит `FAIL`/`UNKNOWN`, запросить owner acceptance Milestone 2.
-7. Только после owner acceptance перевести M2 в DONE и активировать M3.
+## Decision Firewall
 
-## Не менять
+На этапе Kickoff не кодировать:
 
-- Curriculum v2;
-- 10 вопросов;
-- unlock >=80% / 8 из 10;
-- LearningPolicy v3 без нового owner decision;
-- Room schema 2;
-- audio assets;
-- не начинать M3 в рамках M2.5 до закрытия gate.
+- полный алфавит;
+- новый LearningPolicy;
+- новые mastery thresholds;
+- новые Room tables;
+- Parent Dashboard UI.
+
+Сначала должны быть утверждены M3 architecture/scope и все новые продуктовые параметры. Полный порядок 33 букв и long-term spacing policy нельзя считать утверждёнными только на основании этого planning task.
+
+## Нельзя менять без нового owner decision
+
+- LearningPolicy v3;
+- mastery states `INTRODUCED / PRACTICING / MASTERED`;
+- Curriculum v2 Levels 1–3;
+- 10 вопросов на сессию;
+- unlock `>=80%` / 8 из 10;
+- local-audio-first + TTS fallback;
+- Room schema 2.
+
+## Результат Kickoff
+
+Следующий implementation task packet должен появиться только после утверждения владельцем архитектуры M3 и новых versioned решений по Curriculum/Spaced Repetition, если они действительно меняются.
 
 ## Android Studio Agent
 
-Не нужен по умолчанию. Подключать только при конкретной runtime/Room instrumentation проблеме, которую нельзя закрыть repository/CI evidence.
+Не нужен для Kickoff. Это repository/product architecture task без Android runtime debugging.
