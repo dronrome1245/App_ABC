@@ -10,11 +10,15 @@ import androidx.room.RoomDatabase
         LetterProgressEntity::class,
         SessionResultEntity::class
     ],
-    version = 2
+    version = AppDatabase.SCHEMA_VERSION
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun attemptDao(): AttemptDao
     abstract fun letterDao(): LetterDao
     abstract fun letterProgressDao(): LetterProgressDao
     abstract fun sessionResultDao(): SessionResultDao
+
+    companion object {
+        const val SCHEMA_VERSION = 2
+    }
 }
