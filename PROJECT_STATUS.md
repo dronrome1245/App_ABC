@@ -4,81 +4,83 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.3 KICKOFF.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.3 IMPLEMENTATION COMPLETE / OWNER SMOKE PENDING.**
 
-M2.1 находится в `main`. M2.2 реализован в ветке `feature/m2-room-letter-stats` и PR #4; автоматические gate M2.2 пройдены. Ручной runtime/smoke evidence M2.1–M2.2 сохраняется для итогового M2 acceptance и будет собран в M2.3.
+M2.1 и M2.2 слиты в `main` (M2.2 — PR #4). M2.3 реализован в ветке `feature/m2-3-audio-assets-smoke`: локальные audio assets, feedback sounds и level-complete sound подключены к существующему `HybridAudioPlayer` с сохранением TTS fallback.
 
-## Статусы M2.2
+Важно: это не означает, что весь Milestone 2 закрыт. По текущему `docs/DEFINITION_OF_DONE.md` после M2.3 всё ещё обязательны retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting и итоговый closure audit. Они не были перенесены отдельным owner decision и поэтому не могут считаться выполненными или исключёнными.
 
-- IMPLEMENTATION_STATUS: COMPLETE
+## Статусы M2.3
+
+- M2_2_MERGE_STATUS: MERGED_TO_MAIN
+- M2_3_IMPLEMENTATION_STATUS: COMPLETE
 - STATIC_REVIEW_STATUS: PASS
-- TESTS_CI_STATUS: PASS
-- DEBUG_BUILD_STATUS: PASS
-- DATABASE_SCHEMA_VERSION: 2
-- ROOM_MIGRATION_1_2_STATUS: IMPLEMENTED
-- HISTORICAL_ATTEMPT_BACKFILL_STATUS: IMPLEMENTED
-- D019_PER_LETTER_RESULT_STATUS: IMPLEMENTED
-- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_M2.3_SMOKE
-- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_M2.3_SMOKE
+- TESTS_CI_STATUS: PENDING_FINAL_BRANCH_CI
+- DEBUG_BUILD_STATUS: PENDING_FINAL_BRANCH_CI
+- AUDIO_ASSETS_STATUS: IMPLEMENTED
+- CURRICULUM_V2_LOCAL_AUDIO_MAPPING_STATUS: IMPLEMENTED
+- ANSWER_FEEDBACK_AUDIO_STATUS: IMPLEMENTED
+- SESSION_COMPLETE_AUDIO_STATUS: IMPLEMENTED
+- TTS_FALLBACK_STATUS: PRESERVED
+- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
+- SESSION_RULE: 10 QUESTIONS / 80% UNLOCK (UNCHANGED)
+- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_OWNER_SMOKE
+- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_OWNER_SMOKE
+- AUDIO_QUALITY_ACCEPTANCE_STATUS: PENDING_OWNER_SMOKE
 - OWNER_ACCEPTANCE_STATUS: PENDING_FOR_M2
 
-GitHub Actions PR #4 подтвердил прохождение JVM unit tests и `assembleDebug` на коде M2.2.
+## M2.2 — в main
 
-## M2.2 — реализовано
+- Room `databaseSchemaVersion = 2`;
+- migration `1 -> 2` с backfill старых Attempt;
+- persistent `LetterProgressEntity` и `SessionResultEntity`;
+- `ProgressRepository`;
+- D019 per-letter Session Summary;
+- repeat/continue actions.
 
-### Room / persistence
+## M2.3 — реализовано
 
-- сырые `Attempt` остаются единственным детальным источником истории;
-- добавлен `LetterProgressEntity` как производный устойчивый агрегат по букве;
-- добавлен `SessionResultEntity` для истории завершённых сессий с уникальным `sessionId`;
-- добавлены `LetterProgressDao` и `SessionResultDao`;
-- добавлен `ProgressRepository`;
-- финализация сессии выполняется в Room transaction и идемпотентна по `sessionId`;
-- `databaseSchemaVersion = 2`;
-- migration `1 -> 2` не destructive;
-- migration backfill агрегирует существующие M1/M2.1 `Attempt` в новые таблицы без изменения исторических строк.
+### Local audio / D020
 
-### Session Summary / D019
+В `app/src/main/res/raw/` добавлены mono OGG Vorbis, 22.05 kHz:
 
-После завершения сессии доступны:
+- `sound_letter_a.ogg` — `А` / «а»;
+- `sound_letter_m.ogg` — `М` / «эм»;
+- `sound_letter_o.ogg` — `О` / «о»;
+- `sound_letter_u.ogg` — `У` / «у»;
+- `sound_letter_s.ogg` — `С` / «эс»;
+- `sound_letter_n.ogg` — `Н` / «эн»;
+- `sound_correct.ogg` — короткий положительный сигнал;
+- `sound_wrong.ogg` — мягкий сигнал ошибки;
+- `sound_level_complete.ogg` — короткий завершающий джингл.
 
-- общий счёт `X / 10`;
-- точность;
-- pass/fail по D021 (`>=8/10`);
-- сообщение об открытии следующего уровня;
-- разбивка по каждой target-букве текущей сессии: attempts/correct/errors;
-- понятная success/error индикация;
-- `Повторить уровень`;
-- `Далее` / `К выбору уровней`.
+Буквенные файлы синтезированы локально офлайн русским системным TTS-инструментом для M2 smoke candidate; внешние/персональные записи и облачные сервисы не использовались. Финальное качество голоса проверяет владелец на целевом устройстве.
 
-Перенос D019 по per-letter session result технически закрыт. Retry queue из D019 остаётся отдельным обязательным пунктом M2.
+`AudioAssetCatalog` содержит mapping для `А/М/О/У/С/Н` и нормализует регистр. Если mapping отсутствует, Android resource не найден или `MediaPlayer` возвращает ошибку, остаётся TTS fallback.
 
-### Автоматические проверки
+### UI audio hooks
 
-JVM tests покрывают:
+- после ответа вызывается `AudioPlayer.playFeedback(isCorrect)`;
+- на Session Summary вызывается `AudioPlayer.playLevelComplete()`;
+- новый локальный звук не меняет LearningEngine, число вопросов или level unlock.
 
-- расчёт per-letter breakdown;
-- объединение новой статистики с существующим `LetterProgressEntity`;
-- correct/attempt counts;
-- average response time;
-- last seen timestamp.
+### Автоматическая проверка
 
-CI также подтвердил debug build с Room/KSP schema version 2.
+JVM tests проверяют mapping всех букв Curriculum v2, lowercase normalization, имена feedback/completion assets и missing-resource fallback policy.
 
-## Runtime boundary
+Финальный CI должен подтвердить JVM tests + `assembleDebug` на head M2.3.
 
-Изменения M2.2 затрагивают Room migration и Compose ResultScreen. Автоматические проверки не заменяют запуск на устройстве. В M2.3 нужен обычный owner smoke test: обновление существующей установки, прохождение 10 вопросов, проверка per-letter breakdown, повторного запуска и сохранности прогресса.
+## Обязательный owner smoke перед любым утверждением runtime PASS
 
-## Активный slice — M2.3
+Следовать `NEXT_TASK.md`: проверить локальную озвучку всех шести букв, feedback, Summary, TTS fallback, unlock уровней, per-letter summary, persistence и migration на реальном устройстве.
 
-M2.3: добавить утверждённые локальные WAV/OGG assets в `res/raw`, проверить local-audio-first + TTS fallback, проверить уже существующий экран выбора уровней и выполнить объединённый ручной smoke test M2.1–M2.2.
+## Что ещё остаётся обязательным в Milestone 2 после M2.3 smoke
 
-## Что ещё остаётся обязательным в M2
-
-- retry queue из D019;
+- retry queue после ошибки (D019 / LearningEngine);
 - mastery states;
 - weighted selection;
 - delayed checks;
-- weak-letter weighting;
-- реальные pre-recorded WAV/OGG assets и runtime-проверка local-audio-first;
-- итоговый M2 closure audit и owner acceptance.
+- weak-letter weighting / централизованная LearningPolicy;
+- полный набор тестов инвариантов LearningEngine;
+- Milestone Closure Evidence Audit;
+- owner acceptance.
