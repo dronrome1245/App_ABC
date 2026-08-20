@@ -47,11 +47,11 @@
 
 ## M2 — Учебный движок v1/v2 и расширение curriculum
 
-Статус: **M2.2 ACTIVE**.
+Статус: **M2.3 KICKOFF**.
 
 ### M2.1 — Hybrid audio + Curriculum Levels 1–3
 
-Статус: **MERGED TO MAIN / AUTOMATED GATES PASS / RUNTIME RECHECK PENDING FOR M2 ACCEPTANCE**.
+Статус: **MERGED TO MAIN / AUTOMATED GATES PASS / RUNTIME RECHECK TRACKED FOR M2 ACCEPTANCE**.
 
 - [x] интерфейс `AudioPlayer`;
 - [x] `HybridAudioPlayer`: local `res/raw` first + TTS fallback;
@@ -64,25 +64,42 @@
 - [x] Level 3: `С`, `Н`;
 - [x] старые буквы сохраняются в пуле следующих уровней;
 - [x] 10 вопросов на сессию;
-- [x] `learningPolicyVersion = 2` для нового поведения;
+- [x] `learningPolicyVersion = 2`;
 - [x] level unlock policy: >=80% на полной сессии 10 вопросов (8/10);
 - [x] JVM tests на levels/pool/distractors/session generation/unlock;
 - [x] хранение current/max unlocked level в Preferences DataStore;
 - [x] применение LevelUnlockPolicy к progression state;
 - [x] UI выбора разблокированного уровня;
-- [x] runtime передача выбранного `levelId` в Exercise;
-- [ ] повторная owner runtime-проверка исправленного progression перед итоговым M2 acceptance;
-- [ ] реальные утверждённые WAV/OGG assets;
-- [ ] runtime-проверка local asset playback после появления файлов.
+- [x] runtime передача выбранного `levelId` в Exercise.
 
-### M2.2 — Per-letter statistics
+### M2.2 — Per-letter statistics + Room session summary
 
-- [ ] статистика по каждой букве из Room Attempt history;
-- [ ] разбивка результата по буквам (D019);
-- [ ] recent accuracy / recent errors;
-- [ ] response time summary;
-- [ ] переиспользование существующего `LevelProgressionStore` без второго progression state;
-- [ ] unit tests агрегации.
+Статус: **IMPLEMENTATION COMPLETE / CI PASS / RUNTIME SMOKE PENDING**.
+
+- [x] статистика по каждой букве из Room Attempt history;
+- [x] разбивка результата по буквам (D019);
+- [x] attempts/correct/errors по текущей сессии;
+- [x] average response time aggregate;
+- [x] persistent `LetterProgressEntity`;
+- [x] persistent `SessionResultEntity` / session history;
+- [x] `ProgressRepository` и идемпотентная транзакционная финализация сессии;
+- [x] Room schema version 2;
+- [x] migration 1->2 без destructive migration;
+- [x] backfill исторических Attempt в новые агрегаты;
+- [x] переиспользование существующего `LevelProgressionStore`;
+- [x] JVM tests агрегации и per-letter breakdown;
+- [x] debug build / CI;
+- [ ] owner runtime smoke M2.2.
+
+### M2.3 — Local audio assets + combined M2 smoke
+
+- [ ] добавить утверждённые WAV/OGG для текущих букв Curriculum v2;
+- [ ] проверить local-audio-first;
+- [ ] проверить TTS fallback;
+- [ ] проверить существующий UI выбора уровней после unlock;
+- [ ] пройти 10 вопросов и проверить per-letter Session Summary;
+- [ ] проверить сохранность Room/DataStore после перезапуска;
+- [ ] проверить migration 1->2 на существующей установке при наличии schema v1.
 
 ### Остальной M2 LearningEngine
 
@@ -117,7 +134,7 @@
 - [ ] сброс локального прогресса с подтверждением;
 - [ ] отображение недостатка данных как `недостаточно данных`, а не как плохой результат.
 
-## M4 — Игровая оболочка
+## M4 — игровая оболочка
 
 - [ ] карта/список уровней;
 - [ ] 1–3 звезды;
@@ -126,7 +143,7 @@
 - [ ] сессия 3–7 минут + «Ещё потренироваться»;
 - [ ] игровые показатели не подменяют success metrics.
 
-## M5 — Полный алфавит
+## M5 — полный алфавит
 
 - [ ] согласовать curriculumVersion для 33 букв;
 - [ ] согласовать оставшийся порядок 33 букв;

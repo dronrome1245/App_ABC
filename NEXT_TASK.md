@@ -1,47 +1,56 @@
-# NEXT_TASK.md — M2.2 Per-letter statistics
+# NEXT_TASK.md — M2.3 Local audio assets + M2 smoke test
 
 ## Единственная следующая задача
 
-**Реализовать статистику по каждой букве на основе Room Attempt history и показать разбивку по буквам на экране результата.**
+**Добавить утверждённые локальные аудиофайлы букв в `res/raw`, проверить local-audio-first/TTS fallback и провести объединённый ручной smoke test реализованных M2.1–M2.2 функций.**
 
-## Scope M2.2
+## Scope M2.3
 
-1. Рассчитывать статистику отдельно по каждой букве:
-   - attempts;
-   - correct;
-   - accuracy;
-   - recent errors;
-   - response time summary, если это можно сделать без преждевременной сложной аналитики.
-2. На экране результата показывать разбивку по буквам текущей сессии, закрывая перенос D019.
-3. Использовать Room Attempt как источник подробной истории; DataStore не использовать для истории попыток.
-4. Использовать уже реализованный в M2.1 `LevelProgressionStore` для selected/unlocked level; не создавать второй источник progression state.
-5. Не терять прошлые Attempt и их `learningPolicyVersion` / `curriculumVersion`.
-6. Добавить JVM tests на per-letter aggregation.
+1. Добавить утверждённые WAV/OGG assets для букв текущего Curriculum v2:
+   - `А`, `М`, `О`, `У`, `С`, `Н`;
+   - имена ресурсов должны соответствовать `AudioAssetCatalog` либо mapping должен быть обновлён явно.
+2. Не удалять системный TTS fallback.
+3. Проверить на устройстве:
+   - локальный asset воспроизводится при наличии;
+   - при отсутствии/ошибке asset используется TTS fallback;
+   - звук не блокирует переход между вопросами.
+4. Проверить уже реализованный экран выбора уровней:
+   - Level 1 доступен по умолчанию;
+   - Level 2/3 появляются после соответствующего unlock;
+   - не создавать второй экран/источник progression state без необходимости.
+5. Выполнить M2 smoke test:
+   - пройти 10 вопросов;
+   - проверить unlock >=8/10;
+   - проверить per-letter Session Summary из M2.2;
+   - повторить уровень;
+   - закрыть и повторно открыть приложение;
+   - убедиться, что Room/DataStore прогресс сохранился;
+   - отдельно проверить обновление существующей установки через migration 1->2, если на устройстве есть база schema v1.
 
-## Уже реализовано в M2.1
+## Уже реализовано в M2.2
 
-- Curriculum Levels 1–3;
-- 10 вопросов;
-- unlock >=80% (8/10);
-- Preferences DataStore для highest unlocked / selected level;
-- UI выбора разблокированного уровня;
-- runtime передача выбранного `levelId` в Exercise;
-- автоматическое открытие следующего уровня после успешной сессии.
+- Room `databaseSchemaVersion = 2`;
+- `LetterProgressEntity` и `SessionResultEntity`;
+- migration 1->2 с backfill старых Attempt;
+- `ProgressRepository`;
+- per-letter breakdown результата D019;
+- repeat/continue actions на Session Summary.
 
-## Отдельно остаётся обязательным в M2
+## После M2.3 остаётся обязательным в M2
 
 - retry queue после ошибки (D019 / LearningEngine);
 - mastery states;
 - weighted selection;
 - delayed checks;
-- реальные WAV/OGG assets и runtime-проверка local-audio-first после их появления.
+- weak-letter weighting;
+- итоговый M2 closure audit.
 
 ## Decision sources
 
-- D019 — per-letter result и retry перенесены из M1 в M2;
-- D020 — local audio first + TTS fallback;
-- D021 — Curriculum Levels 1–3, 10 вопросов, unlock >=80% (8/10), curriculumVersion 2, learningPolicyVersion 2.
+- D019 — per-letter result и retry перенесены в M2;
+- D020 — local pre-recorded audio first + TTS fallback;
+- D021 — Curriculum Levels 1–3, 10 вопросов, unlock >=80% (8/10).
 
 ## Android Studio Agent
 
-По умолчанию не нужен. Подключать только при конкретной Room/DataStore/runtime проблеме, которую невозможно подтвердить кодом, JVM tests или CI.
+По умолчанию не нужен. Обычный Run/установка и smoke test выполняются владельцем. Android Studio Agent подключать только при конкретной IDE/SDK/Logcat/audio/Room migration ошибке.

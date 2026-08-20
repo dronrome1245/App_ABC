@@ -4,93 +4,81 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.2 ACTIVE / KICKOFF.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.3 KICKOFF.**
 
-M1 принят владельцем и слит в `main`.
+M2.1 находится в `main`. M2.2 реализован в ветке `feature/m2-room-letter-stats` и PR #4; автоматические gate M2.2 пройдены. Ручной runtime/smoke evidence M2.1–M2.2 сохраняется для итогового M2 acceptance и будет собран в M2.3.
 
-M2.1 реализован и слит в `main` через PR #3. Автоматические gate M2.1 пройдены; повторная runtime-проверка исправленного progression остаётся отдельным evidence для итогового M2 acceptance и не блокирует начало следующего slice M2.2.
+## Статусы M2.2
 
-## Статусы M2.1
-
-- MERGE_STATUS: MERGED_TO_MAIN
 - IMPLEMENTATION_STATUS: COMPLETE
 - STATIC_REVIEW_STATUS: PASS
 - TESTS_CI_STATUS: PASS
 - DEBUG_BUILD_STATUS: PASS
-- HYBRID_AUDIO_FALLBACK_STATIC_PATH_STATUS: PASS
-- LEVEL_PROGRESSION_RUNTIME_WIRING_STATUS: IMPLEMENTED
-- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_OWNER_RECHECK
-- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_OWNER_RECHECK
+- DATABASE_SCHEMA_VERSION: 2
+- ROOM_MIGRATION_1_2_STATUS: IMPLEMENTED
+- HISTORICAL_ATTEMPT_BACKFILL_STATUS: IMPLEMENTED
+- D019_PER_LETTER_RESULT_STATUS: IMPLEMENTED
+- LOCAL_ANDROID_RUNTIME_STATUS: PENDING_M2.3_SMOKE
+- PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_M2.3_SMOKE
 - OWNER_ACCEPTANCE_STATUS: PENDING_FOR_M2
 
-GitHub Actions PR #3 подтвердил прохождение JVM unit tests и `assembleDebug` после исправления runtime wiring уровней.
+GitHub Actions PR #4 подтвердил прохождение JVM unit tests и `assembleDebug` на коде M2.2.
 
-## M2.1 — реализовано и находится в main
+## M2.2 — реализовано
 
-### Audio
+### Room / persistence
 
-- единый интерфейс `AudioPlayer`;
-- `HybridAudioPlayer`;
-- стратегия D020: локальный `res/raw` asset first, затем TTS fallback;
-- отсутствие локального файла штатно ведёт в существующий `TtsAudioPlayer`;
-- `ExerciseViewModel` зависит от `AudioPlayer`;
-- в Manifest добавлен `<queries>` для `android.intent.action.TTS_SERVICE`;
-- реальные WAV/OGG пока не добавлены.
+- сырые `Attempt` остаются единственным детальным источником истории;
+- добавлен `LetterProgressEntity` как производный устойчивый агрегат по букве;
+- добавлен `SessionResultEntity` для истории завершённых сессий с уникальным `sessionId`;
+- добавлены `LetterProgressDao` и `SessionResultDao`;
+- добавлен `ProgressRepository`;
+- финализация сессии выполняется в Room transaction и идемпотентна по `sessionId`;
+- `databaseSchemaVersion = 2`;
+- migration `1 -> 2` не destructive;
+- migration backfill агрегирует существующие M1/M2.1 `Attempt` в новые таблицы без изменения исторических строк.
 
-### Curriculum v2
+### Session Summary / D019
 
-По D021:
+После завершения сессии доступны:
 
-- Level 1: `А`, `М`; пул `А/М`;
-- Level 2: добавляются `О`, `У`; пул `А/М/О/У`;
-- Level 3: добавляются `С`, `Н`; пул `А/М/О/У/С/Н`;
-- 10 вопросов в каждой сессии;
-- `curriculumVersion = 2`;
-- Room seed содержит утверждённые Levels 1–3 без переписывания Attempt history.
+- общий счёт `X / 10`;
+- точность;
+- pass/fail по D021 (`>=8/10`);
+- сообщение об открытии следующего уровня;
+- разбивка по каждой target-букве текущей сессии: attempts/correct/errors;
+- понятная success/error индикация;
+- `Повторить уровень`;
+- `Далее` / `К выбору уровней`.
 
-### Runtime progression
+Перенос D019 по per-letter session result технически закрыт. Retry queue из D019 остаётся отдельным обязательным пунктом M2.
 
-- unlocked/selected level хранится в Preferences DataStore;
-- Home показывает кнопки разблокированных уровней;
-- выбранный `levelId` передаётся в `exercise/{levelId}`;
-- `ExerciseViewModel` строит `LearningEngine` из `ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)`;
-- Attempt сохраняет фактический `levelId`;
-- после полной сессии >=80% (`8/10`) Result открывает и автоматически выбирает следующий уровень;
-- экран результата сообщает об открытии нового уровня.
+### Автоматические проверки
 
-### LearningPolicy v2 — level unlock
+JVM tests покрывают:
 
-- полная сессия: 10 вопросов;
-- accuracy >=80%;
-- 8/10 и выше открывает следующий уровень;
-- 7/10 и неполная сессия не открывают уровень;
-- `learningPolicyVersion = 2`.
+- расчёт per-letter breakdown;
+- объединение новой статистики с существующим `LetterProgressEntity`;
+- correct/attempt counts;
+- average response time;
+- last seen timestamp.
 
-## Активный slice — M2.2
+CI также подтвердил debug build с Room/KSP schema version 2.
 
-Цель M2.2: per-letter statistics на основе Room Attempt history и разбивка результата по каждой букве, закрывающая соответствующий перенос D019.
+## Runtime boundary
 
-В M2.2 необходимо:
+Изменения M2.2 затрагивают Room migration и Compose ResultScreen. Автоматические проверки не заменяют запуск на устройстве. В M2.3 нужен обычный owner smoke test: обновление существующей установки, прохождение 10 вопросов, проверка per-letter breakdown, повторного запуска и сохранности прогресса.
 
-- агрегировать attempts/correct/accuracy по каждой букве;
-- добавить recent errors и разумный response-time summary;
-- вывести per-letter breakdown на экране результата;
-- использовать Room Attempt как единственный источник подробной истории;
-- переиспользовать существующий `LevelProgressionStore`, не создавать второй progression state;
-- добавить JVM unit tests агрегации;
-- не переписывать исторические Attempt и их `learningPolicyVersion` / `curriculumVersion`.
+## Активный slice — M2.3
 
-Подробный scope — `NEXT_TASK.md`.
+M2.3: добавить утверждённые локальные WAV/OGG assets в `res/raw`, проверить local-audio-first + TTS fallback, проверить уже существующий экран выбора уровней и выполнить объединённый ручной smoke test M2.1–M2.2.
 
-## Что ещё остаётся обязательным в M2 после M2.2
+## Что ещё остаётся обязательным в M2
 
 - retry queue из D019;
 - mastery states;
 - weighted selection;
 - delayed checks;
-- реальные pre-recorded WAV/OGG assets;
-- runtime-проверка local asset playback после появления файлов.
-
-## Runtime boundary
-
-Первый owner Run M2.1 выявил старую M1 runtime-привязку; она устранена и изменения слиты после зелёного CI. Повторный Run исправленного progression всё ещё нужен как runtime evidence перед итоговым закрытием M2, но не используется как препятствие для последовательной разработки M2.2 внутри того же milestone.
+- weak-letter weighting;
+- реальные pre-recorded WAV/OGG assets и runtime-проверка local-audio-first;
+- итоговый M2 closure audit и owner acceptance.

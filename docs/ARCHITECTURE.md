@@ -1,6 +1,6 @@
 # Техническая архитектура MVP
 
-Дата: 2026-08-19
+Дата: 2026-08-20
 
 ## Платформа
 
@@ -26,6 +26,7 @@ com.dronrome1245.appabc
 │   ├── curriculum
 │   ├── engine
 │   ├── learning
+│   ├── session
 │   └── model
 └── ui
     ├── home
@@ -37,7 +38,24 @@ com.dronrome1245.appabc
 
 ## Room
 
-Хранить исходную историю Attempt. `LetterProgress` можно вычислять или кэшировать, но не использовать как единственный источник истории.
+Сырые `Attempt` — детальный источник истины по учебной истории. Производные таблицы не должны заменять или переписывать `Attempt`.
+
+### Schema v2
+
+`databaseSchemaVersion = 2`.
+
+Таблицы:
+
+- `attempts` — неизменяемая подробная история ответов;
+- `letters` — curriculum metadata;
+- `letter_progress` — производный persistent aggregate для быстрых запросов по букве;
+- `session_results` — сводка завершённой сессии, уникальная по `sessionId`.
+
+`LetterProgressEntity` хранит attempts/correct/lastSeen/averageResponseTime. `SessionResultEntity` хранит level, total/correct, passed и completedAt.
+
+`ProgressRepository.finalizeSession()` выполняет обновление `letter_progress` и `session_results` внутри одной Room transaction. Финализация идемпотентна по `sessionId`, чтобы повторное создание ResultScreen не удваивало статистику.
+
+Migration `1 -> 2` не destructive и делает backfill новых таблиц из существующих `attempts`, сохраняя накопленную M1/M2.1 историю.
 
 Attempt должен поддерживать метрики из `SUCCESS_METRICS.md`.
 
@@ -65,7 +83,7 @@ Attempt должен поддерживать метрики из `SUCCESS_METRI
 
 Не использовать destructive migration для накопленной реальной статистики без явного решения владельца.
 
-После появления стабильной схемы migrations должны иметь тесты.
+После появления стабильной схемы migrations должны иметь тесты/ручное migration evidence до итогового milestone acceptance.
 
 ## Session
 
@@ -76,9 +94,8 @@ Attempt должен поддерживать метрики из `SUCCESS_METRI
 - отличать внутрисессионное повторение от межсессионного;
 - измерять реальные интервалы;
 - рассчитывать delayed retention;
-- анализировать усталость внутри сессии.
-
-Отдельная таблица Session допустима, если реально нужна для start/end timestamps и session summary; не создавать её только ради архитектурной симметрии.
+- анализировать усталость внутри сессии;
+- строить Session Summary и историю завершённых сессий.
 
 ## DataStore
 
@@ -141,6 +158,8 @@ Compose получает состояние из ViewModel.
 
 Детский и родительский потоки логически разделить, но не усложнять навигацию.
 
+M2.2 Session Summary получает подготовленную ViewModel-модель и показывает общий счёт, pass/fail и D019 per-letter breakdown; сам Compose не агрегирует Attempt history.
+
 ## Audio — D020
 
 UI/ViewModel работает через интерфейс `AudioPlayer` и не зависит напрямую от `TextToSpeech`/`MediaPlayer`.
@@ -170,7 +189,7 @@ UI/ViewModel работает через интерфейс `AudioPlayer` и н�
 
 Hilt/Koin на старте не нужен, если зависимости можно передать просто и понятно.
 
-Текущий composition root — `MainActivity`: там создаются repository, `TtsAudioPlayer` и `HybridAudioPlayer`, после чего интерфейс `AudioPlayer` передаётся в ViewModel.
+Текущий composition root — `MainActivity`: там создаются Room database/repositories, `LevelProgressionStore`, `TtsAudioPlayer` и `HybridAudioPlayer`, после чего зависимости передаются в ViewModel.
 
 Подключить DI framework позднее только если он реально уменьшит сложность.
 
@@ -192,7 +211,7 @@ GitHub Actions должен проверять:
 
 На каждом этапе:
 
-- unit tests учебного алгоритма;
+- unit tests учебного алгоритма/агрегации;
 - debug build;
 - ручной запуск при runtime-зависимых изменениях;
 - отсутствие crash в основном сценарии;

@@ -20,8 +20,10 @@ import com.dronrome1245.appabc.core.audio.HybridAudioPlayer
 import com.dronrome1245.appabc.core.audio.TtsAudioPlayer
 import com.dronrome1245.appabc.core.theme.AppABCTheme
 import com.dronrome1245.appabc.data.local.db.AppDatabase
+import com.dronrome1245.appabc.data.local.db.DatabaseMigrations
 import com.dronrome1245.appabc.data.progression.LevelProgressionStore
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
+import com.dronrome1245.appabc.data.repository.ProgressRepository
 import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.ui.exercise.ExerciseScreen
 import com.dronrome1245.appabc.ui.exercise.ExerciseViewModel
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var database: AppDatabase
     private lateinit var repository: AppRepositoryImpl
+    private lateinit var progressRepository: ProgressRepository
     private lateinit var progressionStore: LevelProgressionStore
     private lateinit var audioPlayer: AudioPlayer
 
@@ -45,8 +48,9 @@ class MainActivity : ComponentActivity() {
         database = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "app_abc_db"
-        ).build()
+        ).addMigrations(DatabaseMigrations.MIGRATION_1_2).build()
         repository = AppRepositoryImpl(database.attemptDao(), database.letterDao())
+        progressRepository = ProgressRepository(database)
         progressionStore = LevelProgressionStore(applicationContext)
 
         val ttsPlayer = TtsAudioPlayer(this)
@@ -68,7 +72,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(repository, progressionStore, audioPlayer)
+                    AppNavigation(repository, progressRepository, progressionStore, audioPlayer)
                 }
             }
         }
@@ -83,6 +87,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     repository: AppRepositoryImpl,
+    progressRepository: ProgressRepository,
     progressionStore: LevelProgressionStore,
     audioPlayer: AudioPlayer
 ) {
@@ -116,13 +121,18 @@ fun AppNavigation(
         ) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             ResultScreen(
-                onRestart = {
+                onRepeatLevel = { levelId ->
+                    navController.navigate("exercise/$levelId") {
+                        popUpTo("home")
+                    }
+                },
+                onContinue = {
                     navController.navigate("home") {
                         popUpTo("home") { inclusive = true }
                     }
                 },
                 viewModel = viewModel {
-                    ResultViewModel(repository, progressionStore, sessionId)
+                    ResultViewModel(progressRepository, progressionStore, sessionId)
                 }
             )
         }
