@@ -15,8 +15,9 @@ M2.1 и M2.2 слиты в `main` (M2.2 — PR #4). M2.3 реализован в
 - M2_2_MERGE_STATUS: MERGED_TO_MAIN
 - M2_3_IMPLEMENTATION_STATUS: COMPLETE
 - STATIC_REVIEW_STATUS: PASS
-- TESTS_CI_STATUS: PENDING_FINAL_BRANCH_CI
-- DEBUG_BUILD_STATUS: PENDING_FINAL_BRANCH_CI
+- TESTS_CI_STATUS: PASS
+- DEBUG_BUILD_STATUS: PASS
+- AUDIO_RESOURCE_BUILD_VALIDATION_STATUS: PASS
 - AUDIO_ASSETS_STATUS: IMPLEMENTED
 - CURRICULUM_V2_LOCAL_AUDIO_MAPPING_STATUS: IMPLEMENTED
 - ANSWER_FEEDBACK_AUDIO_STATUS: IMPLEMENTED
@@ -28,6 +29,8 @@ M2.1 и M2.2 слиты в `main` (M2.2 — PR #4). M2.3 реализован в
 - PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_OWNER_SMOKE
 - AUDIO_QUALITY_ACCEPTANCE_STATUS: PENDING_OWNER_SMOKE
 - OWNER_ACCEPTANCE_STATUS: PENDING_FOR_M2
+
+GitHub Actions PR #5 подтвердил JVM unit tests и `assembleDebug` на M2.3 code/assets head. Документационные follow-up commits не меняют runtime-код; финальный branch CI также должен оставаться зелёным.
 
 ## M2.2 — в main
 
@@ -66,9 +69,7 @@ M2.1 и M2.2 слиты в `main` (M2.2 — PR #4). M2.3 реализован в
 
 ### Автоматическая проверка
 
-JVM tests проверяют mapping всех букв Curriculum v2, lowercase normalization, имена feedback/completion assets и missing-resource fallback policy.
-
-Финальный CI должен подтвердить JVM tests + `assembleDebug` на head M2.3.
+JVM tests проверяют mapping всех букв Curriculum v2, lowercase normalization, имена feedback/completion assets и missing-resource fallback policy. CI подтвердил JVM tests и `assembleDebug` с добавленными OGG raw resources.
 
 ## Обязательный owner smoke перед любым утверждением runtime PASS
 
