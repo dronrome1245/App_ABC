@@ -4,14 +4,15 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — M2.1 implementation complete / owner runtime re-check pending.**
+**Milestone 1 — DONE (100%). Milestone 2 — M2.2 ACTIVE / KICKOFF.**
 
 M1 принят владельцем и слит в `main`.
 
-M2.1 реализован в ветке `feature/m2-audio-curriculum` и оформлен draft PR #3.
+M2.1 реализован и слит в `main` через PR #3. Автоматические gate M2.1 пройдены; повторная runtime-проверка исправленного progression остаётся отдельным evidence для итогового M2 acceptance и не блокирует начало следующего slice M2.2.
 
 ## Статусы M2.1
 
+- MERGE_STATUS: MERGED_TO_MAIN
 - IMPLEMENTATION_STATUS: COMPLETE
 - STATIC_REVIEW_STATUS: PASS
 - TESTS_CI_STATUS: PASS
@@ -20,11 +21,11 @@ M2.1 реализован в ветке `feature/m2-audio-curriculum` и офо�
 - LEVEL_PROGRESSION_RUNTIME_WIRING_STATUS: IMPLEMENTED
 - LOCAL_ANDROID_RUNTIME_STATUS: PENDING_OWNER_RECHECK
 - PHYSICAL_DEVICE_RUNTIME_STATUS: PENDING_OWNER_RECHECK
-- OWNER_ACCEPTANCE_STATUS: PENDING
+- OWNER_ACCEPTANCE_STATUS: PENDING_FOR_M2
 
 GitHub Actions PR #3 подтвердил прохождение JVM unit tests и `assembleDebug` после исправления runtime wiring уровней.
 
-## M2.1 — что реализовано
+## M2.1 — реализовано и находится в main
 
 ### Audio
 
@@ -49,12 +50,9 @@ GitHub Actions PR #3 подтвердил прохождение JVM unit tests 
 
 ### Runtime progression
 
-Исправлен найденный при owner Run разрыв между domain Curriculum и UI/runtime:
-
-- Home больше не использует `M1SessionConfig.letters`;
 - unlocked/selected level хранится в Preferences DataStore;
-- Home показывает кнопки всех разблокированных уровней;
-- выбранный `levelId` передаётся в route `exercise/{levelId}`;
+- Home показывает кнопки разблокированных уровней;
+- выбранный `levelId` передаётся в `exercise/{levelId}`;
 - `ExerciseViewModel` строит `LearningEngine` из `ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)`;
 - Attempt сохраняет фактический `levelId`;
 - после полной сессии >=80% (`8/10`) Result открывает и автоматически выбирает следующий уровень;
@@ -68,24 +66,31 @@ GitHub Actions PR #3 подтвердил прохождение JVM unit tests 
 - 7/10 и неполная сессия не открывают уровень;
 - `learningPolicyVersion = 2`.
 
-## Автоматические проверки
+## Активный slice — M2.2
 
-JVM tests и debug build проходят в GitHub Actions. Domain tests покрывают Levels 1–3, accumulated pools, distractors и unlock boundaries.
+Цель M2.2: per-letter statistics на основе Room Attempt history и разбивка результата по каждой букве, закрывающая соответствующий перенос D019.
+
+В M2.2 необходимо:
+
+- агрегировать attempts/correct/accuracy по каждой букве;
+- добавить recent errors и разумный response-time summary;
+- вывести per-letter breakdown на экране результата;
+- использовать Room Attempt как единственный источник подробной истории;
+- переиспользовать существующий `LevelProgressionStore`, не создавать второй progression state;
+- добавить JVM unit tests агрегации;
+- не переписывать исторические Attempt и их `learningPolicyVersion` / `curriculumVersion`.
+
+Подробный scope — `NEXT_TASK.md`.
+
+## Что ещё остаётся обязательным в M2 после M2.2
+
+- retry queue из D019;
+- mastery states;
+- weighted selection;
+- delayed checks;
+- реальные pre-recorded WAV/OGG assets;
+- runtime-проверка local asset playback после появления файлов.
 
 ## Runtime boundary
 
-Первый owner Run выявил старую M1 runtime-привязку; она устранена в PR #3. Новый head после исправления ещё требуется повторно запустить владельцу обычной кнопкой Run. До этого runtime gate не считается закрытым.
-
-## Что ещё не входит в готовность M2 в целом
-
-- реальные pre-recorded WAV/OGG assets;
-- runtime-проверка local asset playback после появления файлов;
-- retry queue из D019;
-- разбивка результата/статистика по каждой букве из D019;
-- mastery states;
-- weighted selection;
-- delayed checks.
-
-## Следующий этап
-
-M2.2: per-letter statistics на основе Room Attempt history и разбивка результата по каждой букве. Progression/unlocked-level DataStore уже реализован в M2.1. Подробно — `NEXT_TASK.md`.
+Первый owner Run M2.1 выявил старую M1 runtime-привязку; она устранена и изменения слиты после зелёного CI. Повторный Run исправленного progression всё ещё нужен как runtime evidence перед итоговым закрытием M2, но не используется как препятствие для последовательной разработки M2.2 внутри того же milestone.
