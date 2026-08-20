@@ -47,7 +47,7 @@
 
 ## M2 — Учебный движок v1/v2 и расширение curriculum
 
-Статус: **M2.3 IMPLEMENTATION COMPLETE / OWNER SMOKE PENDING; M2 OVERALL NOT COMPLETE**.
+Статус: **M2.3 OWNER SMOKE PASS / M2.4 ACTIVE; M2 OVERALL NOT COMPLETE**.
 
 ### M2.1 — Hybrid audio foundation + Curriculum Levels 1–3
 
@@ -89,21 +89,27 @@
 - [x] feedback sound hook после ответа;
 - [x] Session Summary completion sound hook;
 - [x] JVM tests mapping/fallback policy;
-- [ ] owner smoke: качество локальной озвучки;
-- [ ] owner smoke: levels/unlock;
-- [ ] owner smoke: per-letter Summary;
-- [ ] owner smoke: persistence;
-- [ ] owner smoke: migration 1->2 на существующей установке, если доступна schema v1.
+- [x] owner smoke: качество локальной озвучки — PASS;
+- [x] owner smoke: levels/unlock — PASS;
+- [x] owner smoke: per-letter Summary — PASS;
+- [x] owner smoke: persistence — PASS;
+- [ ] owner/device migration 1->2 — NOT_TESTED; закрыть automated migration evidence до M2 closure.
 
-### Остальной обязательный M2 LearningEngine
+### M2.4 — Remaining LearningEngine DoD
+
+Статус: **ACTIVE**.
 
 - [ ] retry queue (D019);
-- [ ] mastery states;
+- [ ] ошибочная target возвращается после 2–4 других заданий при достаточном пуле;
+- [ ] retry не бесконечен и не ломает max-series invariant;
+- [ ] mastery states `NEW / LEARNING / FAMILIAR / STABLE`;
 - [ ] weighted selection;
-- [ ] delayed checks;
-- [ ] weak-letter weighting;
-- [ ] full LearningPolicy config без magic numbers;
-- [ ] тесты всех инвариантов LearningEngine.
+- [ ] weak-letter / recent-error / long-not-seen weighting;
+- [ ] сильные старые буквы сохраняют ненулевой шанс;
+- [ ] delayed checks / delayed success;
+- [ ] centralized LearningPolicy config без magic numbers;
+- [ ] deterministic tests всех обязательных LearningEngine invariants;
+- [ ] automated migration 1->2 evidence с сохранением/backfill истории.
 
 ### Gate M2 → M3
 
@@ -111,6 +117,7 @@
 - [ ] пороги централизованы;
 - [ ] алгоритм не меняется без версии/decision log;
 - [ ] переносы D019 полностью закрыты, включая retry;
+- [ ] migration 1->2 имеет достаточное evidence;
 - [ ] runtime evidence M2 собран;
 - [ ] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
 - [ ] owner acceptance;
