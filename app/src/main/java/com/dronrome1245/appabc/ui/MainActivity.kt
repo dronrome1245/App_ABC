@@ -121,7 +121,12 @@ fun AppNavigation(
         ) { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
             ResultScreen(
-                onRestart = {
+                onRepeatLevel = { levelId ->
+                    navController.navigate("exercise/$levelId") {
+                        popUpTo("home")
+                    }
+                },
+                onContinue = {
                     navController.navigate("home") {
                         popUpTo("home") { inclusive = true }
                     }
