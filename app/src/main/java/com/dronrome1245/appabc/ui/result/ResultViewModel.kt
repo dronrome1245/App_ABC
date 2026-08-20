@@ -2,6 +2,7 @@ package com.dronrome1245.appabc.ui.result
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dronrome1245.appabc.core.audio.AudioPlayer
 import com.dronrome1245.appabc.data.progression.LevelProgressionStore
 import com.dronrome1245.appabc.data.repository.ProgressRepository
 import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
@@ -14,15 +15,13 @@ import kotlinx.coroutines.launch
 class ResultViewModel(
     private val progressRepository: ProgressRepository,
     private val progressionStore: LevelProgressionStore,
+    private val audioPlayer: AudioPlayer,
     private val sessionId: String
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<ResultUiState>(ResultUiState.Loading)
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 
-    init {
-        loadSummary()
-    }
+    init { loadSummary() }
 
     private fun loadSummary() {
         viewModelScope.launch {
@@ -31,9 +30,7 @@ class ResultViewModel(
             val unlockedLevel = if (summary.passed && nextLevel != null) {
                 progressionStore.unlockAndSelect(nextLevel.id)
                 nextLevel.id
-            } else {
-                null
-            }
+            } else null
 
             _uiState.value = ResultUiState.Success(
                 levelId = summary.levelId,
@@ -44,6 +41,7 @@ class ResultViewModel(
                 unlockedLevel = unlockedLevel,
                 letters = summary.letters
             )
+            if (summary.totalQuestions > 0) audioPlayer.playLevelComplete()
         }
     }
 }

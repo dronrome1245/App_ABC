@@ -6,8 +6,6 @@ import android.util.Log
 
 /**
  * D020 audio strategy: local pre-recorded asset first, system TTS fallback.
- *
- * No placeholder audio files are bundled here. Missing resources intentionally fall back to TTS.
  */
 class HybridAudioPlayer(
     context: Context,
@@ -30,6 +28,12 @@ class HybridAudioPlayer(
         playRawOrFallback(resourceName, fallback)
     }
 
+    override fun playLevelComplete() {
+        playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) {
+            tts.speak("Уровень завершён")
+        }
+    }
+
     override fun stop() {
         releaseActivePlayer()
         tts.stop()
@@ -43,13 +47,13 @@ class HybridAudioPlayer(
     private fun playRawOrFallback(resourceName: String?, fallback: () -> Unit) {
         releaseActivePlayer()
 
-        if (resourceName.isNullOrBlank()) {
-            fallback()
-            return
+        val resourceId = if (resourceName.isNullOrBlank()) {
+            0
+        } else {
+            appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
         }
 
-        val resourceId = appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
-        if (resourceId == 0) {
+        if (AudioFallbackPolicy.shouldFallback(resourceName, resourceId)) {
             fallback()
             return
         }
@@ -98,8 +102,9 @@ class HybridAudioPlayer(
 }
 
 object AudioAssetCatalog {
-    const val CORRECT_FEEDBACK = "sound_feedback_correct"
-    const val INCORRECT_FEEDBACK = "sound_feedback_incorrect"
+    const val CORRECT_FEEDBACK = "sound_correct"
+    const val INCORRECT_FEEDBACK = "sound_wrong"
+    const val LEVEL_COMPLETE = "sound_level_complete"
 
     private val letterResources = mapOf(
         'А' to "sound_letter_a",
@@ -111,4 +116,10 @@ object AudioAssetCatalog {
     )
 
     fun resourceNameForLetter(letter: Char): String? = letterResources[letter.uppercaseChar()]
+}
+
+/** Pure policy kept separately so the missing-resource fallback is JVM-testable. */
+object AudioFallbackPolicy {
+    fun shouldFallback(resourceName: String?, resourceId: Int): Boolean =
+        resourceName.isNullOrBlank() || resourceId == 0
 }
