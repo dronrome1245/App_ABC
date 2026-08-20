@@ -1,56 +1,70 @@
-# NEXT_TASK.md — M2.3 Local audio assets + M2 smoke test
+# NEXT_TASK.md — M2.3 Owner smoke test
 
 ## Единственная следующая задача
 
-**Добавить утверждённые локальные аудиофайлы букв в `res/raw`, проверить local-audio-first/TTS fallback и провести объединённый ручной smoke test реализованных M2.1–M2.2 функций.**
+**Провести объединённый ручной smoke test M2.1–M2.3 на реальном Android-устройстве и зафиксировать наблюдаемое поведение.**
 
-## Scope M2.3
+## Перед запуском
 
-1. Добавить утверждённые WAV/OGG assets для букв текущего Curriculum v2:
-   - `А`, `М`, `О`, `У`, `С`, `Н`;
-   - имена ресурсов должны соответствовать `AudioAssetCatalog` либо mapping должен быть обновлён явно.
-2. Не удалять системный TTS fallback.
-3. Проверить на устройстве:
-   - локальный asset воспроизводится при наличии;
-   - при отсутствии/ошибке asset используется TTS fallback;
-   - звук не блокирует переход между вопросами.
-4. Проверить уже реализованный экран выбора уровней:
-   - Level 1 доступен по умолчанию;
-   - Level 2/3 появляются после соответствующего unlock;
-   - не создавать второй экран/источник progression state без необходимости.
-5. Выполнить M2 smoke test:
-   - пройти 10 вопросов;
-   - проверить unlock >=8/10;
-   - проверить per-letter Session Summary из M2.2;
-   - повторить уровень;
-   - закрыть и повторно открыть приложение;
-   - убедиться, что Room/DataStore прогресс сохранился;
-   - отдельно проверить обновление существующей установки через migration 1->2, если на устройстве есть база schema v1.
+1. В Android Studio сделать Fetch/Pull.
+2. Переключиться на `feature/m2-3-audio-assets-smoke`.
+3. Убедиться, что приложение устанавливается поверх существующей версии, если требуется проверить migration 1->2; для отдельной чистой проверки можно использовать чистую установку после migration-теста.
+4. Запустить обычной кнопкой Run. Android Studio Agent по умолчанию не нужен.
 
-## Уже реализовано в M2.2
+## Чеклист M2 smoke
 
-- Room `databaseSchemaVersion = 2`;
-- `LetterProgressEntity` и `SessionResultEntity`;
-- migration 1->2 с backfill старых Attempt;
-- `ProgressRepository`;
-- per-letter breakdown результата D019;
-- repeat/continue actions на Session Summary.
+### A. Audio / D020
 
-## После M2.3 остаётся обязательным в M2
+- [ ] Level 1: `А` произносится локальным asset.
+- [ ] Level 1: `М` произносится локальным asset.
+- [ ] После открытия Level 2 проверить `О` и `У`.
+- [ ] После открытия Level 3 проверить `С` и `Н`.
+- [ ] Верный ответ сопровождается коротким `sound_correct`.
+- [ ] Ошибка сопровождается мягким `sound_wrong`.
+- [ ] При открытии Session Summary звучит `sound_level_complete`.
+- [ ] Звуки не обрезают/не блокируют переход к следующему вопросу.
+- [ ] Голос названий букв понятный и приемлемый для домашнего использования.
 
-- retry queue после ошибки (D019 / LearningEngine);
-- mastery states;
-- weighted selection;
-- delayed checks;
-- weak-letter weighting;
-- итоговый M2 closure audit.
+### B. TTS fallback
 
-## Decision sources
+Для штатного приложения все шесть текущих букв имеют local asset. Fallback архитектурно сохранён и покрыт JVM policy-test. Не удалять asset из рабочей ветки ради smoke.
 
-- D019 — per-letter result и retry перенесены в M2;
-- D020 — local pre-recorded audio first + TTS fallback;
-- D021 — Curriculum Levels 1–3, 10 вопросов, unlock >=80% (8/10).
+- [ ] Обычная работа приложения не требует облака.
+- [ ] При наблюдаемой ошибке local playback приложение не падает; сообщить экран/букву и Logcat, если он уже открыт.
 
-## Android Studio Agent
+### C. Levels / Curriculum
 
-По умолчанию не нужен. Обычный Run/установка и smoke test выполняются владельцем. Android Studio Agent подключать только при конкретной IDE/SDK/Logcat/audio/Room migration ошибке.
+- [ ] Level 1 доступен по умолчанию.
+- [ ] Сессия содержит ровно 10 вопросов.
+- [ ] Результат 7/10 не открывает следующий уровень.
+- [ ] Результат 8/10 или выше открывает следующий уровень.
+- [ ] После unlock Level 2 доступны `А/М/О/У`.
+- [ ] После unlock Level 3 доступны `А/М/О/У/С/Н`.
+
+### D. Session Summary / D019 / M2.2
+
+- [ ] Общий итог показывает `X / 10`.
+- [ ] По каждой показанной target-букве есть отдельная строка correct/attempts.
+- [ ] Ошибки визуально различимы.
+- [ ] `Повторить уровень` запускает тот же уровень.
+- [ ] `Далее / К выбору уровней` возвращает к корректному списку уровней.
+
+### E. Persistence / Room 2 / DataStore
+
+- [ ] Закрыть приложение после завершённой сессии.
+- [ ] Открыть снова — unlocked/selected level сохранился.
+- [ ] История/статистика не обнулилась.
+- [ ] Если на устройстве была schema v1: обновление проходит без crash и старые Attempt учитываются после migration/backfill.
+
+## Что прислать ChatGPT после smoke
+
+- `AUDIO: PASS/FAIL` + какие буквы/звуки проблемны;
+- `LEVELS: PASS/FAIL`;
+- `SUMMARY: PASS/FAIL`;
+- `PERSISTENCE: PASS/FAIL`;
+- `MIGRATION_1_2: PASS/NOT_TESTED/FAIL`;
+- при ошибке — точное наблюдаемое поведение и Logcat, если он уже открыт.
+
+## Важно для Milestone 2
+
+Успешный M2.3 smoke **не закрывает весь M2 автоматически**. По текущему DoD после него ещё остаются retry queue, mastery states, weighted selection, delayed checks/weak-letter weighting и closure audit. Переход к M3 запрещён до выполнения этих требований или отдельного явного решения владельца об изменении M2 gate.
