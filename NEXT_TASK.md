@@ -1,31 +1,47 @@
-# NEXT_TASK.md — M2 Kickoff
+# NEXT_TASK.md — M2.2 Per-letter statistics
 
 ## Единственная следующая задача
 
-**Спроектировать и реализовать первый законченный slice Milestone 2: интерфейс `AudioPlayer` для локальных аудио-ассетов (`SoundPool`/`MediaPlayer`) с системным TTS fallback, расширение модели уровней Curriculum и закрытие owner-approved переносов из M1.**
+**Реализовать статистику по каждой букве на основе Room Attempt history и показать разбивку по буквам на экране результата.**
 
-## Обязательный scope этой итерации
+## Scope M2.2
 
-1. Ввести единый интерфейс `AudioPlayer`, не зависящий от Compose/UI.
-2. Реализовать стратегию `pre-recorded audio first + TTS fallback`.
-3. Подготовить работу с локальными `WAV`/`OGG` в `res/raw`; не генерировать случайные/временные записи вместо утверждённых ассетов.
-4. Если TTS остаётся fallback, добавить корректную декларацию `<queries>` для `android.intent.action.TTS_SERVICE` в Manifest.
-5. Расширить модель Curriculum/уровней так, чтобы состав букв и метаданные не были M1-only константой.
-6. Реализовать retry queue: после ошибки target возвращается позднее по детерминируемому/тестируемому правилу без немедленного зацикливания.
-7. Расширить результат сессии статистикой по каждой букве, начиная с А/М.
-8. Продолжить M2 LearningEngine v1 по `docs/DEFINITION_OF_DONE.md`: централизованный LearningPolicy, версии, mastery states, weighted selection, level unlock, delayed checks и сохранение старых букв в пуле.
-9. Добавить/обновить JVM unit tests на учебные инварианты; Android-specific audio integration проверять отдельно.
-10. Не менять продуктовые пороги/веса/retry interval/curriculum order без отдельного `DECISION_SOURCE`.
+1. Рассчитывать статистику отдельно по каждой букве:
+   - attempts;
+   - correct;
+   - accuracy;
+   - recent errors;
+   - response time summary, если это можно сделать без преждевременной сложной аналитики.
+2. На экране результата показывать разбивку по буквам текущей сессии, закрывая перенос D019.
+3. Использовать Room Attempt как источник подробной истории; DataStore не использовать для истории попыток.
+4. Использовать уже реализованный в M2.1 `LevelProgressionStore` для selected/unlocked level; не создавать второй источник progression state.
+5. Не терять прошлые Attempt и их `learningPolicyVersion` / `curriculumVersion`.
+6. Добавить JVM tests на per-letter aggregation.
 
-## Архитектурные решения
+## Уже реализовано в M2.1
 
-- D019: незакрытые требования раннего M1 явно перенесены в M2.
-- D020: основной звук — локальные pre-recorded assets; TTS — fallback.
+- Curriculum Levels 1–3;
+- 10 вопросов;
+- unlock >=80% (8/10);
+- Preferences DataStore для highest unlocked / selected level;
+- UI выбора разблокированного уровня;
+- runtime передача выбранного `levelId` в Exercise;
+- автоматическое открытие следующего уровня после успешной сессии.
 
-## Критерий завершения текущего slice
+## Отдельно остаётся обязательным в M2
 
-Перед заявлением о готовности исполнитель обязан выдать DoD evidence matrix: каждый затронутый критерий M2 и каждый перенесённый пункт D019 должны иметь статус `PASS`, `PENDING_RUNTIME` либо `OWNER_DECISION_REQUIRED` с конкретным доказательством/причиной.
+- retry queue после ошибки (D019 / LearningEngine);
+- mastery states;
+- weighted selection;
+- delayed checks;
+- реальные WAV/OGG assets и runtime-проверка local-audio-first после их появления.
+
+## Decision sources
+
+- D019 — per-letter result и retry перенесены из M1 в M2;
+- D020 — local audio first + TTS fallback;
+- D021 — Curriculum Levels 1–3, 10 вопросов, unlock >=80% (8/10), curriculumVersion 2, learningPolicyVersion 2.
 
 ## Android Studio Agent
 
-По умолчанию не нужен. Подключать только при конкретной Android runtime/Manifest/audio/TTS проблеме, которую нельзя подтвердить через код, JVM tests или CI.
+По умолчанию не нужен. Подключать только при конкретной Room/DataStore/runtime проблеме, которую невозможно подтвердить кодом, JVM tests или CI.

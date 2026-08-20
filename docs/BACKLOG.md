@@ -36,64 +36,64 @@
 - [x] случайно менять позиции букв между вопросами;
 - [x] Room Attempt с `sessionId`;
 - [x] предусмотреть поля версии LearningPolicy/Curriculum;
-- [x] результат 10 вопросов (общий итог);
-- [x] unit tests на реализованные M1-инварианты;
+- [x] результат 10 вопросов;
+- [x] unit tests;
 - [x] debug build;
-- [x] запуск на реальном телефоне;
-- [x] Owner Acceptance;
-- [x] Gradle-проект настроен;
+- [x] запуск на телефоне;
+- [x] owner acceptance;
 - [x] CI: JVM unit tests + debug build.
 
-### Owner-approved deferral D019
+Переносы D019 включены в M2, а не считаются выполненными в M1.
 
-Следующие требования ранней редакции M1 не считаются реализованными и перенесены в M2:
+## M2 — Учебный движок v1/v2 и расширение curriculum
 
-- [ ] разбивка результата по каждой букве;
-- [ ] retry ошибочной target-буквы через управляемую очередь;
-- [ ] `<queries>` для `android.intent.action.TTS_SERVICE` при использовании TTS fallback.
+Статус: **M2.1 implementation / validation**.
 
-## M2 — Учебный движок v1 + audio/curriculum foundation
+### M2.1 — Hybrid audio + Curriculum Levels 1–3
 
-Статус: **In Planning / Kickoff**.
+- [x] интерфейс `AudioPlayer`;
+- [x] `HybridAudioPlayer`: local `res/raw` first + TTS fallback;
+- [x] `<queries>` для `android.intent.action.TTS_SERVICE`;
+- [x] dependency injection через простой composition root без Hilt/Koin;
+- [x] централизованная модель Curriculum;
+- [x] `curriculumVersion = 2`;
+- [x] Level 1: `А`, `М`;
+- [x] Level 2: `О`, `У`;
+- [x] Level 3: `С`, `Н`;
+- [x] старые буквы сохраняются в пуле следующих уровней;
+- [x] 10 вопросов на сессию;
+- [x] `learningPolicyVersion = 2` для нового поведения;
+- [x] level unlock policy: >=80% на полной сессии 10 вопросов (8/10);
+- [x] JVM tests на levels/pool/distractors/session generation/unlock;
+- [ ] реальные утверждённые WAV/OGG assets;
+- [ ] runtime-проверка local asset playback после появления файлов.
 
-### Переносы из M1 — обязательны
+### M2.2 — Per-letter statistics + progression persistence
 
-- [ ] разбивка результата по каждой букве;
-- [ ] retry queue / поздний возврат ошибочной target-буквы;
-- [ ] TTS service visibility declaration в Manifest при TTS fallback.
+- [ ] статистика по каждой букве из Room Attempt history;
+- [ ] разбивка результата по буквам (D019);
+- [ ] recent accuracy;
+- [ ] response time summary;
+- [ ] хранение текущего/max unlocked level в DataStore;
+- [ ] применение LevelUnlockPolicy к progression state;
+- [ ] unit tests агрегации и progression.
 
-### Audio foundation — D020
+### Остальной M2 LearningEngine
 
-- [ ] единый интерфейс `AudioPlayer`;
-- [ ] pre-recorded local audio first;
-- [ ] TTS fallback;
-- [ ] поддержка локальных `WAV`/`OGG` в `res/raw`;
-- [ ] Android-specific тест/проверка fallback после реализации;
-- [ ] не добавлять случайные/неутверждённые аудиофайлы как финальные ассеты.
-
-### LearningEngine v1
-
-- [ ] конфиг LearningPolicy v1;
-- [ ] `learningPolicyVersion`;
-- [ ] `curriculumVersion`;
+- [ ] retry queue (D019);
 - [ ] mastery states;
 - [ ] weighted selection;
-- [ ] retry queue;
-- [ ] level unlock;
-- [ ] повторение старых букв;
 - [ ] delayed checks;
-- [ ] тесты алгоритма;
-- [ ] расширить модель Curriculum/уровней за пределы M1-only константы;
-- [x] GitHub Actions: unit tests + debug build.
+- [ ] weak-letter weighting;
+- [ ] full LearningPolicy config без magic numbers;
+- [ ] тесты всех инвариантов LearningEngine.
 
 ### Gate M2 → M3
 
 - [ ] все инварианты LearningEngine покрыты тестами;
 - [ ] пороги централизованы;
 - [ ] алгоритм не меняется без версии/decision log;
-- [ ] owner-approved переносы D019 закрыты;
-- [ ] audio-first + TTS fallback проверены в допустимом runtime scope;
-- [ ] milestone closure evidence matrix не содержит `FAIL`/`UNKNOWN`;
+- [ ] переносы D019 закрыты;
 - [ ] нет High-риска LearningEngine без меры контроля.
 
 ## M3 — Статистика и Parent mode
@@ -122,10 +122,10 @@
 ## M5 — Полный алфавит
 
 - [ ] согласовать curriculumVersion для 33 букв;
-- [ ] согласовать порядок 33 букв;
+- [ ] согласовать оставшийся порядок 33 букв;
 - [ ] проверить визуально похожие группы;
 - [ ] подобрать distractors;
-- [ ] проверить локальное аудио/TTS fallback для всех букв;
+- [ ] проверить озвучку всех букв;
 - [ ] определить число вариантов ответа по этапам;
 - [ ] домашнее UX-тестирование;
 - [ ] baseline и продуктовая проверка по `SUCCESS_METRICS.md`;

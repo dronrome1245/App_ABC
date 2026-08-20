@@ -17,23 +17,20 @@ Android native:
 
 ```text
 com.dronrome1245.appabc
+├── core
+│   └── audio
 ├── data
-│   ├── db
-│   ├── entity
+│   ├── local
 │   └── repository
 ├── domain
-│   ├── model
-│   └── learning
-├── speech
-│   ├── tts
-│   └── recognition
+│   ├── curriculum
+│   ├── engine
+│   ├── learning
+│   └── model
 └── ui
     ├── home
-    ├── training
-    ├── result
-    ├── statistics
-    ├── parent
-    └── weakletters
+    ├── exercise
+    └── result
 ```
 
 Не создавать слои только ради шаблона.
@@ -50,7 +47,7 @@ Attempt должен поддерживать метрики из `SUCCESS_METRI
 - timestamp;
 - sessionId;
 - levelId;
-- exerciseType;
+- exerciseType при необходимости;
 - targetLetter;
 - selectedLetter;
 - isCorrect;
@@ -87,8 +84,8 @@ Attempt должен поддерживать метрики из `SUCCESS_METRI
 
 Подходит для:
 
-- текущего открытого уровня;
-- настроек TTS;
+- текущего/max разблокированного уровня;
+- настроек озвучки;
 - onboarding;
 - размера рекомендуемой сессии;
 - feature flags;
@@ -117,18 +114,22 @@ Attempt должен поддерживать метрики из `SUCCESS_METRI
 
 Пороги и веса не должны быть разбросаны по UI/классам.
 
-Они должны находиться в централизованной конфигурации, связанной с `learningPolicyVersion`.
+Для M2.1 создан централизованный `LearningPolicyConfig` с `learningPolicyVersion = 2` и owner-approved level unlock `8/10 = 80%` по D021.
+
+Остальные mastery/weighted/retry параметры реализуются последующими slices M2 и требуют сохранения version discipline.
 
 ## Curriculum config
 
-Для каждой буквы хранить минимум:
+Curriculum хранится централизованно в pure Kotlin domain-модели.
+
+Для каждой буквы минимум:
 
 - symbol;
 - spokenName;
 - stageIntroduced;
 - confusableWith/preferredDistractors при необходимости.
 
-Политика описана в `CURRICULUM.md`.
+`curriculumVersion = 2` содержит утверждённые Levels 1–3 по D021. Старые буквы входят в пул следующего уровня.
 
 ## UI
 
@@ -140,13 +141,24 @@ Compose получает состояние из ViewModel.
 
 Детский и родительский потоки логически разделить, но не усложнять навигацию.
 
-## TTS
+## Audio — D020
 
-Отдельный wrapper.
+UI/ViewModel работает через интерфейс `AudioPlayer` и не зависит напрямую от `TextToSpeech`/`MediaPlayer`.
 
-Для буквы хранить `symbol` и `spokenName` (`М` / `эм`), чтобы не зависеть от того, как TTS интерпретирует одиночный символ.
+`HybridAudioPlayer` реализует стратегию:
 
-Каждый spokenName до массового включения проверяется на реальном устройстве.
+1. определить ожидаемое имя локального ресурса для буквы;
+2. найти asset в `res/raw`;
+3. если asset существует — воспроизвести его через Android `MediaPlayer`;
+4. если asset отсутствует или воспроизведение завершается ошибкой — использовать существующий `TextToSpeechWrapper` как fallback.
+
+Пока реальные WAV/OGG не добавлены, fallback является штатным поведением, а не исключением.
+
+Для TTS service visibility Android Manifest содержит `<queries>` с `android.intent.action.TTS_SERVICE`.
+
+Для буквы `spokenName` хранится в Curriculum (`М` / `эм`), чтобы fallback не зависел от произношения одиночного Unicode-символа.
+
+Низкоуровневый `TtsAudioPlayer` не удаляется и остаётся fallback engine.
 
 ## Speech recognition
 
@@ -156,7 +168,11 @@ Compose получает состояние из ViewModel.
 
 ## DI
 
-Hilt/Koin на старте не нужен, если зависимости можно передать просто и понятно. Подключить DI позднее только если он реально уменьшит сложность.
+Hilt/Koin на старте не нужен, если зависимости можно передать просто и понятно.
+
+Текущий composition root — `MainActivity`: там создаются repository, `TtsAudioPlayer` и `HybridAudioPlayer`, после чего интерфейс `AudioPlayer` передаётся в ViewModel.
+
+Подключить DI framework позднее только если он реально уменьшит сложность.
 
 ## Сеть
 
@@ -166,13 +182,11 @@ Hilt/Koin на старте не нужен, если зависимости м�
 
 ## CI
 
-После создания Gradle-проекта добавить GitHub Actions:
+GitHub Actions должен проверять:
 
-- unit tests;
+- JVM unit tests;
 - debug build;
 - позднее lint при необходимости.
-
-До появления Android-проекта workflow не создавать, чтобы CI не был заведомо красным.
 
 ## Качество
 
@@ -180,7 +194,7 @@ Hilt/Koin на старте не нужен, если зависимости м�
 
 - unit tests учебного алгоритма;
 - debug build;
-- ручной запуск на реальном телефоне;
+- ручной запуск при runtime-зависимых изменениях;
 - отсутствие crash в основном сценарии;
 - соответствие `DEFINITION_OF_DONE.md`;
 - проверка новых рисков по `RISK_REGISTER.md`.

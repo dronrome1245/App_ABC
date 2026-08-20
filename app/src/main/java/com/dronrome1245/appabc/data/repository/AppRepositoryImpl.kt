@@ -4,7 +4,7 @@ import com.dronrome1245.appabc.data.local.db.AttemptDao
 import com.dronrome1245.appabc.data.local.db.AttemptEntity
 import com.dronrome1245.appabc.data.local.db.LetterDao
 import com.dronrome1245.appabc.data.local.db.LetterEntity
-import com.dronrome1245.appabc.domain.m1.M1SessionConfig
+import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.domain.model.Attempt
 import com.dronrome1245.appabc.domain.model.Letter
 import kotlinx.coroutines.flow.Flow
@@ -37,21 +37,23 @@ class AppRepositoryImpl(
     }
 
     suspend fun ensureInitialLetters() {
-        val levelLetters = M1SessionConfig.letters.map { letter ->
-            LetterEntity(
-                symbol = letter.symbol,
-                spokenName = letter.spokenName,
-                levelIntroduced = letter.levelIntroduced
-            )
-        }
+        val approvedLevels = ApprovedCurriculum.curriculum.levels
 
-        // Remove only obsolete Level 1 curriculum rows. Attempt history is stored separately and remains intact.
-        // This removes the old "О" seed on devices that ran the earlier drifted M1 build.
-        letterDao.deleteLettersOutsideLevelSet(
-            levelId = M1SessionConfig.LEVEL_ID,
-            allowedSymbols = levelLetters.map { it.symbol }
-        )
-        letterDao.insertLetters(levelLetters)
+        approvedLevels.forEach { level ->
+            val levelLetters = level.introducedLetters.map { letter ->
+                LetterEntity(
+                    symbol = letter.symbol,
+                    spokenName = letter.spokenName,
+                    levelIntroduced = letter.levelIntroduced
+                )
+            }
+
+            letterDao.deleteLettersOutsideLevelSet(
+                levelId = level.id,
+                allowedSymbols = levelLetters.map { it.symbol }
+            )
+            letterDao.insertLetters(levelLetters)
+        }
     }
 
     suspend fun getSessionSummary(sessionId: String): List<Attempt> {
