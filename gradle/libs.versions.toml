@@ -12,6 +12,8 @@ room = "2.6.1"
 datastore = "1.1.1"
 navigation = "2.7.7"
 ksp = "2.0.0-1.0.21"
+androidxTestCore = "1.6.1"
+robolectric = "4.13"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +40,10 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 
 # DataStore
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+
+# JVM Android migration testing
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
