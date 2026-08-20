@@ -45,28 +45,24 @@
 
 Переносы D019 включены в M2, а не считаются выполненными в M1.
 
-## M2 — Учебный движок v1/v2 и расширение curriculum
+## M2 — LearningEngine + audio/curriculum foundation
 
-Статус: **M2.3 OWNER SMOKE PASS / M2.4 ACTIVE; M2 OVERALL NOT COMPLETE**.
+Статус: **M2.4 COMPLETE / M2.5 CLOSURE AUDIT ACTIVE; M2 OVERALL PENDING OWNER ACCEPTANCE**.
 
 ### M2.1 — Hybrid audio foundation + Curriculum Levels 1–3
 
 - [x] интерфейс `AudioPlayer`;
 - [x] `HybridAudioPlayer`: local `res/raw` first + TTS fallback;
 - [x] `<queries>` для `android.intent.action.TTS_SERVICE`;
-- [x] dependency injection через простой composition root без Hilt/Koin;
 - [x] централизованная модель Curriculum;
 - [x] `curriculumVersion = 2`;
-- [x] Level 1: `А`, `М`;
-- [x] Level 2: `О`, `У`;
-- [x] Level 3: `С`, `Н`;
+- [x] Levels 1–3: `А/М`, `О/У`, `С/Н`;
 - [x] старые буквы сохраняются в пуле следующих уровней;
 - [x] 10 вопросов на сессию;
-- [x] `learningPolicyVersion = 2`;
-- [x] level unlock >=80% на полной сессии 10 вопросов (8/10);
-- [x] хранение current/max unlocked level в Preferences DataStore;
+- [x] level unlock >=80% / 8 из 10;
+- [x] current/max unlocked level в DataStore;
 - [x] UI выбора разблокированного уровня;
-- [x] runtime передача выбранного `levelId` в Exercise.
+- [x] runtime передача выбранного `levelId`.
 
 ### M2.2 — Per-letter statistics / Room 2
 
@@ -74,54 +70,72 @@
 - [x] разбивка результата по буквам (D019);
 - [x] persistent `LetterProgressEntity`;
 - [x] `SessionResultEntity` и история завершённых сессий;
-- [x] migration 1->2 + backfill старой истории;
+- [x] migration 1→2 + backfill старой истории;
 - [x] response-time aggregate;
-- [x] переиспользование существующего `LevelProgressionStore`;
 - [x] JVM tests агрегации.
 
 ### M2.3 — Local assets + combined smoke
 
 - [x] local OGG assets для `А/М/О/У/С/Н`;
-- [x] `sound_correct`;
-- [x] `sound_wrong`;
-- [x] `sound_level_complete`;
+- [x] `sound_correct` / `sound_wrong` / `sound_level_complete`;
 - [x] mapping Curriculum v2 -> local raw resource;
-- [x] feedback sound hook после ответа;
-- [x] Session Summary completion sound hook;
+- [x] feedback/completion audio hooks;
 - [x] JVM tests mapping/fallback policy;
-- [x] owner smoke: качество локальной озвучки — PASS;
+- [x] owner smoke: audio — PASS;
 - [x] owner smoke: levels/unlock — PASS;
 - [x] owner smoke: per-letter Summary — PASS;
 - [x] owner smoke: persistence — PASS;
-- [ ] owner/device migration 1->2 — NOT_TESTED; закрыть automated migration evidence до M2 closure.
+- [ ] device migration 1→2 — NOT_TESTED; не выдавать за device PASS.
 
-### M2.4 — Remaining LearningEngine DoD
+### M2.4 — Adaptive LearningPolicy v3
 
-Статус: **ACTIVE**.
+Статус: **COMPLETE / CI PASS**.
 
-- [ ] retry queue (D019);
-- [ ] ошибочная target возвращается после 2–4 других заданий при достаточном пуле;
-- [ ] retry не бесконечен и не ломает max-series invariant;
-- [ ] mastery states `NEW / LEARNING / FAMILIAR / STABLE`;
-- [ ] weighted selection;
-- [ ] weak-letter / recent-error / long-not-seen weighting;
-- [ ] сильные старые буквы сохраняют ненулевой шанс;
-- [ ] delayed checks / delayed success;
-- [ ] centralized LearningPolicy config без magic numbers;
-- [ ] deterministic tests всех обязательных LearningEngine invariants;
-- [ ] automated migration 1->2 evidence с сохранением/backfill истории.
+- [x] D022: `learningPolicyVersion = 3`;
+- [x] mastery states `INTRODUCED / PRACTICING / MASTERED`;
+- [x] thresholds `<3`, `>=3`, `>=5 + recent accuracy >=85%`;
+- [x] centralized recent window/weights/retry spacing без UI magic numbers;
+- [x] weighted selection;
+- [x] `MASTERED = 1.0`, `INTRODUCED = 2.0`, `PRACTICING = 2.0…3.0`;
+- [x] сильная буква сохраняет ненулевой шанс;
+- [x] retry queue (D019);
+- [x] ошибочная target возвращается через 2–4 других вопроса при наличии места;
+- [x] retry не бесконечен и не расширяет 10-вопросную сессию;
+- [x] max target-series invariant;
+- [x] delayed success при spacing >=2;
+- [x] confusion pair tracking;
+- [x] historical Attempt используются как вход adaptive policy;
+- [x] deterministic JVM invariant tests;
+- [x] automated real-SQLite migration 1→2 test;
+- [x] preservation/backfill Attempt -> `letter_progress` / `session_results`;
+- [x] JVM tests PASS;
+- [x] `assembleDebug` PASS;
+- [x] Android CI PASS.
+
+### M2.5 — Closure Audit
+
+Статус: **NEXT / ACTIVE AFTER M2.4**.
+
+- [ ] построчный evidence audit каждого M2 DoD criterion;
+- [ ] проверить documentation/code drift;
+- [ ] подтвердить все обязательные LearningEngine invariants;
+- [ ] подтвердить переносы D019;
+- [ ] зафиксировать automated migration evidence и отдельно device `NOT_TESTED`;
+- [ ] исключить `FAIL` / `UNKNOWN`;
+- [ ] запросить owner acceptance всего M2;
+- [ ] после owner acceptance перевести M2 в DONE и только затем открыть M3.
 
 ### Gate M2 → M3
 
-- [ ] все инварианты LearningEngine покрыты тестами;
-- [ ] пороги централизованы;
-- [ ] алгоритм не меняется без версии/decision log;
-- [ ] переносы D019 полностью закрыты, включая retry;
-- [ ] migration 1->2 имеет достаточное evidence;
-- [ ] runtime evidence M2 собран;
+- [x] adaptive LearningEngine реализован;
+- [x] централизованные policy thresholds/weights;
+- [x] version discipline / D022;
+- [x] retry D019 реализован;
+- [x] per-letter D019 реализован;
+- [x] automated migration 1→2 evidence;
+- [x] runtime evidence M2.3 собрано;
 - [ ] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
-- [ ] owner acceptance;
-- [ ] нет High-риска LearningEngine без меры контроля.
+- [ ] owner acceptance M2.
 
 ## M3 — Статистика и Parent mode
 
@@ -137,7 +151,7 @@
 - [ ] сброс локального прогресса с подтверждением;
 - [ ] отображение недостатка данных как `недостаточно данных`, а не как плохой результат.
 
-## M4 — игровая оболочка
+## M4 — Игровая оболочка
 
 - [ ] карта/список уровней;
 - [ ] 1–3 звезды;
@@ -146,7 +160,7 @@
 - [ ] сессия 3–7 минут + «Ещё потренироваться»;
 - [ ] игровые показатели не подменяют success metrics.
 
-## M5 — полный алфавит
+## M5 — Полный алфавит
 
 - [ ] согласовать curriculumVersion для 33 букв;
 - [ ] согласовать оставшийся порядок 33 букв;
@@ -190,4 +204,4 @@ M6 **не является обязательным условием завер�
 
 ## Правило roadmap
 
-`BACKLOG.md` показывает этапы продукта. Конкретные исполняемые задачи после начала активной разработки желательно вести через GitHub Issues. Текущая одна ближайшая задача всегда фиксируется в `NEXT_TASK.md`.
+`BACKLOG.md` показывает этапы продукта. Текущая одна ближайшая задача всегда фиксируется в `NEXT_TASK.md`.
