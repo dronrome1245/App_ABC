@@ -47,9 +47,11 @@
 
 ## M2 — Учебный движок v1/v2 и расширение curriculum
 
-Статус: **M2.1 implementation / validation**.
+Статус: **M2.2 ACTIVE**.
 
 ### M2.1 — Hybrid audio + Curriculum Levels 1–3
+
+Статус: **MERGED TO MAIN / AUTOMATED GATES PASS / RUNTIME RECHECK PENDING FOR M2 ACCEPTANCE**.
 
 - [x] интерфейс `AudioPlayer`;
 - [x] `HybridAudioPlayer`: local `res/raw` first + TTS fallback;
@@ -65,18 +67,22 @@
 - [x] `learningPolicyVersion = 2` для нового поведения;
 - [x] level unlock policy: >=80% на полной сессии 10 вопросов (8/10);
 - [x] JVM tests на levels/pool/distractors/session generation/unlock;
+- [x] хранение current/max unlocked level в Preferences DataStore;
+- [x] применение LevelUnlockPolicy к progression state;
+- [x] UI выбора разблокированного уровня;
+- [x] runtime передача выбранного `levelId` в Exercise;
+- [ ] повторная owner runtime-проверка исправленного progression перед итоговым M2 acceptance;
 - [ ] реальные утверждённые WAV/OGG assets;
 - [ ] runtime-проверка local asset playback после появления файлов.
 
-### M2.2 — Per-letter statistics + progression persistence
+### M2.2 — Per-letter statistics
 
 - [ ] статистика по каждой букве из Room Attempt history;
 - [ ] разбивка результата по буквам (D019);
-- [ ] recent accuracy;
+- [ ] recent accuracy / recent errors;
 - [ ] response time summary;
-- [ ] хранение текущего/max unlocked level в DataStore;
-- [ ] применение LevelUnlockPolicy к progression state;
-- [ ] unit tests агрегации и progression.
+- [ ] переиспользование существующего `LevelProgressionStore` без второго progression state;
+- [ ] unit tests агрегации.
 
 ### Остальной M2 LearningEngine
 
@@ -94,6 +100,7 @@
 - [ ] пороги централизованы;
 - [ ] алгоритм не меняется без версии/decision log;
 - [ ] переносы D019 закрыты;
+- [ ] runtime evidence по M2 собран;
 - [ ] нет High-риска LearningEngine без меры контроля.
 
 ## M3 — Статистика и Parent mode
