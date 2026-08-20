@@ -34,6 +34,40 @@ object DatabaseMigrations {
             db.execSQL(
                 "CREATE UNIQUE INDEX IF NOT EXISTS `index_session_results_sessionId` ON `session_results` (`sessionId`)"
             )
+
+            // Preserve M1/M2.1 history by deriving the new caches from existing raw attempts.
+            db.execSQL(
+                """
+                INSERT OR REPLACE INTO `letter_progress`
+                    (`letter`, `attemptsCount`, `correctCount`, `lastSeenTimestamp`, `averageResponseTimeMs`)
+                SELECT
+                    `targetLetter`,
+                    COUNT(*),
+                    SUM(CASE WHEN `isCorrect` = 1 THEN 1 ELSE 0 END),
+                    MAX(`timestamp`),
+                    CAST(AVG(`responseTimeMs`) AS INTEGER)
+                FROM `attempts`
+                GROUP BY `targetLetter`
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                INSERT OR IGNORE INTO `session_results`
+                    (`sessionId`, `levelId`, `totalQuestions`, `correctAnswers`, `passed`, `completedAt`)
+                SELECT
+                    `sessionId`,
+                    MAX(`levelId`),
+                    COUNT(*),
+                    SUM(CASE WHEN `isCorrect` = 1 THEN 1 ELSE 0 END),
+                    CASE
+                        WHEN COUNT(*) = 10 AND SUM(CASE WHEN `isCorrect` = 1 THEN 1 ELSE 0 END) >= 8 THEN 1
+                        ELSE 0
+                    END,
+                    MAX(`timestamp`)
+                FROM `attempts`
+                GROUP BY `sessionId`
+                """.trimIndent()
+            )
         }
     }
 }
