@@ -84,6 +84,11 @@ class ExerciseViewModel(
             nextTask()
         }
     }
+
+    override fun onCleared() {
+        audioPlayer.stop()
+        super.onCleared()
+    }
 }
 
 sealed class ExerciseUiState {

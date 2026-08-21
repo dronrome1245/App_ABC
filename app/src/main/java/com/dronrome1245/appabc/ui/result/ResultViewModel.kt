@@ -44,6 +44,11 @@ class ResultViewModel(
             if (summary.totalQuestions > 0) audioPlayer.playLevelComplete()
         }
     }
+
+    override fun onCleared() {
+        audioPlayer.stop()
+        super.onCleared()
+    }
 }
 
 sealed class ResultUiState {

@@ -4,13 +4,14 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.2 IMPLEMENTATION_COMPLETE / M4.3 NEXT.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.3 IMPLEMENTATION_COMPLETE / M4.4 NEXT.**
 
 PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
 PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
 PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
 PR #11 с Home level selector hotfix слит в `main` merge-коммитом `4d8320053770371ddde065fe90ed9a4402cae593`.
 PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c810ab3ab41acf85e14d030c8a6bd5`.
+PR #13 с M4.2 Parent settings + safe progress reset слит в `main` merge-коммитом `97472f3c5bf07684843e419987a4c86704aa2561`.
 
 ## Milestone 2 — финальные статусы
 
@@ -131,7 +132,9 @@ PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c
 
 ## M4.2 — Parent settings / safe progress reset
 
-- M4_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- M4_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE / MERGED
+- PR: #13
+- MERGE_SHA: `97472f3c5bf07684843e419987a4c86704aa2561`
 - DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/PRODUCT_CHARTER.md` / OWNER task
 - SETTINGS_DATASTORE: COMPLETE
 - VOICEOVER_SETTING: PERSISTENT / DEFAULT TRUE
@@ -155,6 +158,32 @@ PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
 - EXTERNAL_SDK: NONE
 
+## M4.3 — Release hardening
+
+- M4_3_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/DEFINITION_OF_DONE.md` / OWNER task
+- RELEASE_MINIFY: ENABLED
+- RELEASE_SHRINK_RESOURCES: ENABLED
+- RELEASE_PROGUARD_FILE: `app/proguard-rules.pro`
+- RELEASE_SIGNING_FOR_CI: DEBUG KEY / VALIDATION ONLY
+- ROOM_R8_KEEP_RULES: ADDED
+- COMPOSE_R8_KEEP_RULES: ADDED
+- DATASTORE_R8_KEEP_RULES: ADDED
+- DYNAMIC_AUDIO_RESOURCE_KEEP: `res/raw/keep.xml` / `@raw/sound_*`
+- HYBRID_AUDIO_RELEASE_IDEMPOTENT: YES
+- VIEWMODEL_AUDIO_EXIT: `stop()` ON `ExerciseViewModel` / `ResultViewModel` CLEAR
+- ACTIVITY_AUDIO_OWNER: FINAL `release()` ON DESTROY
+- ACTIVITY_INIT_COROUTINE_SCOPE: `lifecycleScope`
+- COMPOSE_UI_TEST_SOURCE_SET: `src/testDebug` / RELEASE VARIANT EXCLUDED
+- CI_TEST_TASK: PASS — `gradle --no-daemon test`
+- CI_DEBUG_ASSEMBLE: PASS
+- CI_RELEASE_ASSEMBLE: PASS — R8 + RESOURCE SHRINK
+- RELEASE_BUILD_R8: PASS
+- M4_3_RELEASE_GATE_EVIDENCE: PASS — run 32477575125
+- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
+- CURRICULUM_VERSION: 3 (UNCHANGED)
+
 ## D024 normalized matrix — без изменений
 
 - Level 1: `А М`
@@ -168,4 +197,4 @@ PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c
 
 ## Следующий этап
 
-**Этап M4.3: Релизная конфигурация сборки (ProGuard/R8 rules, shrinkResources, проверка отсутствия утечек и Release APK/AAB build).**
+**Этап M4.4: Построчный Closure Evidence Audit Milestone 4, подготовка чеклиста финального смоук-теста релиза на Pixel 7a и официальное закрытие M4.**
