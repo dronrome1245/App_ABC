@@ -9,23 +9,27 @@ class HybridAudioPlayer(
     context: Context,
     private val tts: TextToSpeechWrapper,
     private val spokenNameProvider: (Char) -> String,
-    private val rawResourceNameProvider: (Char) -> String? = AudioAssetCatalog::resourceNameForLetter
+    private val rawResourceNameProvider: (Char) -> String? = AudioAssetCatalog::resourceNameForLetter,
+    private val settingsSource: AudioSettingsSource = AlwaysEnabledAudioSettings
 ) : AudioPlayer {
     private val appContext = context.applicationContext
     private var activePlayer: MediaPlayer? = null
 
     override fun playLetterSound(letter: Char) {
+        if (!settingsSource.isVoiceoverEnabledNow) return
         val fallback = { tts.speak(spokenNameProvider(letter)) }
         playRawOrFallback(rawResourceNameProvider(letter), fallback)
     }
 
     override fun playFeedback(isCorrect: Boolean) {
+        if (!settingsSource.isSoundEffectsEnabledNow) return
         val resourceName = if (isCorrect) AudioAssetCatalog.CORRECT_FEEDBACK else AudioAssetCatalog.INCORRECT_FEEDBACK
         val fallback = { tts.speak(if (isCorrect) "Верно" else "Попробуй ещё") }
         playRawOrFallback(resourceName, fallback)
     }
 
     override fun playLevelComplete() {
+        if (!settingsSource.isSoundEffectsEnabledNow) return
         playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) { tts.speak("Уровень завершён") }
     }
 

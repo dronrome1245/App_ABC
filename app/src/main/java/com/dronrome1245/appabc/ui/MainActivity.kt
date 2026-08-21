@@ -24,6 +24,7 @@ import com.dronrome1245.appabc.data.local.db.DatabaseMigrations
 import com.dronrome1245.appabc.data.progression.LevelProgressionStore
 import com.dronrome1245.appabc.data.repository.AppRepositoryImpl
 import com.dronrome1245.appabc.data.repository.ProgressRepository
+import com.dronrome1245.appabc.data.settings.SettingsRepository
 import com.dronrome1245.appabc.domain.curriculum.ApprovedCurriculum
 import com.dronrome1245.appabc.ui.exercise.ExerciseScreen
 import com.dronrome1245.appabc.ui.exercise.ExerciseViewModel
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var repository: AppRepositoryImpl
     private lateinit var progressRepository: ProgressRepository
     private lateinit var progressionStore: LevelProgressionStore
+    private lateinit var settingsRepository: SettingsRepository
     private lateinit var audioPlayer: AudioPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,19 +51,21 @@ class MainActivity : ComponentActivity() {
             .addMigrations(DatabaseMigrations.MIGRATION_1_2)
             .build()
         repository = AppRepositoryImpl(database.attemptDao(), database.letterDao())
-        progressRepository = ProgressRepository(database)
         progressionStore = LevelProgressionStore(applicationContext)
+        settingsRepository = SettingsRepository(applicationContext)
+        progressRepository = ProgressRepository(database, progressionStore)
         val ttsPlayer = TtsAudioPlayer(this)
         audioPlayer = HybridAudioPlayer(
             context = this,
             tts = ttsPlayer,
-            spokenNameProvider = { symbol -> ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString() }
+            spokenNameProvider = { symbol -> ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString() },
+            settingsSource = settingsRepository
         )
         MainScope().launch { repository.ensureInitialLetters() }
         setContent {
             AppABCTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    AppNavigation(repository, progressRepository, progressionStore, audioPlayer)
+                    AppNavigation(repository, progressRepository, progressionStore, settingsRepository, audioPlayer)
                 }
             }
         }
@@ -69,6 +73,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         audioPlayer.release()
+        settingsRepository.close()
         super.onDestroy()
     }
 }
@@ -78,6 +83,7 @@ fun AppNavigation(
     repository: AppRepositoryImpl,
     progressRepository: ProgressRepository,
     progressionStore: LevelProgressionStore,
+    settingsRepository: SettingsRepository,
     audioPlayer: AudioPlayer
 ) {
     val navController = rememberNavController()
@@ -92,7 +98,7 @@ fun AppNavigation(
         composable("parent-dashboard") {
             ParentDashboardScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel { ParentDashboardViewModel(progressRepository) }
+                viewModel = viewModel { ParentDashboardViewModel(progressRepository, settingsRepository) }
             )
         }
         composable("exercise/{levelId}", arguments = listOf(navArgument("levelId") { type = NavType.IntType })) { backStackEntry ->

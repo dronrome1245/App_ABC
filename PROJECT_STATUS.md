@@ -4,12 +4,13 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.1 IMPLEMENTATION_COMPLETE / M4.2 NEXT.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.2 IMPLEMENTATION_COMPLETE / M4.3 NEXT.**
 
 PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
 PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
 PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
 PR #11 с Home level selector hotfix слит в `main` merge-коммитом `4d8320053770371ddde065fe90ed9a4402cae593`.
+PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c810ab3ab41acf85e14d030c8a6bd5`.
 
 ## Milestone 2 — финальные статусы
 
@@ -109,7 +110,9 @@ PR #11 с Home level selector hotfix слит в `main` merge-коммитом `
 
 ## M4.1 — UI Delight / native Compose animations
 
-- M4_1_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- M4_1_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE / MERGED
+- PR: #12
+- MERGE_SHA: `702f908630c810ab3ab41acf85e14d030c8a6bd5`
 - DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/UX_GAME_DESIGN.md` / OWNER task
 - RESULT_CELEBRATION_TRIGGER: EXISTING `passed == true` STATE
 - RESULT_CELEBRATION_EFFECT: NATIVE COMPOSE CANVAS
@@ -126,6 +129,32 @@ PR #11 с Home level selector hotfix слит в `main` merge-коммитом `
 - CURRICULUM_VERSION: 3 (UNCHANGED)
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
 
+## M4.2 — Parent settings / safe progress reset
+
+- M4_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/PRODUCT_CHARTER.md` / OWNER task
+- SETTINGS_DATASTORE: COMPLETE
+- VOICEOVER_SETTING: PERSISTENT / DEFAULT TRUE
+- SOUND_EFFECTS_SETTING: PERSISTENT / DEFAULT TRUE
+- HYBRID_AUDIO_SETTINGS_INTEGRATION: COMPLETE
+- VOICEOVER_DISABLED_BEHAVIOR: `playLetterSound` IGNORED
+- SOUND_EFFECTS_DISABLED_BEHAVIOR: `playFeedback` / `playLevelComplete` IGNORED
+- PROGRESS_RESET: COMPLETE
+- RESET_ROOM_TABLES: `attempts` / `letter_progress` / `session_results`
+- RESET_ROOM_TRANSACTION: YES
+- LEVEL_PROGRESSION_RESET: `highestUnlockedLevel=1` / `selectedLevel=1`
+- LETTER_CATALOG_PRESERVED: YES
+- AUDIO_ASSETS_PRESERVED: YES
+- SETTINGS_PRESERVED_BY_PROGRESS_RESET: YES
+- SETTINGS_REPOSITORY_TESTS: ADDED
+- HYBRID_AUDIO_FILTER_TESTS: ADDED
+- PROGRESS_RESET_TEST: ADDED
+- PARENT_DASHBOARD_COMPOSE_TEST: ADDED
+- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
+- CURRICULUM_VERSION: 3 (UNCHANGED)
+- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+- EXTERNAL_SDK: NONE
+
 ## D024 normalized matrix — без изменений
 
 - Level 1: `А М`
@@ -139,4 +168,4 @@ PR #11 с Home level selector hotfix слит в `main` merge-коммитом `
 
 ## Следующий этап
 
-**Этап M4.2: Настройки звука и безопасный сброс прогресса в Parent Dashboard (DataStore).**
+**Этап M4.3: Релизная конфигурация сборки (ProGuard/R8 rules, shrinkResources, проверка отсутствия утечек и Release APK/AAB build).**

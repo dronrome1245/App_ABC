@@ -44,4 +44,11 @@ class LevelProgressionStore(private val context: Context) {
             preferences[Keys.selectedLevel] = levelId.coerceIn(1, newHighest)
         }
     }
+
+    suspend fun resetToLevelOne() {
+        context.levelProgressionDataStore.edit { preferences ->
+            preferences[Keys.highestUnlockedLevel] = 1
+            preferences[Keys.selectedLevel] = 1
+        }
+    }
 }
