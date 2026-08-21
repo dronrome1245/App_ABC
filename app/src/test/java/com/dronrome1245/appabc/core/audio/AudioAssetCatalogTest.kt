@@ -42,6 +42,16 @@ class AudioAssetCatalogTest {
     }
 
     @Test
+    fun all33V2MappingsResolveToBundledRawResources() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        RussianAlphabet.symbols.forEach { symbol ->
+            val resourceName = AudioAssetCatalog.v2ResourceNameForLetter(symbol.single())
+            val resourceId = context.resources.getIdentifier(resourceName, "raw", context.packageName)
+            assertNotEquals("Missing v2 raw resource for $symbol: $resourceName", 0, resourceId)
+        }
+    }
+
+    @Test
     fun allMappedResourceNamesAreAndroidSafeSnakeCase() {
         val names = buildList {
             RussianAlphabet.symbols.forEach { symbol ->
