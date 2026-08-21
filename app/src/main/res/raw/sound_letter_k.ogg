@@ -1,13 +1,14 @@
 package com.dronrome1245.appabc.domain.curriculum
 
 import com.dronrome1245.appabc.domain.engine.LearningEngine
-import java.util.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Random
 
 class CurriculumTest {
+
     private val expectedIntroduced = mapOf(
         1 to listOf("А", "М"),
         2 to listOf("О", "У"),
@@ -20,8 +21,9 @@ class CurriculumTest {
     )
 
     @Test
-    fun allEightLevelsMatchOwnerApprovedD024AndTenQuestions() {
+    fun curriculumV3ContainsEightOwnerApprovedLevelsAndTenQuestions() {
         val curriculum = ApprovedCurriculum.curriculum
+
         assertEquals(3, ApprovedCurriculum.VERSION)
         assertEquals(8, curriculum.levels.size)
         expectedIntroduced.forEach { (levelId, letters) ->
@@ -33,27 +35,47 @@ class CurriculumTest {
     @Test
     fun studiedPoolAccumulatesToAll33Letters() {
         val curriculum = ApprovedCurriculum.curriculum
-        val expectedSizes = listOf(2, 4, 6, 9, 12, 15, 19, 33)
-        expectedSizes.forEachIndexed { index, size ->
-            assertEquals(size, curriculum.lettersAvailableAt(index + 1).size)
+        val expectedPoolSizes = mapOf(
+            1 to 2,
+            2 to 4,
+            3 to 6,
+            4 to 9,
+            5 to 12,
+            6 to 15,
+            7 to 19,
+            8 to 33
+        )
+
+        expectedPoolSizes.forEach { (levelId, expectedSize) ->
+            val pool = curriculum.lettersAvailableAt(levelId).map { it.symbol }
+            assertEquals(expectedSize, pool.size)
+            (1 until levelId).flatMap { expectedIntroduced.getValue(it) }.forEach { previous ->
+                assertTrue(previous in pool)
+            }
         }
-        assertEquals(RussianAlphabet.symbols.toSet(), curriculum.lettersAvailableAt(8).map { it.symbol }.toSet())
+
+        val finalPool = curriculum.lettersAvailableAt(8).map { it.symbol }
+        assertEquals(33, finalPool.distinct().size)
+        assertEquals(RussianAlphabet.symbols.toSet(), finalPool.toSet())
     }
 
     @Test
-    fun distractorPoolNeverContainsTargetForEveryLevel() {
+    fun distractorPoolForEveryLevelUsesStudiedLettersAndExcludesTarget() {
         val curriculum = ApprovedCurriculum.curriculum
+
         (1..8).forEach { levelId ->
-            curriculum.lettersAvailableAt(levelId).forEach { target ->
-                val distractors = curriculum.distractorPool(levelId, target.symbol).map { it.symbol }
-                assertFalse(distractors.contains(target.symbol))
-                assertTrue(distractors.all { it in curriculum.lettersAvailableAt(levelId).map { letter -> letter.symbol } })
+            val allowed = curriculum.lettersAvailableAt(levelId).map { it.symbol }.toSet()
+            allowed.forEach { target ->
+                val distractors = curriculum.distractorPool(levelId, target).map { it.symbol }
+                assertFalse(target in distractors)
+                assertTrue(distractors.all { it in allowed })
+                assertEquals(allowed.size - 1, distractors.distinct().size)
             }
         }
     }
 
     @Test
-    fun learningEngineGeneratesTenValidQuestionsForEveryLevel() {
+    fun learningEngineGeneratesTenValidQuestionsForEachApprovedLevel() {
         (1..8).forEach { levelId ->
             val pool = ApprovedCurriculum.curriculum.lettersAvailableAt(levelId)
             val allowed = pool.map { it.symbol }.toSet()
@@ -67,9 +89,16 @@ class CurriculumTest {
                 assertTrue(task.options.any { option -> option.symbol == task.target.symbol })
                 assertTrue(task.options.all { option -> option.symbol in allowed })
                 assertEquals(2, task.options.map { option -> option.symbol }.distinct().size)
-                assertTrue(task.options.filter { it.symbol != task.target.symbol }.none { it.symbol == task.target.symbol })
                 lastTargets += task.target.symbol
             }
         }
+    }
+
+    @Test
+    fun everyRussianLetterHasSpokenNameAndIntroducedLevel() {
+        val letters = ApprovedCurriculum.curriculum.lettersAvailableAt(8)
+        assertEquals(33, letters.size)
+        assertTrue(letters.all { it.spokenName.isNotBlank() })
+        assertTrue(letters.all { it.levelIntroduced in 1..8 })
     }
 }
