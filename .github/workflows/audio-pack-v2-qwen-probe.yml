@@ -23,7 +23,7 @@ permissions:
 jobs:
   qwen3-russian-audition:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,17 +38,18 @@ jobs:
           python -m pip install --disable-pip-version-check gradio_client
       - name: Inspect public Qwen3-TTS Space API
         run: python tools/probe_qwen3_tts_space.py
-      - name: Generate one designed Russian voice and diagnostic letter-name pack
+      - name: Generate one batched native-Russian phonetic audition
         run: python tools/generate_qwen3_ru_audition.py --output build/qwen3-ru-audition
-      - name: Verify diagnostic count
+      - name: Verify audition files
         run: |
-          count=$(find build/qwen3-ru-audition -maxdepth 1 -type f -name 'sound_letter_*_qwen.ogg' | wc -l)
-          echo "Qwen3 diagnostic OGG count: $count"
-          test "$count" -eq 20
+          test -s build/qwen3-ru-audition/qwen3_russian_diagnostic.mp3
+          test -s build/qwen3-ru-audition/qwen3_russian_diagnostic.ogg
+          test -s build/qwen3-ru-audition/diagnostic.json
       - name: Upload Qwen3 Russian audition
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qwen3-ru-v2-diagnostic-audition
+          name: qwen3-ru-v2-batched-audition
           path: build/qwen3-ru-audition/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
