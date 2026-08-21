@@ -6,7 +6,7 @@
 
 **Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.1 IN_PROGRESS.**
 
-M2 остаётся закрытым и owner accepted. M3.1 реализуется в `feature/m3-parent-dashboard-gate`: Parental Gate, Parent Dashboard и 33-буквенная сводка строятся поверх существующей Room schema 2 без изменения тренировочного цикла.
+M2 остаётся закрытым и owner accepted. M3.1 реализуется в `feature/m3-parent-dashboard-gate` / PR #7: Parental Gate, Parent Dashboard и 33-буквенная сводка построены поверх существующей Room schema 2 без изменения тренировочного цикла.
 
 ## Milestone 2 — финальные статусы
 
@@ -26,27 +26,30 @@ M2 остаётся закрытым и owner accepted. M3.1 реализует�
 
 ## M3 owner decisions
 
-- D023: Parent mode открывается через случайный арифметический Parental Gate; отрицательные ответы для subtraction не генерируются.
+- D023: Parent mode открывается через случайный арифметический Parental Gate; subtraction не генерирует отрицательный результат.
 - D024: целевой Curriculum содержит 8 уровней и покрывает все 33 русские буквы. Levels 1–3 сохраняют `А/М`, `О/У`, `С/Н`; Levels 4–8 вводят оставшиеся 27 букв. В полученном M3.1 packet отсутствует точная owner-approved матрица распределения этих 27 букв между уровнями, поэтому она не изобреталась и должна быть импортирована перед M3.2.
 - D025: `MASTERED` требует long-term re-check после 7 суток без успешного подтверждения; runtime LearningPolicy v3 в M3.1 пока не меняется.
 
-## M3.1 — реализуемый контур
+## M3.1 — статусы
 
-- DOMAIN_PARENTAL_GATE_STATUS: IMPLEMENTED
-- PARENTAL_GATE_NON_NEGATIVE_SUBTRACTION_STATUS: IMPLEMENTED / UNIT_TESTED
+- M3_1_IMPLEMENTATION_STATUS: COMPLETE
+- DOMAIN_PARENTAL_GATE_STATUS: PASS — CODE/TEST
+- PARENTAL_GATE_NON_NEGATIVE_SUBTRACTION_STATUS: PASS — UNIT_TEST
 - PARENT_DASHBOARD_ROUTE_STATUS: IMPLEMENTED
-- PARENT_DASHBOARD_VIEWMODEL_STATUS: IMPLEMENTED
-- ALL_33_LETTERS_MATRIX_STATUS: IMPLEMENTED
-- NOT_STARTED_DEFAULT_STATUS: IMPLEMENTED
+- PARENT_DASHBOARD_VIEWMODEL_STATUS: PASS — CODE/TEST
+- ALL_33_LETTERS_MATRIX_STATUS: PASS — CODE/TEST
+- NOT_STARTED_DEFAULT_STATUS: PASS — UNIT_TEST
 - MASTERED_STATUS_SOURCE: LEARNING_POLICY_V3
-- SUMMARY_METRICS_STATUS: IMPLEMENTED
+- SUMMARY_METRICS_STATUS: PASS — CODE/TEST
 - LETTER_DETAIL_DIALOG_STATUS: IMPLEMENTED
 - HOME_PARENT_ENTRY_STATUS: IMPLEMENTED
 - DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
 - TRAINING_SESSION_RULE: 10 QUESTIONS / ADAPTIVE GENERATOR / 80% UNCHANGED
-- JVM_TESTS_STATUS: PENDING_CI
-- DEBUG_BUILD_STATUS_M3_1: PENDING_CI
+- JVM_TESTS_STATUS: PASS
+- DEBUG_BUILD_STATUS_M3_1: PASS
+- ANDROID_CI_STATUS: PASS — run 32452734342
 - M3_1_RUNTIME_STATUS: NOT_TESTED
+- M3_1_OWNER_ACCEPTANCE_STATUS: PENDING
 
 ## Parent Dashboard data source
 
