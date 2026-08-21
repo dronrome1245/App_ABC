@@ -1,0 +1,35 @@
+name: Audio Pack v2 Qwen3 TTS Probe
+
+on:
+  push:
+    branches:
+      - feature/audio-pack-v2-d027
+    paths:
+      - "tools/probe_qwen3_tts_space.py"
+      - ".github/workflows/audio-pack-v2-qwen-probe.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/probe_qwen3_tts_space.py"
+      - ".github/workflows/audio-pack-v2-qwen-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qwen3-space-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Gradio client
+        run: python -m pip install --disable-pip-version-check gradio_client
+      - name: Inspect public Qwen3-TTS Space API
+        run: python tools/probe_qwen3_tts_space.py
