@@ -9,29 +9,30 @@ class HybridAudioPlayer(
     context: Context,
     private val tts: TextToSpeechWrapper,
     private val spokenNameProvider: (Char) -> String,
-    private val rawResourceNameProvider: (Char) -> String? = AudioAssetCatalog::resourceNameForLetter,
+    private val rawResourceCandidatesProvider: (Char) -> List<String> = AudioAssetCatalog::resourceCandidatesForLetter,
     private val settingsSource: AudioSettingsSource = AlwaysEnabledAudioSettings
 ) : AudioPlayer {
     private val appContext = context.applicationContext
+    private val rawResourceResolver = RawAudioResourceResolver(appContext)
     private var activePlayer: MediaPlayer? = null
     private var released = false
 
     override fun playLetterSound(letter: Char) {
         if (released || !settingsSource.isVoiceoverEnabledNow) return
         val fallback = { tts.speak(spokenNameProvider(letter)) }
-        playRawOrFallback(rawResourceNameProvider(letter), fallback)
+        playRawOrFallback(rawResourceCandidatesProvider(letter), fallback)
     }
 
     override fun playFeedback(isCorrect: Boolean) {
         if (released || !settingsSource.isSoundEffectsEnabledNow) return
         val resourceName = if (isCorrect) AudioAssetCatalog.CORRECT_FEEDBACK else AudioAssetCatalog.INCORRECT_FEEDBACK
         val fallback = { tts.speak(if (isCorrect) "Верно" else "Попробуй ещё") }
-        playRawOrFallback(resourceName, fallback)
+        playRawOrFallback(listOf(resourceName), fallback)
     }
 
     override fun playLevelComplete() {
         if (released || !settingsSource.isSoundEffectsEnabledNow) return
-        playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) { tts.speak("Уровень завершён") }
+        playRawOrFallback(listOf(AudioAssetCatalog.LEVEL_COMPLETE)) { tts.speak("Уровень завершён") }
     }
 
     override fun stop() {
@@ -47,20 +48,23 @@ class HybridAudioPlayer(
         tts.release()
     }
 
-    private fun playRawOrFallback(resourceName: String?, fallback: () -> Unit) {
+    private fun playRawOrFallback(resourceNames: List<String>, fallback: () -> Unit) {
         if (released) return
         releaseActivePlayer()
-        val resourceId = if (resourceName.isNullOrBlank()) 0 else
-            appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
 
-        if (AudioFallbackPolicy.shouldFallback(resourceName, resourceId)) {
+        val resolved = rawResourceResolver.resolveFirst(resourceNames)
+        if (resolved == null) {
+            if (resourceNames.isNotEmpty()) {
+                Log.w(TAG, "No bundled raw audio found for candidates=${resourceNames.joinToString()}; using TTS fallback")
+            }
             fallback()
             return
         }
 
         try {
-            val player = MediaPlayer.create(appContext, resourceId)
+            val player = MediaPlayer.create(appContext, resolved.resourceId)
             if (player == null) {
+                Log.w(TAG, "MediaPlayer.create returned null for ${resolved.resourceName}; using TTS fallback")
                 fallback()
                 return
             }
@@ -70,7 +74,7 @@ class HybridAudioPlayer(
                 completed.release()
             }
             player.setOnErrorListener { failed, what, extra ->
-                Log.e(TAG, "Local audio playback failed: what=$what extra=$extra")
+                Log.e(TAG, "Local audio playback failed for ${resolved.resourceName}: what=$what extra=$extra")
                 if (activePlayer === failed) activePlayer = null
                 failed.release()
                 fallback()
@@ -78,7 +82,7 @@ class HybridAudioPlayer(
             }
             player.start()
         } catch (error: RuntimeException) {
-            Log.e(TAG, "Unable to play local audio asset $resourceName", error)
+            Log.e(TAG, "Unable to play local audio asset ${resolved.resourceName}", error)
             releaseActivePlayer()
             fallback()
         }
@@ -102,8 +106,9 @@ object AudioAssetCatalog {
     const val CORRECT_FEEDBACK = "sound_correct"
     const val INCORRECT_FEEDBACK = "sound_wrong"
     const val LEVEL_COMPLETE = "sound_level_complete"
+    const val V2_SUFFIX = "_v2"
 
-    private val letterResources = mapOf(
+    private val legacyLetterResources = mapOf(
         'А' to "sound_letter_a", 'Б' to "sound_letter_b", 'В' to "sound_letter_v",
         'Г' to "sound_letter_g", 'Д' to "sound_letter_d", 'Е' to "sound_letter_e",
         'Ё' to "sound_letter_yo", 'Ж' to "sound_letter_zh", 'З' to "sound_letter_z",
@@ -117,8 +122,46 @@ object AudioAssetCatalog {
         'Э' to "sound_letter_eh", 'Ю' to "sound_letter_yu", 'Я' to "sound_letter_ya"
     )
 
-    fun resourceNameForLetter(letter: Char): String? = letterResources[letter.uppercaseChar()]
-    fun mappedLetters(): Set<Char> = letterResources.keys
+    /** Legacy v1 name kept for compatibility and as the second local fallback. */
+    fun resourceNameForLetter(letter: Char): String? = legacyLetterResources[letter.uppercaseChar()]
+
+    /**
+     * D027 Audio Pack v2 convention. New studio assets are expected as
+     * `sound_letter_<token>_v2.ogg` in res/raw.
+     */
+    fun v2ResourceNameForLetter(letter: Char): String? =
+        resourceNameForLetter(letter)?.plus(V2_SUFFIX)
+
+    /** D027 playback order: studio v2 first, bundled v1 second, then TTS in HybridAudioPlayer. */
+    fun resourceCandidatesForLetter(letter: Char): List<String> {
+        val legacy = resourceNameForLetter(letter) ?: return emptyList()
+        return listOf("$legacy$V2_SUFFIX", legacy)
+    }
+
+    fun mappedLetters(): Set<Char> = legacyLetterResources.keys
+
+    fun isValidRawResourceName(resourceName: String): Boolean = RAW_RESOURCE_NAME.matches(resourceName)
+
+    private val RAW_RESOURCE_NAME = Regex("^[a-z][a-z0-9_]*$")
+}
+
+data class ResolvedRawAudioResource(
+    val resourceName: String,
+    val resourceId: Int
+)
+
+/** Resolves the first bundled Android raw resource from an ordered candidate list. */
+class RawAudioResourceResolver(context: Context) {
+    private val appContext = context.applicationContext
+
+    fun resolveFirst(resourceNames: Iterable<String>): ResolvedRawAudioResource? {
+        resourceNames.forEach { resourceName ->
+            if (!AudioAssetCatalog.isValidRawResourceName(resourceName)) return@forEach
+            val resourceId = appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
+            if (resourceId != 0) return ResolvedRawAudioResource(resourceName, resourceId)
+        }
+        return null
+    }
 }
 
 object AudioFallbackPolicy {

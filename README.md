@@ -2,6 +2,11 @@
 
 Мобильное Android-приложение для коротких тренировок узнавания и запоминания русских букв. Основная идея заимствована из тренажёров нот: начинаем с малого набора символов, постепенно добавляем новые, а уже пройденные продолжают появляться в следующих упражнениях.
 
+> [!WARNING]
+> **AUDIO DISTRIBUTION BLOCKER:** если для D027 / Audio Pack v2 используется HOME-ONLY аудиотека (например, локальный пакет GCompris), перед любой публикацией или передачей APK/AAB/репозитория её необходимо полностью заменить на аудиопак с подтверждённой лицензией для распространения. HOME-ONLY аудио нельзя коммитить в публичный репозиторий. См. [docs/AUDIO_DISTRIBUTION_NOTICE.md](docs/AUDIO_DISTRIBUTION_NOTICE.md).
+
+**Post-MVP D027 status:** GCompris HOME-ONLY Audio Pack v2 установлен `33/33`; bundled QC и Android CI (`test` / `assembleDebug` / `assembleRelease`) — PASS. До закрытия AUDIO-02 для домашней версии остаётся owner device smoke 33 букв.
+
 ## Текущий статус
 
 | Milestone | Статус |
@@ -116,6 +121,7 @@ MVP v1.0.0 завершён как локальный семейный Android-�
 15. [docs/TEST_PLAN.md](docs/TEST_PLAN.md) — техническая и продуктовая проверка.
 16. [PROJECT_STATUS.md](PROJECT_STATUS.md) — фактическая точка проекта.
 17. [NEXT_TASK.md](NEXT_TASK.md) — следующий необязательный deployment/Post-MVP шаг.
+18. [docs/AUDIO_DISTRIBUTION_NOTICE.md](docs/AUDIO_DISTRIBUTION_NOTICE.md) — обязательный release blocker для HOME-ONLY аудиопаков.
 
 Для Gemini дополнительно: [prompts/GEMINI_WEB_SYSTEM_PROMPT.md](prompts/GEMINI_WEB_SYSTEM_PROMPT.md) и [GEMINI.md](GEMINI.md).
 

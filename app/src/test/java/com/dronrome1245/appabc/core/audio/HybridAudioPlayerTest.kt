@@ -85,7 +85,7 @@ class HybridAudioPlayerTest {
             context = context,
             tts = tts,
             spokenNameProvider = { "а" },
-            rawResourceNameProvider = { null },
+            rawResourceCandidatesProvider = { emptyList() },
             settingsSource = settings
         )
     }

@@ -1,0 +1,126 @@
+name: Audio Pack v2 Bundled Asset QC
+
+on:
+  push:
+    branches:
+      - feature/audio-pack-v2-d027
+    paths:
+      - "app/src/main/res/raw/sound_letter_*_v2.ogg"
+      - "app/src/main/java/com/dronrome1245/appabc/core/audio/HybridAudioPlayer.kt"
+      - "app/src/test/java/com/dronrome1245/appabc/core/audio/AudioAssetCatalogTest.kt"
+      - "app/src/test/java/com/dronrome1245/appabc/core/audio/HybridAudioPlayerTest.kt"
+      - ".github/workflows/audio-pack-v2-qc.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/src/main/res/raw/sound_letter_*_v2.ogg"
+      - "app/src/main/java/com/dronrome1245/appabc/core/audio/HybridAudioPlayer.kt"
+      - "app/src/test/java/com/dronrome1245/appabc/core/audio/AudioAssetCatalogTest.kt"
+      - "app/src/test/java/com/dronrome1245/appabc/core/audio/HybridAudioPlayerTest.kt"
+      - ".github/workflows/audio-pack-v2-qc.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundled-v2-qc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffprobe -version
+
+      - name: Verify exact 33-file v2 resource set and durations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          raw = Path("app/src/main/res/raw")
+          tokens = [
+              "a", "b", "v", "g", "d", "e", "yo", "zh", "z", "i", "short_i",
+              "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "h",
+              "ts", "ch", "sh", "shch", "hard", "y", "soft", "eh", "yu", "ya",
+          ]
+          expected = {f"sound_letter_{token}_v2.ogg" for token in tokens}
+          actual = {p.name for p in raw.glob("sound_letter_*_v2.ogg")}
+          if actual != expected:
+              raise SystemExit(
+                  "v2 resource mismatch\n"
+                  f"missing={sorted(expected - actual)}\n"
+                  f"unexpected={sorted(actual - expected)}"
+              )
+
+          multiword = {"short_i", "hard", "soft"}
+          records = []
+          for token in tokens:
+              path = raw / f"sound_letter_{token}_v2.ogg"
+              proc = subprocess.run(
+                  [
+                      "ffprobe", "-v", "error", "-select_streams", "a:0",
+                      "-show_entries", "format=duration:stream=codec_name,sample_rate,channels",
+                      "-of", "json", str(path),
+                  ],
+                  check=True, capture_output=True, text=True,
+              )
+              payload = json.loads(proc.stdout)
+              stream = payload["streams"][0]
+              duration_ms = round(float(payload["format"]["duration"]) * 1000)
+              codec = stream.get("codec_name")
+              if codec != "vorbis":
+                  raise SystemExit(f"Unexpected codec for {path.name}: {codec}")
+              if duration_ms <= 0:
+                  raise SystemExit(f"Invalid duration for {path.name}: {duration_ms}")
+
+              if 400 <= duration_ms <= 700:
+                  status = "TARGET"
+              elif token in multiword and duration_ms > 700:
+                  status = "ARTICULATION_EXCEPTION"
+              elif duration_ms < 400:
+                  status = "ACCEPTED_HOME_SHORT"
+              else:
+                  status = "ACCEPTED_HOME_LONG"
+
+              records.append({
+                  "token": token,
+                  "file": path.name,
+                  "duration_ms": duration_ms,
+                  "codec": codec,
+                  "sample_rate_hz": int(stream.get("sample_rate", 0)),
+                  "channels": int(stream.get("channels", 0)),
+                  "qc_status": status,
+              })
+
+          summary = {
+              "count": len(records),
+              "target_400_700": sum(r["qc_status"] == "TARGET" for r in records),
+              "articulation_exception": sum(r["qc_status"] == "ARTICULATION_EXCEPTION" for r in records),
+              "accepted_home_short": sum(r["qc_status"] == "ACCEPTED_HOME_SHORT" for r in records),
+              "accepted_home_long": sum(r["qc_status"] == "ACCEPTED_HOME_LONG" for r in records),
+              "home_only": True,
+              "distribution_gate": "REPLACE_OR_SEPARATELY_CLEAR_LICENSE_BEFORE_DISTRIBUTION",
+          }
+          Path("build").mkdir(exist_ok=True)
+          Path("build/audio-pack-v2-bundled-qc.json").write_text(
+              json.dumps({"summary": summary, "assets": records}, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(summary, ensure_ascii=False))
+          PY
+
+      - name: Upload bundled v2 QC report
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-pack-v2-bundled-qc
+          path: build/audio-pack-v2-bundled-qc.json
+          if-no-files-found: error
+          retention-days: 14
