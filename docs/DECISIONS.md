@@ -253,3 +253,24 @@ Gate является UX-механизмом отделения родител�
 Для долгосрочного spaced repetition утвержден 7-дневный горизонт: буква в состоянии `MASTERED`, не имеющая успешного подтверждения знания в течение 7 суток, должна считаться требующей повторной проверки long-term retention.
 
 M3.1/M3.2 не меняют LearningPolicy v3 и не демотируют сохранённое состояние автоматически. Точный эффект decay на вес выбора/состояние mastery должен быть реализован отдельным versioned изменением LearningPolicy v4 с детерминированными time-based тестами. Источником времени остаются реальные timestamps Attempt; суточная блокировка приложения не вводится.
+
+## 2026-08-21 — D026: Закрытие Milestone 4 и App_ABC MVP v1.0.0
+
+`DECISION_SOURCE: OWNER`
+
+Владелец подтвердил финальный Closure Evidence Audit Milestone 4 со статусом `PASS — 7/7` и успешно выполнил финальный smoke-тест release-состояния приложения на физическом Pixel 7a.
+
+На основании owner acceptance утверждается:
+
+- Milestone 1: `DONE (100%) / OWNER ACCEPTED`;
+- Milestone 2: `DONE (100%) / OWNER ACCEPTED`;
+- Milestone 3: `DONE (100%) / OWNER ACCEPTED`;
+- Milestone 4: `DONE (100%) / OWNER ACCEPTED`;
+- финальный CI Triple Gate: `test` / `assembleDebug` / `assembleRelease` — PASS;
+- `LearningPolicy v4`, `Curriculum v3`, Room schema 2 остаются нормативным runtime-контуром v1.0.0;
+- release optimization: R8/minification + resource shrinking ENABLED;
+- App_ABC MVP v1.0.0 объявляется `COMPLETE / PRODUCTION READY (100%)`.
+
+Для v1.0.0 owner-approved MVP gate закрывается Milestone 1–4. Прежние дополнительные M5/M6/M7-направления нормализуются как Post-MVP Roadmap и не являются незакрытыми требованиями v1.0.0. В частности, дополнительные curriculum/UX исследования, специализированные distractors, слоги/слова, мини-игры, speech recognition и store publication выполняются только по отдельному будущему решению владельца.
+
+Production signing keys и публикация в Google Play / RuStore остаются отдельным deployment-шагом. Debug signing, используемый для CI release validation, не является production signing strategy и не должен использоваться для публичной публикации.

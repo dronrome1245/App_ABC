@@ -2,166 +2,142 @@
 
 Дата обновления: 2026-08-21
 
-## Текущий этап
+## Общий статус проекта
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.3 IMPLEMENTATION_COMPLETE / M4.4 NEXT.**
+**App_ABC MVP v1.0.0 — COMPLETE / PRODUCTION READY (100%).**
 
-PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
-PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
-PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
-PR #11 с Home level selector hotfix слит в `main` merge-коммитом `4d8320053770371ddde065fe90ed9a4402cae593`.
-PR #12 с M4.1 UI Delight слит в `main` merge-коммитом `702f908630c810ab3ab41acf85e14d030c8a6bd5`.
-PR #13 с M4.2 Parent settings + safe progress reset слит в `main` merge-коммитом `97472f3c5bf07684843e419987a4c86704aa2561`.
+- Milestone 1: DONE (100%) / OWNER ACCEPTED.
+- Milestone 2: DONE (100%) / OWNER ACCEPTED.
+- Milestone 3: DONE (100%) / OWNER ACCEPTED.
+- Milestone 4: DONE (100%) / OWNER ACCEPTED.
 
-## Milestone 2 — финальные статусы
+Финальный owner-approved smoke-тест на физическом Pixel 7a: **PASS**.
 
-- MILESTONE_2_STATUS: DONE (100%)
-- OWNER_ACCEPTANCE_STATUS: ACCEPTED
-- DATABASE_SCHEMA_VERSION: 2
+## Финальный контур v1.0.0
 
-## Milestone 3 — финальные статусы
-
-- MILESTONE_3_STATUS: DONE (100%)
-- M3_4_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
 - STATIC_REVIEW_STATUS: PASS
-- TESTS_CI_STATUS: PASS
+- TESTS_CI_STATUS: PASS — Triple Gate: `test` / `assembleDebug` / `assembleRelease`
 - LOCAL_BUILD_STATUS: PASS
 - PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
-- LEARNING_POLICY_VERSION: 4
+- LEARNING_POLICY_VERSION: 4 — 7-day retention decay
+- CURRICULUM_VERSION: 3 — 33 letters / 8 levels
+- ROOM_DATABASE_SCHEMA: 2
+- AUDIO_ASSETS: 33 letter OGGs + 3 UI sounds + `res/raw/keep.xml`
+- AUDIO_STRATEGY: LOCAL OGG FIRST / TTS FALLBACK
+- RELEASE_OPTIMIZATION: R8 MINIFIED + RESOURCE SHRINKING ENABLED
+- RELEASE_BUILD_R8: PASS
+- EXTERNAL_NETWORK_ANALYTICS_SDK: NONE
+- MVP_VERSION: 1.0.0
+- MVP_STATUS: COMPLETE / PRODUCTION READY (100%)
+
+Production signing keys и store publication не хранятся/не выполняются в рамках закрытия MVP. Это отдельный deployment/Post-MVP шаг.
+
+## Merge / CI evidence
+
+- PR #7 / M3.1: merged — `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
+- PR #8 / M3.2: merged — `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
+- PR #9 / M3.3: merged — `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
+- PR #11 / Home selector hotfix: merged — `4d8320053770371ddde065fe90ed9a4402cae593`.
+- PR #12 / M4.1 UI Delight: merged — `702f908630c810ab3ab41acf85e14d030c8a6bd5`.
+- PR #13 / M4.2 Parent settings + safe reset: merged — `97472f3c5bf07684843e419987a4c86704aa2561`.
+- PR #14 / M4.3 Release hardening: merged — `b4eb423ed5ec4986d53da597084d386a1cbd58d2`.
+- PR #14 final CI evidence: run `32478003835` — SUCCESS.
+- CI gates on final PR #14 head: `test` PASS / `assembleDebug` PASS / `assembleRelease` PASS.
+
+## Milestone 1 — final
+
+- MILESTONE_1_STATUS: DONE (100%)
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- BASE_FLOW: PASS
+- SESSION_LENGTH: 10
+- LEVEL_1: `А М`
+- HISTORY_PERSISTENCE: PASS
+- PHYSICAL_DEVICE_STATUS: PASS
+
+## Milestone 2 — final
+
+- MILESTONE_2_STATUS: DONE (100%)
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- M2_5_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
+- HYBRID_AUDIO: LOCAL OGG FIRST / TTS FALLBACK
+- LEARNING_POLICY_VERSION_AT_CLOSE: 3
+- ROOM_DATABASE_SCHEMA: 2
+- MIGRATION_1_2_TEST: PASS
+- TESTS_CI_STATUS: PASS
+- PHYSICAL_DEVICE_STATUS: PASS
+
+## Milestone 3 — final
+
+- MILESTONE_3_STATUS: DONE (100%)
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- M3_4_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
+- PARENTAL_GATE_STATUS: PASS
+- PARENT_DASHBOARD_STATUS: PASS
 - CURRICULUM_VERSION: 3
 - CURRICULUM_LEVELS: 8
 - CURRICULUM_LETTERS: 33
 - AUDIO_ASSETS: 33 letter OGGs + 3 UI sounds
-- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
-- PARENTAL_GATE_STATUS: PASS / UNCHANGED
-
-### M3.4 Closure Evidence Audit — 7/7
-
-1. D023 — Parental Gate и Parent Dashboard: PASS.
-2. D024 — Curriculum v3, 8 уровней, 33 буквы, 10 вопросов / unlock >=80%: PASS.
-3. D025 — LearningPolicy v4, 7-day Retention Decay, deterministic time-based JVM tests, decay weight 2.0 и successful re-check: PASS.
-4. Room schema остаётся 2, новая migration для M3 не требуется: PASS.
-5. Historical `Attempt` остаются read-only при time-based evaluation: PASS.
-6. JVM test suite, `assembleDebug` и CI на финальном PR #9 head: PASS.
-7. Owner Acceptance / physical-device smoke на Pixel 7a: PASS / ACCEPTED.
-
-## M3.1 — Parent mode / Dashboard
-
-- M3_1_IMPLEMENTATION_STATUS: COMPLETE / MERGED
-- PARENTAL_GATE_STATUS: PASS
-- PARENT_DASHBOARD_STATUS: PASS
-- ALL_33_LETTERS_DASHBOARD_STATUS: PASS
-- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
-- OWNER_ACCEPTANCE_STATUS: ACCEPTED
-
-## M3.2 — Curriculum v3 / full audio
-
-- M3_2_IMPLEMENTATION_STATUS: COMPLETE / MERGED
-- PR: #8
-- MERGE_SHA: `2c08aff6a49e26810de07734839ef7e73b58fa0f`
-- CURRICULUM_VERSION: 3
-- CURRICULUM_LEVELS: 8
-- CURRICULUM_LETTERS: 33
-- LEVEL_POOL_SIZES: 2 / 4 / 6 / 9 / 12 / 15 / 19 / 33
-- SESSION_QUESTION_COUNT: 10 (UNCHANGED)
-- LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
-- AUDIO_ASSETS_COUNT: 33_LETTER_OGGS
-- AUDIO_FEEDBACK_ASSETS_COUNT: 3
-- AUDIO_STRATEGY: LOCAL_OGG_FIRST / TTS_FALLBACK
-- AUDIO_MAPPING_STATUS: ALL_33_LETTERS
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- FINAL_ANDROID_CI_M3_2: PASS — run 32462272322
-- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
-
-## M3.3 — Retention Decay / LearningPolicy v4
-
-- M3_3_IMPLEMENTATION_STATUS: COMPLETE / MERGED
-- PR: #9
-- MERGE_SHA: `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`
-- POLICY_VERSION: 4
 - LEARNING_POLICY_VERSION: 4
-- DECISION_SOURCE: D025 / OWNER
-- RETENTION_DECAY_MILLIS: 604800000
-- RETENTION_BOUNDARY: DECAY WHEN ELAPSED > 7 DAYS
-- DECAYED_EFFECTIVE_STATE: PRACTICING
+- RETENTION_DECAY: 7 DAYS / DECAY WHEN ELAPSED > 7 DAYS
 - RETENTION_DECAY_WEIGHT: 2.0
-- RETENTION_ANCHOR: LAST_SUCCESSFUL_ATTEMPT_TIMESTAMP
-- SUCCESSFUL_RECHECK: REFRESHES RETENTION TIMESTAMP / RESTORES MASTERED WHEN BASE CRITERIA HOLD
-- TIME_EVALUATION: READ_ONLY FOR HISTORICAL ATTEMPTS
-- TIME_BASED_JVM_TESTS: PASS
-- PARENT_DASHBOARD_REVIEW_FLAG: PASS
-- PARENT_DASHBOARD_LAST_TRAINING_DATE: PASS
-- FINAL_ANDROID_CI_M3_3: PASS — run 32464698415
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- PARENTAL_GATE_STATUS: UNCHANGED
+- ROOM_DATABASE_SCHEMA: 2
+- TESTS_CI_STATUS: PASS
+- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
 
-## UI hotfix — Home level selector
+### D024 normalized matrix
 
-- HOME_LEVEL_SELECTOR: 4x2 NON_SCROLLING GRID
-- LEVEL_BUTTONS_VISIBLE: 1–8
-- LOCKED_LEVELS: VISIBLE / DISABLED / LOCK_MARKER
-- SELECTED_LEVEL: FILLED BUTTON
-- COMPLETED_LEVELS: STAR MARKER WHEN DERIVABLE FROM CURRENT PROGRESSION STATE
-- LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
+- Level 1: `А М`
+- Level 2 new: `О У`; pool 4
+- Level 3 new: `С Н`; pool 6
+- Level 4 new: `И Т К`; pool 9
+- Level 5 new: `Л Р В`; pool 12
+- Level 6 new: `Д П Б`; pool 15
+- Level 7 new: `З Г Е Я`; pool 19
+- Level 8 new: `Ш Ж Ч Щ Х Ц Э Ю Ё Ы Ь Ъ Й Ф`; pool 33
+
+## Milestone 4 — final
+
+- MILESTONE_4_STATUS: DONE (100%)
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- M4_4_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
+- STATIC_REVIEW_STATUS: PASS
+- TESTS_CI_STATUS: PASS — Triple Gate
+- LOCAL_BUILD_STATUS: PASS
+- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
+- ROOM_DATABASE_SCHEMA: 2 (UNCHANGED)
 - LEARNING_POLICY_VERSION: 4 (UNCHANGED)
 - CURRICULUM_VERSION: 3 (UNCHANGED)
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- COMPOSE_UI_TEST: ADDED
 
-## M4.1 — UI Delight / native Compose animations
+### M4.1 — UI Delight
 
-- M4_1_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE / MERGED
-- PR: #12
-- MERGE_SHA: `702f908630c810ab3ab41acf85e14d030c8a6bd5`
-- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/UX_GAME_DESIGN.md` / OWNER task
-- RESULT_CELEBRATION_TRIGGER: EXISTING `passed == true` STATE
-- RESULT_CELEBRATION_EFFECT: NATIVE COMPOSE CANVAS
+- M4_1_STATUS: COMPLETE / MERGED
+- HOME_LEVEL_SELECTOR: 4x2 / LEVELS 1–8 VISIBLE
+- RESULT_CELEBRATION: NATIVE COMPOSE CANVAS
 - RESULT_CELEBRATION_PARTICLES: 36
 - RESULT_CELEBRATION_DURATION: 2800 ms
-- RESULT_CELEBRATION_AUTO_STOP: YES
-- EXTERNAL_ANIMATION_LIBRARIES: NONE
 - ANSWER_CARD_PRESS_SCALE: 0.95 -> 1.0
-- ANSWER_CARD_ANIMATION: `animateFloatAsState` + spring
-- RESULT_COMPOSE_UI_TESTS: VICTORY / FAILURE STATES
-- ANSWER_CARD_TESTS: SCALE TARGETS / CLICK INTERACTION
-- LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
-- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
-- CURRICULUM_VERSION: 3 (UNCHANGED)
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+- RESULT_COMPOSE_TESTS: PASS
 
-## M4.2 — Parent settings / safe progress reset
+### M4.2 — Parent settings / safe reset
 
-- M4_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE / MERGED
-- PR: #13
-- MERGE_SHA: `97472f3c5bf07684843e419987a4c86704aa2561`
-- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/PRODUCT_CHARTER.md` / OWNER task
+- M4_2_STATUS: COMPLETE / MERGED
 - SETTINGS_DATASTORE: COMPLETE
 - VOICEOVER_SETTING: PERSISTENT / DEFAULT TRUE
 - SOUND_EFFECTS_SETTING: PERSISTENT / DEFAULT TRUE
 - HYBRID_AUDIO_SETTINGS_INTEGRATION: COMPLETE
-- VOICEOVER_DISABLED_BEHAVIOR: `playLetterSound` IGNORED
-- SOUND_EFFECTS_DISABLED_BEHAVIOR: `playFeedback` / `playLevelComplete` IGNORED
 - PROGRESS_RESET: COMPLETE
 - RESET_ROOM_TABLES: `attempts` / `letter_progress` / `session_results`
 - RESET_ROOM_TRANSACTION: YES
-- LEVEL_PROGRESSION_RESET: `highestUnlockedLevel=1` / `selectedLevel=1`
-- LETTER_CATALOG_PRESERVED: YES
-- AUDIO_ASSETS_PRESERVED: YES
+- LEVEL_PROGRESSION_RESET: Level 1
 - SETTINGS_PRESERVED_BY_PROGRESS_RESET: YES
-- SETTINGS_REPOSITORY_TESTS: ADDED
-- HYBRID_AUDIO_FILTER_TESTS: ADDED
-- PROGRESS_RESET_TEST: ADDED
-- PARENT_DASHBOARD_COMPOSE_TEST: ADDED
-- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
-- CURRICULUM_VERSION: 3 (UNCHANGED)
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- EXTERNAL_SDK: NONE
+- TESTS: PASS
 
-## M4.3 — Release hardening
+### M4.3 — Release hardening
 
-- M4_3_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
-- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/DEFINITION_OF_DONE.md` / OWNER task
+- M4_3_STATUS: COMPLETE / MERGED
+- PR: #14
+- MERGE_SHA: `b4eb423ed5ec4986d53da597084d386a1cbd58d2`
 - RELEASE_MINIFY: ENABLED
 - RELEASE_SHRINK_RESOURCES: ENABLED
 - RELEASE_PROGUARD_FILE: `app/proguard-rules.pro`
@@ -171,30 +147,38 @@ PR #13 с M4.2 Parent settings + safe progress reset слит в `main` merge-к
 - DATASTORE_R8_KEEP_RULES: ADDED
 - DYNAMIC_AUDIO_RESOURCE_KEEP: `res/raw/keep.xml` / `@raw/sound_*`
 - HYBRID_AUDIO_RELEASE_IDEMPOTENT: YES
-- VIEWMODEL_AUDIO_EXIT: `stop()` ON `ExerciseViewModel` / `ResultViewModel` CLEAR
+- VIEWMODEL_AUDIO_EXIT: `stop()` ON CLEAR
 - ACTIVITY_AUDIO_OWNER: FINAL `release()` ON DESTROY
 - ACTIVITY_INIT_COROUTINE_SCOPE: `lifecycleScope`
-- COMPOSE_UI_TEST_SOURCE_SET: `src/testDebug` / RELEASE VARIANT EXCLUDED
-- CI_TEST_TASK: PASS — `gradle --no-daemon test`
+- CI_TEST_TASK: PASS
 - CI_DEBUG_ASSEMBLE: PASS
 - CI_RELEASE_ASSEMBLE: PASS — R8 + RESOURCE SHRINK
 - RELEASE_BUILD_R8: PASS
-- M4_3_RELEASE_GATE_EVIDENCE: PASS — run 32477575125
-- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
-- CURRICULUM_VERSION: 3 (UNCHANGED)
+- FINAL_ANDROID_CI_M4_3: PASS — run `32478003835`
 
-## D024 normalized matrix — без изменений
+### M4.4 — Closure Evidence Audit — 7/7
 
-- Level 1: `А М`
-- Level 2 new: `О У`
-- Level 3 new: `С Н`
-- Level 4 new: `И Т К`
-- Level 5 new: `Л Р В`
-- Level 6 new: `Д П Б`
-- Level 7 new: `З Г Е Я`
-- Level 8 new: `Ш Ж Ч Щ Х Ц Э Ю Ё Ы Ь Ъ Й Ф`
+1. Уровни и позитивная игровая оболочка — PASS — CODE / TEST / RUNTIME evidence.
+2. Повторная тренировка и отсутствие блокирующей/штрафной механики — PASS — CODE / RUNTIME evidence.
+3. Награды/анимации не изменяют LearningPolicy v4 и Curriculum v3 — PASS — STATIC / CODE evidence.
+4. Persistent sound settings в Parent Dashboard — PASS — CODE / TEST / RUNTIME evidence.
+5. Safe progress reset с подтверждением — PASS — CODE / TEST / RUNTIME evidence.
+6. Release hardening и CI Triple Gate — PASS — CI evidence.
+7. Финальный release smoke Pixel 7a + owner acceptance — PASS — RUNTIME / OWNER evidence.
 
-## Следующий этап
+- M4_4_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
+- FAIL_COUNT: 0
+- UNKNOWN_COUNT: 0
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
 
-**Этап M4.4: Построчный Closure Evidence Audit Milestone 4, подготовка чеклиста финального смоук-теста релиза на Pixel 7a и официальное закрытие M4.**
+## MVP closure
+
+Согласно финальному решению владельца от 2026-08-21 и синхронизированному `docs/DEFINITION_OF_DONE.md`, обязательный scope App_ABC MVP v1.0.0 закрывается Milestone 1–4. Дополнительные curriculum/UX исследования, слоги, мини-игры, speech recognition и store publication перенесены в Post-MVP Roadmap.
+
+**FINAL_STATUS: App_ABC MVP v1.0.0 — COMPLETE / PRODUCTION READY (100%).**
+
+## Следующий шаг
+
+Обязательных задач MVP не осталось.
+
+По желанию владельца: подготовка production signing keys и публикация в Google Play / RuStore.

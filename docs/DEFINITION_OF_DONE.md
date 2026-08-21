@@ -1,6 +1,6 @@
 # Definition of Done — App_ABC
 
-Дата: 2026-08-19
+Дата: 2026-08-21
 
 ## 1. Общий Definition of Done для любой задачи
 
@@ -33,6 +33,8 @@ Milestone нельзя закрывать при `FAIL` или `UNKNOWN`. `DEFER
 
 ## 2. M1 — первый вертикальный срез
 
+Статус: **DONE (100%) / OWNER ACCEPTED**.
+
 M1 DONE, если выполнен принятый владельцем базовый вертикальный срез:
 
 - Android-проект создан и открывается в Android Studio;
@@ -53,15 +55,15 @@ M1 DONE, если выполнен принятый владельцем баз�
 
 ### Owner-approved deferral из M1 в M2
 
-Согласно D019 следующие требования ранней редакции M1 DoD не считаются реализованными в M1 и обязательным образом перенесены в M2:
+Согласно D019 следующие требования ранней редакции M1 DoD были перенесены в M2 и закрыты там:
 
 - разбивка результата по отдельным буквам;
 - возврат ошибочной target-буквы позднее через retry queue;
 - декларация `<queries>` для `android.intent.action.TTS_SERVICE`, если TTS используется как fallback.
 
-M1 может считаться DONE только потому, что владелец явно изменил milestone gate и принял этот перенос; это не является техническим PASS перечисленных функций.
+## 3. M2 — LearningEngine + audio/curriculum foundation
 
-## 3. M2 — LearningEngine v1 + audio/curriculum foundation
+Статус: **DONE (100%) / OWNER ACCEPTED**.
 
 M2 DONE, если:
 
@@ -79,90 +81,101 @@ M2 DONE, если:
 - поведение алгоритма соответствует `LEARNING_ENGINE.md` и `SUCCESS_METRICS.md`;
 - алгоритм можно проверить на детерминированных тестовых данных;
 - результат сессии умеет показывать статистику по каждой букве;
-- введён единый интерфейс `AudioPlayer`, не связанный напрямую с UI/LearningEngine;
+- введён единый интерфейс `AudioPlayer`;
 - основной источник озвучки — локальные pre-recorded audio assets, TTS работает как fallback согласно D020;
-- при использовании системного TTS fallback Android Manifest содержит требуемую service visibility declaration (`<queries>` для `android.intent.action.TTS_SERVICE`), если она требуется целевой Android-конфигурацией;
-- модель Curriculum/уровней расширена за пределы M1-only константы и остаётся версионируемой;
-- перенесённые по D019 требования закрыты и имеют явные доказательства в milestone closure audit.
+- Android Manifest содержит требуемую TTS service visibility declaration;
+- модель Curriculum/уровней версионируется;
+- перенесённые по D019 требования закрыты и имеют evidence.
 
-## 4. M3 — статистика
+## 4. M3 — Parent mode / Curriculum / retention
 
-M3 DONE, если:
+Статус: **DONE (100%) / OWNER ACCEPTED**.
 
-- есть родительский экран статистики;
-- отображается статистика по каждой букве;
-- отображаются recent accuracy и response time;
-- работает confusion matrix;
-- слабые буквы автоматически ранжируются;
-- можно запустить отдельную тренировку слабых букв;
-- можно вручную выбрать набор букв;
-- данные прошлых сессий не теряются;
-- нет необходимости читать технические логи, чтобы понять прогресс.
+Owner-approved gate M3 нормализован решениями D023–D025 и закрыт M3.4 Closure Evidence Audit. Для v1.0.0 обязательны:
 
-## 5. M4 — игровая оболочка
+- Parental Gate и Parent Dashboard;
+- статистика по всем 33 буквам и persistence прошлых сессий;
+- Curriculum v3: 8 уровней / 33 буквы;
+- 33 letter OGG + 3 UI sounds, local-audio-first/TTS-fallback;
+- LearningPolicy v4;
+- 7-day retention decay с deterministic time-based tests;
+- Room schema 2 без новой migration;
+- CI/build evidence;
+- physical-device smoke на Pixel 7a;
+- owner acceptance.
+
+Отдельная тренировка слабых букв, ручной выбор набора и дополнительные специализированные distractors относятся к Post-MVP Roadmap и не являются незакрытыми критериями App_ABC MVP v1.0.0 согласно финальному owner decision D026.
+
+## 5. M4 — игровая оболочка / settings / release hardening
+
+Статус: **DONE (100%) / OWNER ACCEPTED**.
 
 M4 DONE, если:
 
 - уровни визуально понятны;
-- есть простая система 1–3 звёзд или аналогичная;
+- есть простая система звёзд/аналогичной позитивной награды;
 - повторное прохождение разрешено;
 - награды не меняют учебные правила;
 - нет жизней/штрафов как основной механики;
 - рекомендуемая сессия завершается позитивным экраном;
-- есть `Закончить` и `Ещё потренироваться`;
-- после повторного входа приложение не заблокировано.
+- доступны завершение/продолжение и повторная тренировка;
+- после повторного входа приложение не заблокировано;
+- persistent-настройки звука и безопасный reset доступны в Parent Dashboard;
+- release build проходит R8/minification и resource shrinking;
+- audio/TTS resources освобождаются по lifecycle;
+- CI triple gate `test` / `assembleDebug` / `assembleRelease` проходит;
+- финальный physical-device smoke проходит.
 
-## 6. M5 — полный алфавит
+### M4.4 Closure Evidence Audit
 
-M5 DONE, если:
+Статус: **PASS — 7/7 / OWNER ACCEPTED**.
 
-- зафиксирована версия curriculum;
-- полный порядок 33 букв согласован;
-- для всех букв проверен spokenName/локальный аудио-ассет;
-- distractors и потенциально путаемые пары определены;
-- позиции ответов перемешиваются;
-- нет уровней, которые систематически допускают угадывание по расположению;
-- проведено домашнее UX-тестирование полного цикла;
-- выявленные критические проблемы внесены в backlog и устранены до перехода к release.
+1. Уровни и игровой/позитивный UX — PASS — CODE/TEST/RUNTIME evidence.
+2. Повторная тренировка и отсутствие блокирующей механики — PASS — CODE/RUNTIME evidence.
+3. Награды не меняют LearningPolicy/Curriculum — PASS — STATIC/CODE evidence.
+4. Persistent sound settings — PASS — CODE/TEST/RUNTIME evidence.
+5. Safe progress reset — PASS — CODE/TEST/RUNTIME evidence.
+6. Release hardening / R8 / resource shrinking / CI Triple Gate — PASS — CI evidence.
+7. Финальный Pixel 7a smoke и owner acceptance — PASS — RUNTIME/OWNER evidence.
 
-## 7. M6 — эксперимент распознавания речи
+`FAIL` / `UNKNOWN` отсутствуют.
 
-M6 DONE, если:
+## 6. Post-MVP — Curriculum / UX validation
 
-- есть отдельный test screen;
-- используется ru-RU recognition;
-- есть нормализация названий букв;
-- различаются `CORRECT`, `WRONG`, `NOT_RECOGNIZED`;
-- `NOT_RECOGNIZED` не снижает прогресс;
-- аудиофайлы не сохраняются без отдельного решения;
-- проведён тест на реальной детской речи;
-- отдельно принято решение: включать, ограничить или не включать ASR в основной продукт.
+Прежний M5 больше не является gate MVP v1.0.0. Базовый полный алфавит уже реализован в Curriculum v3. Дополнительная проверка distractors, визуально похожих групп, расширенные UX-исследования и новые режимы относятся к Post-MVP Roadmap.
 
-## 8. M7 — release candidate
+## 7. Post-MVP — эксперимент распознавания речи
 
-M7 DONE, если:
+Speech recognition не является обязательным условием MVP. При отдельном решении владельца эксперимент должен сохранять требования `ru-RU`, `CORRECT/WRONG/NOT_RECOGNIZED`, отсутствие штрафа за `NOT_RECOGNIZED` и отсутствие сохранения аудио без отдельного решения.
 
-- release build собирается;
-- приложение подписывается безопасным ключом;
-- ключи/секреты отсутствуют в Git;
-- privacy/release checklist выполнен;
-- есть возможность удалить локальные данные;
-- проверены текущие требования Google Play перед публикацией;
-- проведено закрытое тестирование;
-- критических crash/потерь данных нет;
-- принято явное решение о публикации.
+## 8. Post-MVP — публикация / distribution
 
-## 9. MVP DONE
+Кодовая база v1.0.0 может считаться `PRODUCTION READY` до store publication. Фактическая публикация требует отдельного deployment gate:
 
-MVP считается завершённым, когда M1–M5 выполнены и:
+- production signing key хранится вне Git;
+- privacy/store checklist актуализирован;
+- требования Google Play / RuStore проверены на дату публикации;
+- при необходимости проведено closed/internal testing;
+- принято отдельное решение владельца о публикации.
 
-- приложение пригодно для регулярной домашней тренировки;
-- основной сценарий ребёнок проходит без помощи в навигации;
-- взрослый видит реальную статистику по буквам;
-- слабые буквы выявляются и тренируются отдельно;
-- история не теряется;
-- LearningPolicy и Curriculum версионируются;
-- собраны данные, позволяющие оценить полезность по `SUCCESS_METRICS.md`;
-- нет критических рисков уровня High без меры контроля.
+Debug signing, используемый для CI release validation, не является production signing strategy.
 
-M6 не является обязательным условием MVP: speech recognition может остаться экспериментом.
+## 9. MVP v1.0.0 DONE
+
+Согласно финальному owner decision D026, **App_ABC MVP v1.0.0 считается завершённым после M1–M4**, если одновременно выполнены:
+
+- M1: DONE (100%) / OWNER ACCEPTED;
+- M2: DONE (100%) / OWNER ACCEPTED;
+- M3: DONE (100%) / OWNER ACCEPTED;
+- M4: DONE (100%) / OWNER ACCEPTED;
+- M4.4 Closure Evidence Audit: PASS — 7/7;
+- `STATIC_REVIEW_STATUS: PASS`;
+- CI Triple Gate `test` / `assembleDebug` / `assembleRelease`: PASS;
+- финальный physical-device smoke: PASS — Pixel 7a;
+- LearningPolicy v4 и Curriculum v3 версионированы;
+- Room schema 2 сохраняет историю;
+- критических release blockers, `FAIL` или `UNKNOWN` в closure audit нет.
+
+Финальный статус: **App_ABC MVP v1.0.0 — COMPLETE / PRODUCTION READY (100%)**.
+
+Post-MVP Curriculum/UX validation, speech recognition, слоги/мини-игры и store publication не блокируют закрытие MVP v1.0.0.

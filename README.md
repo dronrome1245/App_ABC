@@ -6,10 +6,18 @@
 
 | Milestone | Статус |
 | --- | --- |
-| Milestone 1 | DONE / OWNER ACCEPTED |
-| Milestone 2 | DONE / OWNER ACCEPTED |
-| Milestone 3 | DONE / OWNER ACCEPTED |
-| Milestone 4 | In Planning / Kickoff |
+| Milestone 1 | DONE (100%) / OWNER ACCEPTED |
+| Milestone 2 | DONE (100%) / OWNER ACCEPTED |
+| Milestone 3 | DONE (100%) / OWNER ACCEPTED |
+| Milestone 4 | DONE (100%) / OWNER ACCEPTED |
+
+## Статус: Продукт полностью готов к релизу (Production Ready)
+
+**App_ABC MVP v1.0.0 — COMPLETE / PRODUCTION READY (100%).**
+
+Финальный Milestone 4 закрыт после M4.4 Closure Evidence Audit со статусом PASS 7/7. Владелец выполнил финальный smoke-тест на физическом Pixel 7a — PASS. Финальный release hardening проверен CI triple gate: `test`, `assembleDebug`, `assembleRelease` — PASS. Release build использует R8/minification и resource shrinking; динамически адресуемые 33 letter OGG + 3 UI sounds защищены `res/raw/keep.xml`.
+
+Кодовая база `main` находится в релизном состоянии. Подготовка production signing keys и публикация в Google Play / RuStore являются отдельным deployment-шагом и не входят в закрытый MVP v1.0.0.
 
 M1 принят владельцем на реальном Android-устройстве: Level 1 `А/М`, 10 вопросов, рабочая озвучка, выбор ответа, сохранение истории и основной пользовательский поток.
 
@@ -17,13 +25,13 @@ M2 закрыт после M2.5 Closure Evidence Audit: 7/7 критериев P
 
 M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев PASS, CI/JVM tests/`assembleDebug` PASS, физический smoke-тест на Pixel 7a PASS, owner acceptance ACCEPTED. В M3 реализованы Parental Gate и Parent Dashboard, Curriculum v3 на 8 уровней и все 33 русские буквы, полный набор из 33 letter OGG + 3 UI sounds и LearningPolicy v4 с 7-дневным Retention Decay по D025.
 
-Активен **Milestone 4 — In Planning / Kickoff**. До утверждения scope код M4 не начинается; планирование охватывает UI/UX-полировку, анимации успеха/салют-конфетти в Compose, настройки звука в Parent Dashboard и подготовку ProGuard/R8 release build.
+M4 закрыт после M4.4 Closure Evidence Audit: UI delight/celebration, persistent sound settings, safe progress reset, release hardening R8/resource shrinking, lifecycle-safe audio cleanup, CI release gate и финальный Pixel 7a smoke — PASS / OWNER ACCEPTED.
 
 Подробно: [PROJECT_STATUS.md](PROJECT_STATUS.md) и [NEXT_TASK.md](NEXT_TASK.md).
 
 ## Продуктовая стратегия
 
-Сначала делается **семейный пилот**: простой локальный Android-инструмент, который реально используется дома и накапливает достоверную статистику. Решение о превращении его в публичный продукт принимается после проверки полезности и UX.
+MVP v1.0.0 завершён как локальный семейный Android-инструмент. Дальнейшее развитие и публичная публикация выполняются отдельными Post-MVP шагами без изменения факта закрытия v1.0.0.
 
 См. [docs/PRODUCT_CHARTER.md](docs/PRODUCT_CHARTER.md) и [docs/SUCCESS_METRICS.md](docs/SUCCESS_METRICS.md).
 
@@ -38,28 +46,28 @@ M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев P
 - коротких сессий примерно 3–7 минут;
 - игровой прогрессии по уровням;
 - статистики по каждой букве;
-- отдельной тренировки слабых букв.
+- родительского контроля прогресса и настроек.
 
 ## Что входит в первую версию
 
-- только русский алфавит;
-- на старте — печатные заглавные буквы;
-- уровни, которые постепенно добавляют буквы;
+- русский алфавит из 33 заглавных букв;
+- 8 игровых уровней Curriculum v3;
 - упражнение «услышь название буквы → выбери её»;
-- адаптивный подбор вопросов;
+- адаптивный подбор вопросов LearningPolicy v4;
 - повторение старых букв в новых уровнях;
-- статистика: попытки, правильность, время ответа, последние ошибки;
-- карта путаницы: какую букву ребёнок выбирает вместо правильной;
-- экран «Трудные буквы» и отдельная тренировка проблемного набора;
-- родительский доступ к статистике и настройкам;
-- мягкая игровая мотивация: уровни, звёзды/награды, прогресс;
-- рекомендуемая короткая сессия, но без блокировки приложения после её завершения;
-- локальное хранение прогресса на устройстве без обязательной регистрации и сервера.
+- статистика по буквам и история сессий;
+- Parent Dashboard и Parental Gate;
+- persistent-настройки озвучки букв и звуковых эффектов;
+- безопасный сброс прогресса с подтверждением;
+- мягкая игровая мотивация и позитивный экран результата;
+- локальные 33 letter OGG + 3 UI sounds с TTS fallback;
+- локальное хранение прогресса на устройстве без обязательной регистрации и сервера;
+- release build с R8/minification и resource shrinking.
 
 ## Что сознательно НЕ входит в MVP
 
-- звуки букв и фонетические упражнения;
-- слоги, слова и чтение (`МА → МО → МУ` — отдельная будущая версия);
+- фонетические упражнения со звуками речи;
+- слоги, слова и чтение (`МА → МО → МУ` — Post-MVP);
 - рисование букв пальцем;
 - распознавание почерка;
 - iOS;
@@ -70,7 +78,7 @@ M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев P
 
 ## Распознавание произношения ребёнка
 
-Режим «покажи букву → ребёнок произносит её название → приложение оценивает ответ» выделен в отдельный экспериментальный этап после основного MVP. Распознавание коротких ответов вроде «эм», «эн», «эль» может ошибаться, особенно на детской речи. `Не распознано` не должно превращаться в учебную ошибку.
+Режим «покажи букву → ребёнок произносит её название → приложение оценивает ответ» остаётся отдельным Post-MVP экспериментом. Распознавание коротких ответов вроде «эм», «эн», «эль» может ошибаться, особенно на детской речи. `Не распознано` не должно превращаться в учебную ошибку.
 
 См. [docs/SPEECH_RECOGNITION.md](docs/SPEECH_RECOGNITION.md).
 
@@ -79,11 +87,11 @@ M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев P
 - Kotlin;
 - Jetpack Compose;
 - Android Studio;
-- Room — статистика и история попыток;
-- DataStore — простые настройки и состояние;
-- локальные audio assets — основной источник названий букв с M2;
-- Android TextToSpeech — fallback для голосовых инструкций/названий букв;
-- Android SpeechRecognizer — только для отдельного экспериментального режима произношения.
+- Room schema 2 — статистика и история попыток;
+- Preferences DataStore — progression и настройки;
+- локальные audio assets — основной источник названий букв;
+- Android TextToSpeech — fallback;
+- R8/ProGuard + resource shrinking для release build.
 
 ## Управление проектом
 
@@ -105,12 +113,10 @@ M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев P
 14. [docs/BACKLOG.md](docs/BACKLOG.md) — roadmap.
 15. [docs/TEST_PLAN.md](docs/TEST_PLAN.md) — техническая и продуктовая проверка.
 16. [PROJECT_STATUS.md](PROJECT_STATUS.md) — фактическая точка проекта.
-17. [NEXT_TASK.md](NEXT_TASK.md) — одна ближайшая задача.
+17. [NEXT_TASK.md](NEXT_TASK.md) — следующий необязательный deployment/Post-MVP шаг.
 
 Для Gemini дополнительно: [prompts/GEMINI_WEB_SYSTEM_PROMPT.md](prompts/GEMINI_WEB_SYSTEM_PROMPT.md) и [GEMINI.md](GEMINI.md).
 
 ## Главный принцип разработки
 
-Разработка идёт небольшими проверяемыми milestone/slice. Перед закрытием milestone AI обязан проверить каждый пункт DoD отдельно и не подменять отсутствие функции общей ручной приёмкой. Не реализованный критерий может быть перенесён только явным решением владельца с записью в `DECISIONS.md` и backlog следующего этапа.
-
-`main` должен оставаться рабочей веткой. Существенные изменения учебного алгоритма требуют версии LearningPolicy и записи в `docs/DECISIONS.md`.
+Разработка идёт небольшими проверяемыми milestone/slice. Закрытие milestone требует evidence audit без `FAIL`/`UNKNOWN`, CI и требуемого runtime/owner evidence. `main` должен оставаться рабочей веткой. Существенные изменения учебного алгоритма требуют версии LearningPolicy и записи в `docs/DECISIONS.md`.
