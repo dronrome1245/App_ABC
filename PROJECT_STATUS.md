@@ -37,7 +37,7 @@ Production signing keys и store publication не хранятся/не выпо
 
 ### AUDIO-02 — Audio Pack v2 / D027
 
-- AUDIO_02_STATUS: IN PROGRESS / HOME-ONLY V2 INSTALLED / DEVICE SMOKE PENDING
+- AUDIO_02_STATUS: IN PROGRESS / HOME-ONLY V2 INSTALLED / TECHNICAL GATES PASS / DEVICE SMOKE PENDING
 - D027_SCOPE: 33 letter voice assets; existing `correct` / `wrong` / `level_complete` remain unchanged
 - V2_RESOURCE_NAMING: `sound_letter_<token>_v2`
 - AUDIO_RESOLUTION_ORDER: V2 LOCAL -> V1 LOCAL -> TTS
@@ -47,9 +47,11 @@ Production signing keys и store publication не хранятся/не выпо
 - RELEASE_LIFECYCLE: existing `stop()` / idempotent `release()` retained
 - V2_DURATION_TARGET: 400–700 ms per letter, subject to justified articulation exceptions
 - HOME_ONLY_V2_CONTENT_STATUS: INSTALLED — 33/33 human-recorded GCompris OGGs; distribution remains blocked until replacement/relicensing decision
+- AUDIO_V2_BUNDLED_QC: PASS — run `32513695237`
+- AUDIO_V2_ANDROID_CI: PASS — run `32513695238` (`test` / `assembleDebug` / `assembleRelease`)
 - DEVICE_AUDIO_SMOKE: PENDING owner verification of installed HOME-ONLY v2 assets
 
-Для домашнего использования владелец принял человеческий пакет GCompris: 33/33 v2-ассета установлены и имеют приоритет над v1. AUDIO-02 остаётся `IN PROGRESS` до физического device smoke. Публичное или стороннее распространение сборки заблокировано: перед ним HOME-ONLY пакет должен быть заменён либо должно быть отдельно принято и выполнено лицензионное решение по распространению.
+Для домашнего использования владелец выбрал человеческий пакет GCompris: 33/33 v2-ассета установлены и имеют приоритет над v1. Bundled-audio QC, JVM/Compose tests, debug build и release build с R8/resource shrinking — PASS. AUDIO-02 остаётся `IN PROGRESS` только до физического прослушивания всех 33 букв на устройстве. При owner PASS задача закрывается как `DONE FOR HOME USE`; это не снимает distribution gate. Перед любой передачей или публикацией HOME-ONLY пакет должен быть заменён либо должно быть отдельно принято и выполнено лицензионное решение по распространению.
 
 ## Merge / CI evidence
 
@@ -197,6 +199,6 @@ Production signing keys и store publication не хранятся/не выпо
 
 ## Следующий шаг
 
-Обязательных задач MVP не осталось.
+MVP v1.0.0 остаётся закрытым. Текущий Post-MVP шаг — **AUDIO-02 device smoke** на физическом Pixel 7a: прослушать все 33 буквы, проверить правильность названий, отсутствие обрезания начала/конца и фактическое использование v2.
 
-По желанию владельца: подготовка production signing keys и публикация в Google Play / RuStore.
+Если smoke = PASS, AUDIO-02 закрывается как `DONE FOR HOME USE`, после чего PR #16 может быть подготовлен к merge только по отдельному решению владельца. Следующая продуктовая задача D027 после AUDIO-02 — **UX-01** (визуальная иерархия действий на ResultScreen). Публичное распространение при текущем GCompris HOME-ONLY пакете остаётся заблокированным.

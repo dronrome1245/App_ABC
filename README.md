@@ -5,6 +5,8 @@
 > [!WARNING]
 > **AUDIO DISTRIBUTION BLOCKER:** если для D027 / Audio Pack v2 используется HOME-ONLY аудиотека (например, локальный пакет GCompris), перед любой публикацией или передачей APK/AAB/репозитория её необходимо полностью заменить на аудиопак с подтверждённой лицензией для распространения. HOME-ONLY аудио нельзя коммитить в публичный репозиторий. См. [docs/AUDIO_DISTRIBUTION_NOTICE.md](docs/AUDIO_DISTRIBUTION_NOTICE.md).
 
+**Post-MVP D027 status:** GCompris HOME-ONLY Audio Pack v2 установлен `33/33`; bundled QC и Android CI (`test` / `assembleDebug` / `assembleRelease`) — PASS. До закрытия AUDIO-02 для домашней версии остаётся owner device smoke 33 букв.
+
 ## Текущий статус
 
 | Milestone | Статус |

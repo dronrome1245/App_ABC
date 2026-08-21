@@ -1,28 +1,36 @@
-# NEXT_TASK.md — App_ABC MVP v1.0.0 Complete
+# NEXT_TASK.md — Post-MVP D027
 
-## Статус
+## Текущий статус
 
-**App_ABC MVP v1.0.0 успешно завершён. Кодовая база на ветке main находится в релизном состоянии, проверена в CI и на физическом устройстве. Следующий шаг (по желанию владельца): подготовка релизных ключей и публикация в Google Play / RuStore.**
+**MVP v1.0.0 закрыт и остаётся COMPLETE / OWNER ACCEPTED. Активная Post-MVP работа — D027.**
 
-## Финальные доказательства MVP v1.0.0
+### AUDIO-02 — почти завершено для домашней версии
 
-- Milestone 1: DONE (100%) / OWNER ACCEPTED.
-- Milestone 2: DONE (100%) / OWNER ACCEPTED.
-- Milestone 3: DONE (100%) / OWNER ACCEPTED.
-- Milestone 4: DONE (100%) / OWNER ACCEPTED.
-- M4.4 Closure Evidence Audit: PASS — 7/7.
-- Android CI triple gate: PASS — `test`, `assembleDebug`, `assembleRelease`.
-- Финальный physical-device smoke: PASS — Pixel 7a.
-- LearningPolicy: v4 / 7-day retention decay.
-- Curriculum: v3 / 8 уровней / 33 буквы.
-- Room schema: 2.
-- Audio: 33 letter OGG + 3 UI sounds + `keep.xml`.
-- Release optimization: R8/minification + resource shrinking ENABLED.
+- GCompris HOME-ONLY Audio Pack v2: **33 / 33 INSTALLED**;
+- playback order: `v2 local -> v1 local -> TTS`;
+- все 33 v2 raw resources проверяются автоматическим тестом;
+- bundled-v2 QC: **PASS**, run `32513695237`;
+- Android CI: **PASS**, run `32513695238`;
+- `test` / `assembleDebug` / `assembleRelease` + R8/resource shrinking: **PASS**;
+- repository visibility: **private**;
+- distribution gate: **ACTIVE**.
 
-## Следующий шаг — только по отдельному решению владельца
+## Следующее действие владельца
 
-Подготовка production signing keys, store metadata/privacy checklist и публикация в Google Play / RuStore относятся к deployment/Post-MVP и не являются незакрытой задачей MVP v1.0.0.
+На физическом Pixel 7a прослушать все 33 буквы в обычном приложении и проверить:
 
-## Android Studio Agent
+1. каждой букве соответствует правильное русское название;
+2. используется новый GCompris v2, а не v1/TTS;
+3. начало и окончание записи не обрезаны;
+4. громкость и тембр приемлемы в реальном занятии;
+5. длинные `Й`, `Ъ`, `Ь` не мешают учебному потоку.
 
-Не нужен. Подключать только при конкретной IDE/runtime/store-signing проблеме.
+Если все 33 пункта проходят без критичного дефекта, владелец сообщает **AUDIO-02 SMOKE PASS**. После этого AUDIO-02 фиксируется как `DONE FOR HOME USE`. PR #16 остаётся draft до отдельной команды владельца на подготовку/merge.
+
+## После AUDIO-02
+
+Следующая задача D027 — **UX-01**: привести primary/secondary действия `ResultScreen` к правилу для нечитающего ребёнка и проверить success/failure Compose tests.
+
+## Ограничение распространения
+
+Текущий GCompris v2 — **HOME-ONLY**. Перед передачей APK/AAB, передачей репозитория третьим лицам, переводом репозитория в public или публикацией в магазине этот аудиопак необходимо заменить либо отдельно выполнить лицензионное решение для предполагаемого способа распространения. См. `docs/AUDIO_DISTRIBUTION_NOTICE.md`.

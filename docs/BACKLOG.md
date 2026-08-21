@@ -195,14 +195,15 @@
   - проверить, что визуальный акцент следует педагогически рекомендуемому действию и понятен без чтения текста;
   - реализацию сопровождать Compose-тестами для success/failure состояний `ResultScreen`.
 
-- [ ] **[AUDIO-02] Подготовка и интеграция обновлённого пакета аудио-ассетов букв v2 — IN PROGRESS / HOME-ONLY V2 INSTALLED / DEVICE SMOKE PENDING.**
+- [ ] **[AUDIO-02] Подготовка и интеграция обновлённого пакета аудио-ассетов букв v2 — IN PROGRESS / HOME-ONLY V2 INSTALLED / TECHNICAL GATES PASS / DEVICE SMOKE PENDING.**
   - [x] зафиксирован Android-safe naming для v2: `sound_letter_<token>_v2`;
   - [x] реализован порядок локального разрешения `v2 -> v1 -> TTS`, поэтому отсутствие v2-файла не приводит к падению;
   - [x] сохранены существующие `correct` / `wrong` / `level_complete` без подмены scope D027;
   - [x] добавлены unit-тесты полного 33-letter mapping, snake_case naming и fallback resolver;
   - [x] для домашней сборки интегрированы 33/33 реальные человеческие GCompris letter OGG v2; пакет помечен HOME-ONLY и не считается разрешённым для распространения;
   - [x] выполнен технический duration QC: 21/33 в `400–700 мс`, 8 короче, `Ф` — 720 мс, `Й/Ъ/Ь` длиннее как естественные артикуляционные исключения; искусственный time-stretch/pitch-shift не применяется;
-  - [ ] выполнить device smoke: mapping всех букв, отсутствие обрезания начала/конца, fallback при намеренно отсутствующем v2-ресурсе.
+  - [x] bundled-v2 QC — PASS, run `32513695237`; Android CI `test` / `assembleDebug` / `assembleRelease` — PASS, run `32513695238`;
+  - [ ] выполнить owner device smoke на Pixel 7a: прослушать все 33 буквы, подтвердить правильность произношения/маппинга, отсутствие обрезания начала/конца и фактическое использование v2; после PASS закрыть AUDIO-02 как `DONE FOR HOME USE`.
   - [x] установлен distribution gate: перед любой публикацией/передачей приложения HOME-ONLY GCompris v2 необходимо заменить либо отдельно закрыть требования лицензии для выбранного способа распространения.
 
 ### Curriculum / UX validation
