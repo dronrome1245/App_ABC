@@ -7,6 +7,12 @@ on:
     paths:
       - "tools/build_audio_pack_v2.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/build_audio_pack_v2.py"
+      - ".github/workflows/audio-pack-v2-qc.yml"
   workflow_dispatch:
 
 permissions:
