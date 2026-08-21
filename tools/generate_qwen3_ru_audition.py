@@ -15,10 +15,9 @@ import argparse
 import csv
 import shutil
 import subprocess
-import wave
 from pathlib import Path
 
-from gradio_client import Client
+from gradio_client import Client, handle_file
 
 SPACE = "Qwen/Qwen3-TTS"
 
@@ -72,7 +71,6 @@ def as_path(value) -> Path:
 
 
 def duration_ms(path: Path) -> int:
-    # ffprobe handles WAV/FLAC/etc returned by the Space consistently.
     result = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(path)],
         check=True,
@@ -89,7 +87,7 @@ def concat_preview(inputs: list[Path], output: Path, silence_s: float = 0.45) ->
     subprocess.run(
         [
             "ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi",
-            "-i", f"anullsrc=r=24000:cl=mono", "-t", str(silence_s), str(silence),
+            "-i", "anullsrc=r=24000:cl=mono", "-t", str(silence_s), str(silence),
         ],
         check=True,
     )
@@ -135,9 +133,8 @@ def main() -> None:
     outputs: list[Path] = []
     rows = []
     for letter, spoken, token in DIAGNOSTIC:
-        # Punctuation helps the model resolve an isolated Russian name as a complete utterance.
         generated_audio, status = client.predict(
-            ref_audio=str(reference),
+            ref_audio=handle_file(str(reference)),
             ref_text=REFERENCE_TEXT,
             target_text=f"{spoken}.",
             language="Russian",
