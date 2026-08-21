@@ -1,4 +1,4 @@
-name: Audio Pack v2 Qwen3 TTS Probe
+name: Audio Pack v2 Qwen3 TTS Russian Audition
 
 on:
   push:
@@ -6,12 +6,14 @@ on:
       - feature/audio-pack-v2-d027
     paths:
       - "tools/probe_qwen3_tts_space.py"
+      - "tools/generate_qwen3_ru_audition.py"
       - ".github/workflows/audio-pack-v2-qwen-probe.yml"
   pull_request:
     branches:
       - main
     paths:
       - "tools/probe_qwen3_tts_space.py"
+      - "tools/generate_qwen3_ru_audition.py"
       - ".github/workflows/audio-pack-v2-qwen-probe.yml"
   workflow_dispatch:
 
@@ -19,9 +21,9 @@ permissions:
   contents: read
 
 jobs:
-  qwen3-space-probe:
+  qwen3-russian-audition:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +31,24 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install Gradio client
-        run: python -m pip install --disable-pip-version-check gradio_client
+      - name: Install Gradio and audio tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --disable-pip-version-check gradio_client
       - name: Inspect public Qwen3-TTS Space API
         run: python tools/probe_qwen3_tts_space.py
+      - name: Generate one designed Russian voice and diagnostic letter-name pack
+        run: python tools/generate_qwen3_ru_audition.py --output build/qwen3-ru-audition
+      - name: Verify diagnostic count
+        run: |
+          count=$(find build/qwen3-ru-audition -maxdepth 1 -type f -name 'sound_letter_*_qwen.ogg' | wc -l)
+          echo "Qwen3 diagnostic OGG count: $count"
+          test "$count" -eq 20
+      - name: Upload Qwen3 Russian audition
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen3-ru-v2-diagnostic-audition
+          path: build/qwen3-ru-audition/
+          if-no-files-found: error
+          retention-days: 14
