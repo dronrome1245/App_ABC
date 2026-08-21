@@ -8,6 +8,13 @@ on:
       - "tools/probe_dialogs_ru_space.py"
       - "tools/generate_dialogs_ru_v2.py"
       - ".github/workflows/audio-pack-v2-neural.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/probe_dialogs_ru_space.py"
+      - "tools/generate_dialogs_ru_v2.py"
+      - ".github/workflows/audio-pack-v2-neural.yml"
   workflow_dispatch:
 
 permissions:
