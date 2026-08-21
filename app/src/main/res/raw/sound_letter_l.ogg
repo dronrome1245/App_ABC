@@ -1,0 +1,93 @@
+package com.dronrome1245.appabc.core.audio
+
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.dronrome1245.appabc.domain.curriculum.RussianAlphabet
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+
+@RunWith(RobolectricTestRunner::class)
+class AudioAssetCatalogTest {
+    private val expected = mapOf(
+        'А' to "sound_letter_a",
+        'Б' to "sound_letter_b",
+        'В' to "sound_letter_v",
+        'Г' to "sound_letter_g",
+        'Д' to "sound_letter_d",
+        'Е' to "sound_letter_e",
+        'Ё' to "sound_letter_yo",
+        'Ж' to "sound_letter_zh",
+        'З' to "sound_letter_z",
+        'И' to "sound_letter_i",
+        'Й' to "sound_letter_short_i",
+        'К' to "sound_letter_k",
+        'Л' to "sound_letter_l",
+        'М' to "sound_letter_m",
+        'Н' to "sound_letter_n",
+        'О' to "sound_letter_o",
+        'П' to "sound_letter_p",
+        'Р' to "sound_letter_r",
+        'С' to "sound_letter_s",
+        'Т' to "sound_letter_t",
+        'У' to "sound_letter_u",
+        'Ф' to "sound_letter_f",
+        'Х' to "sound_letter_h",
+        'Ц' to "sound_letter_ts",
+        'Ч' to "sound_letter_ch",
+        'Ш' to "sound_letter_sh",
+        'Щ' to "sound_letter_shch",
+        'Ъ' to "sound_letter_hard",
+        'Ы' to "sound_letter_y",
+        'Ь' to "sound_letter_soft",
+        'Э' to "sound_letter_eh",
+        'Ю' to "sound_letter_yu",
+        'Я' to "sound_letter_ya"
+    )
+
+    @Test
+    fun mapsAll33RussianLettersIgnoringCase() {
+        assertEquals(33, expected.size)
+        assertEquals(RussianAlphabet.symbols.map { it.single() }.toSet(), AudioAssetCatalog.mappedLetters())
+
+        expected.forEach { (letter, resourceName) ->
+            assertEquals(resourceName, AudioAssetCatalog.resourceNameForLetter(letter))
+            assertEquals(resourceName, AudioAssetCatalog.resourceNameForLetter(letter.lowercaseChar()))
+        }
+    }
+
+    @Test
+    fun everyMappedLetterResolvesToBundledRawResourceId() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        RussianAlphabet.symbols.forEach { symbol ->
+            val resourceName = AudioAssetCatalog.resourceNameForLetter(symbol.single())
+            val resourceId = context.resources.getIdentifier(resourceName, "raw", context.packageName)
+            assertTrue("Missing raw resource for $symbol ($resourceName)", resourceId != 0)
+        }
+    }
+
+    @Test
+    fun unknownCharacterHasNoLocalAssetMapping() {
+        assertNull(AudioAssetCatalog.resourceNameForLetter('Q'))
+    }
+
+    @Test
+    fun feedbackAndCompletionResourceNamesMatchBundledAssets() {
+        assertEquals("sound_correct", AudioAssetCatalog.CORRECT_FEEDBACK)
+        assertEquals("sound_wrong", AudioAssetCatalog.INCORRECT_FEEDBACK)
+        assertEquals("sound_level_complete", AudioAssetCatalog.LEVEL_COMPLETE)
+    }
+
+    @Test
+    fun fallbackPolicyUsesTtsForMissingMappingOrMissingAndroidResource() {
+        assertTrue(AudioFallbackPolicy.shouldFallback(null, 0))
+        assertTrue(AudioFallbackPolicy.shouldFallback("", 0))
+        assertTrue(AudioFallbackPolicy.shouldFallback("sound_letter_a", 0))
+        assertFalse(AudioFallbackPolicy.shouldFallback("sound_letter_a", 42))
+    }
+}

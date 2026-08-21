@@ -39,54 +39,79 @@ class Curriculum(val levels: List<CurriculumLevel>) {
         .minByOrNull { it.id }
 }
 
-/** Owner-approved full 8-level curriculum from D024, implemented in M3.2. */
+/** Owner-approved full 8-level curriculum from D024. */
 object ApprovedCurriculum {
     const val VERSION = 3
     const val SESSION_QUESTION_COUNT = 10
+    const val MAX_LEVEL = 8
 
     private fun letter(symbol: String, spokenName: String, level: Int) =
         Letter(symbol = symbol, spokenName = spokenName, levelIntroduced = level)
 
     val level1 = CurriculumLevel(
         id = 1,
-        introducedLetters = listOf(letter("А", "а", 1), letter("М", "эм", 1)),
+        introducedLetters = listOf(
+            letter("А", "а", 1),
+            letter("М", "эм", 1)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level2 = CurriculumLevel(
         id = 2,
-        introducedLetters = listOf(letter("О", "о", 2), letter("У", "у", 2)),
+        introducedLetters = listOf(
+            letter("О", "о", 2),
+            letter("У", "у", 2)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level3 = CurriculumLevel(
         id = 3,
-        introducedLetters = listOf(letter("С", "эс", 3), letter("Н", "эн", 3)),
+        introducedLetters = listOf(
+            letter("С", "эс", 3),
+            letter("Н", "эн", 3)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level4 = CurriculumLevel(
         id = 4,
-        introducedLetters = listOf(letter("И", "и", 4), letter("Т", "тэ", 4), letter("К", "ка", 4)),
+        introducedLetters = listOf(
+            letter("И", "и", 4),
+            letter("Т", "тэ", 4),
+            letter("К", "ка", 4)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level5 = CurriculumLevel(
         id = 5,
-        introducedLetters = listOf(letter("Л", "эль", 5), letter("Р", "эр", 5), letter("В", "вэ", 5)),
+        introducedLetters = listOf(
+            letter("Л", "эль", 5),
+            letter("Р", "эр", 5),
+            letter("В", "вэ", 5)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level6 = CurriculumLevel(
         id = 6,
-        introducedLetters = listOf(letter("Д", "дэ", 6), letter("П", "пэ", 6), letter("Б", "бэ", 6)),
+        introducedLetters = listOf(
+            letter("Д", "дэ", 6),
+            letter("П", "пэ", 6),
+            letter("Б", "бэ", 6)
+        ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
     val level7 = CurriculumLevel(
         id = 7,
         introducedLetters = listOf(
-            letter("З", "зэ", 7), letter("Г", "гэ", 7), letter("Е", "е", 7), letter("Я", "я", 7)
+            letter("З", "зэ", 7),
+            letter("Г", "гэ", 7),
+            letter("Е", "е", 7),
+            letter("Я", "я", 7)
         ),
         questionCount = SESSION_QUESTION_COUNT
     )
@@ -94,17 +119,37 @@ object ApprovedCurriculum {
     val level8 = CurriculumLevel(
         id = 8,
         introducedLetters = listOf(
-            letter("Ш", "ша", 8), letter("Ж", "жэ", 8), letter("Ч", "чэ", 8), letter("Щ", "ща", 8),
-            letter("Х", "ха", 8), letter("Ц", "цэ", 8), letter("Э", "э", 8), letter("Ю", "ю", 8),
-            letter("Ё", "ё", 8), letter("Ы", "ы", 8), letter("Ь", "мягкий знак", 8),
-            letter("Ъ", "твёрдый знак", 8), letter("Й", "и краткое", 8), letter("Ф", "эф", 8)
+            letter("Ш", "ша", 8),
+            letter("Ж", "жэ", 8),
+            letter("Ч", "чэ", 8),
+            letter("Щ", "ща", 8),
+            letter("Х", "ха", 8),
+            letter("Ц", "цэ", 8),
+            letter("Э", "э", 8),
+            letter("Ю", "ю", 8),
+            letter("Ё", "ё", 8),
+            letter("Ы", "ы", 8),
+            letter("Ь", "мягкий знак", 8),
+            letter("Ъ", "твёрдый знак", 8),
+            letter("Й", "и краткое", 8),
+            letter("Ф", "эф", 8)
         ),
         questionCount = SESSION_QUESTION_COUNT
     )
 
-    val curriculum = Curriculum(listOf(level1, level2, level3, level4, level5, level6, level7, level8))
+    val curriculum = Curriculum(
+        listOf(level1, level2, level3, level4, level5, level6, level7, level8)
+    )
+
+    init {
+        val allSymbols = curriculum.lettersAvailableAt(MAX_LEVEL).map { it.symbol }
+        check(allSymbols.size == 33) { "D024 curriculum must contain exactly 33 unique letters" }
+        check(allSymbols.toSet() == RussianAlphabet.symbols.toSet()) {
+            "D024 curriculum must cover the complete Russian alphabet"
+        }
+    }
 
     fun findLetter(symbol: Char): Letter? = curriculum
-        .lettersAvailableAt(level8.id)
+        .lettersAvailableAt(MAX_LEVEL)
         .firstOrNull { it.symbol == symbol.uppercaseChar().toString() }
 }

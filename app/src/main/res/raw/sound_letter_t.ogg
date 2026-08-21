@@ -4,13 +4,16 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.util.Log
 
-/** D020 audio strategy: local pre-recorded asset first, system TTS fallback. */
+/**
+ * D020 audio strategy: local pre-recorded asset first, system TTS fallback.
+ */
 class HybridAudioPlayer(
     context: Context,
     private val tts: TextToSpeechWrapper,
     private val spokenNameProvider: (Char) -> String,
     private val rawResourceNameProvider: (Char) -> String? = AudioAssetCatalog::resourceNameForLetter
 ) : AudioPlayer {
+
     private val appContext = context.applicationContext
     private var activePlayer: MediaPlayer? = null
 
@@ -26,7 +29,9 @@ class HybridAudioPlayer(
     }
 
     override fun playLevelComplete() {
-        playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) { tts.speak("Уровень завершён") }
+        playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) {
+            tts.speak("Уровень завершён")
+        }
     }
 
     override fun stop() {
@@ -41,8 +46,12 @@ class HybridAudioPlayer(
 
     private fun playRawOrFallback(resourceName: String?, fallback: () -> Unit) {
         releaseActivePlayer()
-        val resourceId = if (resourceName.isNullOrBlank()) 0 else
+
+        val resourceId = if (resourceName.isNullOrBlank()) {
+            0
+        } else {
             appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
+        }
 
         if (AudioFallbackPolicy.shouldFallback(resourceName, resourceId)) {
             fallback()
@@ -55,6 +64,7 @@ class HybridAudioPlayer(
                 fallback()
                 return
             }
+
             activePlayer = player
             player.setOnCompletionListener { completed ->
                 if (activePlayer === completed) activePlayer = null
@@ -86,7 +96,9 @@ class HybridAudioPlayer(
         player.release()
     }
 
-    private companion object { const val TAG = "HybridAudioPlayer" }
+    private companion object {
+        const val TAG = "HybridAudioPlayer"
+    }
 }
 
 object AudioAssetCatalog {
@@ -95,23 +107,47 @@ object AudioAssetCatalog {
     const val LEVEL_COMPLETE = "sound_level_complete"
 
     private val letterResources = mapOf(
-        'А' to "sound_letter_a", 'Б' to "sound_letter_b", 'В' to "sound_letter_v",
-        'Г' to "sound_letter_g", 'Д' to "sound_letter_d", 'Е' to "sound_letter_e",
-        'Ё' to "sound_letter_yo", 'Ж' to "sound_letter_zh", 'З' to "sound_letter_z",
-        'И' to "sound_letter_i", 'Й' to "sound_letter_short_i", 'К' to "sound_letter_k",
-        'Л' to "sound_letter_l", 'М' to "sound_letter_m", 'Н' to "sound_letter_n",
-        'О' to "sound_letter_o", 'П' to "sound_letter_p", 'Р' to "sound_letter_r",
-        'С' to "sound_letter_s", 'Т' to "sound_letter_t", 'У' to "sound_letter_u",
-        'Ф' to "sound_letter_f", 'Х' to "sound_letter_h", 'Ц' to "sound_letter_ts",
-        'Ч' to "sound_letter_ch", 'Ш' to "sound_letter_sh", 'Щ' to "sound_letter_shch",
-        'Ъ' to "sound_letter_hard", 'Ы' to "sound_letter_y", 'Ь' to "sound_letter_soft",
-        'Э' to "sound_letter_eh", 'Ю' to "sound_letter_yu", 'Я' to "sound_letter_ya"
+        'А' to "sound_letter_a",
+        'Б' to "sound_letter_b",
+        'В' to "sound_letter_v",
+        'Г' to "sound_letter_g",
+        'Д' to "sound_letter_d",
+        'Е' to "sound_letter_e",
+        'Ё' to "sound_letter_yo",
+        'Ж' to "sound_letter_zh",
+        'З' to "sound_letter_z",
+        'И' to "sound_letter_i",
+        'Й' to "sound_letter_short_i",
+        'К' to "sound_letter_k",
+        'Л' to "sound_letter_l",
+        'М' to "sound_letter_m",
+        'Н' to "sound_letter_n",
+        'О' to "sound_letter_o",
+        'П' to "sound_letter_p",
+        'Р' to "sound_letter_r",
+        'С' to "sound_letter_s",
+        'Т' to "sound_letter_t",
+        'У' to "sound_letter_u",
+        'Ф' to "sound_letter_f",
+        'Х' to "sound_letter_h",
+        'Ц' to "sound_letter_ts",
+        'Ч' to "sound_letter_ch",
+        'Ш' to "sound_letter_sh",
+        'Щ' to "sound_letter_shch",
+        'Ъ' to "sound_letter_hard",
+        'Ы' to "sound_letter_y",
+        'Ь' to "sound_letter_soft",
+        'Э' to "sound_letter_eh",
+        'Ю' to "sound_letter_yu",
+        'Я' to "sound_letter_ya"
     )
 
     fun resourceNameForLetter(letter: Char): String? = letterResources[letter.uppercaseChar()]
+
     fun mappedLetters(): Set<Char> = letterResources.keys
 }
 
+/** Pure policy kept separately so the missing-resource fallback is JVM-testable. */
 object AudioFallbackPolicy {
     fun shouldFallback(resourceName: String?, resourceId: Int): Boolean =
         resourceName.isNullOrBlank() || resourceId == 0
