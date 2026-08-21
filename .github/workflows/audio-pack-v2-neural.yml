@@ -7,6 +7,7 @@ on:
     paths:
       - "tools/probe_dialogs_ru_space.py"
       - "tools/generate_dialogs_ru_v2.py"
+      - "tools/generate_dialogs_ru_direct_v2.py"
       - ".github/workflows/audio-pack-v2-neural.yml"
   pull_request:
     branches:
@@ -14,6 +15,7 @@ on:
     paths:
       - "tools/probe_dialogs_ru_space.py"
       - "tools/generate_dialogs_ru_v2.py"
+      - "tools/generate_dialogs_ru_direct_v2.py"
       - ".github/workflows/audio-pack-v2-neural.yml"
   workflow_dispatch:
 
@@ -21,63 +23,38 @@ permissions:
   contents: read
 
 jobs:
-  duration-calibration:
+  direct-duration-calibration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install audio and Gradio tooling
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install audio and model tooling
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          python3 -m pip install --disable-pip-version-check gradio_client
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install \
+            --extra-index-url https://download.pytorch.org/whl/cpu \
+            torch==2.3.1 numpy==1.26.4 scipy librosa huggingface_hub
 
-      - name: Discover Dialogs-RU expressive TTS API
-        run: python3 tools/probe_dialogs_ru_space.py
-
-      - name: Baseline at speed 1.0
+      - name: Generate direct duration-calibrated preview
         run: |
-          python3 tools/generate_dialogs_ru_v2.py \
+          python tools/generate_dialogs_ru_direct_v2.py \
             --letters А,Б,Л,Ф \
-            --profiles masha-neutral \
-            --speed 1.0 \
-            --output build/dialogs-ru-speed-100
+            --speaker masha \
+            --emotion neutral \
+            --output build/dialogs-ru-direct-v2
 
-      - name: Calibrate at speed 0.5
-        run: |
-          python3 tools/generate_dialogs_ru_v2.py \
-            --letters А,Б,Л,Ф \
-            --profiles masha-neutral \
-            --speed 0.5 \
-            --output build/dialogs-ru-speed-050
-
-      - name: Calibrate at speed 0.3
-        run: |
-          python3 tools/generate_dialogs_ru_v2.py \
-            --letters А,Б,Л,Ф \
-            --profiles masha-neutral \
-            --speed 0.3 \
-            --output build/dialogs-ru-speed-030
-
-      - name: Calibrate at speed 0.2
-        continue-on-error: true
-        run: |
-          python3 tools/generate_dialogs_ru_v2.py \
-            --letters А,Б,Л,Ф \
-            --profiles masha-neutral \
-            --speed 0.2 \
-            --output build/dialogs-ru-speed-020
-
-      - name: Upload duration calibration matrix
+      - name: Upload direct neural preview
         uses: actions/upload-artifact@v4
         with:
-          name: dialogs-ru-v2-duration-calibration
-          path: |
-            build/dialogs-ru-speed-100/
-            build/dialogs-ru-speed-050/
-            build/dialogs-ru-speed-030/
-            build/dialogs-ru-speed-020/
-            build/dialogs-ru-space-api.txt
-          if-no-files-found: warn
+          name: dialogs-ru-direct-v2-calibration
+          path: build/dialogs-ru-direct-v2/
+          if-no-files-found: error
           retention-days: 7
