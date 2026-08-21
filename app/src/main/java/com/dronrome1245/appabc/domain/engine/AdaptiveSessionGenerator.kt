@@ -9,14 +9,15 @@ import com.dronrome1245.appabc.domain.model.Letter
 import java.util.Random
 
 /**
- * Pure-Kotlin adaptive generator used by the training flow in LearningPolicy v3.
+ * Pure-Kotlin adaptive generator used by the training flow in LearningPolicy v4.
  */
 class AdaptiveSessionGenerator(
     private val availableLetters: List<Letter>,
     history: List<Attempt> = emptyList(),
     private val random: Random = Random(),
     private val policy: LearningPolicy = LearningPolicy(),
-    private val sessionLength: Int = LearningPolicyConfig.SESSION_QUESTION_COUNT
+    private val sessionLength: Int = LearningPolicyConfig.SESSION_QUESTION_COUNT,
+    private val currentTimeMillisProvider: () -> Long = { System.currentTimeMillis() }
 ) {
     init {
         require(availableLetters.size >= 2) { "Adaptive session requires at least two letters" }
@@ -66,7 +67,11 @@ class AdaptiveSessionGenerator(
         val currentIndex = targetHistory.lastIndex
         val delayedSuccess = policy.isDelayedSuccess(currentPreviousPresentationIndex, currentIndex, isCorrect)
         val currentPerformance = performances[targetSymbol] ?: LetterPerformance()
-        performances[targetSymbol] = currentPerformance.record(isCorrect, delayedSuccess)
+        performances[targetSymbol] = currentPerformance.record(
+            isCorrect = isCorrect,
+            isDelayedSuccess = delayedSuccess,
+            currentTimeMillis = currentTimeMillisProvider()
+        )
 
         if (!isCorrect) {
             val key = targetSymbol to selectedSymbol
@@ -99,8 +104,12 @@ class AdaptiveSessionGenerator(
         }
         if (candidates.isEmpty()) candidates = availableLetters
 
+        val now = currentTimeMillisProvider()
         val weighted = candidates.map { letter ->
-            letter to policy.selectionWeight(performances[letter.symbol] ?: LetterPerformance())
+            letter to policy.selectionWeight(
+                performances[letter.symbol] ?: LetterPerformance(),
+                currentTimeMillis = now
+            )
         }
         val totalWeight = weighted.sumOf { it.second }
         var cursor = random.nextDouble() * totalWeight
