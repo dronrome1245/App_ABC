@@ -12,6 +12,8 @@ import com.dronrome1245.appabc.domain.session.LetterSessionBreakdown
 import com.dronrome1245.appabc.domain.session.SessionLetterBreakdownCalculator
 import com.dronrome1245.appabc.domain.session.SessionProgressCalculator
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 
 data class PersistedSessionSummary(
@@ -75,6 +77,32 @@ class ProgressRepository(private val database: AppDatabase) {
     fun observeSessionHistory(): Flow<List<SessionResultEntity>> = sessionResultDao.observeAll()
 
     suspend fun getSessionHistory(): List<SessionResultEntity> = sessionResultDao.getAll()
+
+    fun observeParentDashboard(): Flow<ParentDashboardSnapshot> = combine(
+        attemptDao.getAllAttempts(),
+        letterProgressDao.observeAll(),
+        sessionResultDao.observeAll()
+    ) { attempts, progressRows, sessions ->
+        ParentDashboardAggregator.calculate(
+            attempts = attempts.map { it.toDomain() },
+            progressRows = progressRows,
+            sessions = sessions
+        )
+    }
+
+    suspend fun getParentDashboard(): ParentDashboardSnapshot = ParentDashboardAggregator.calculate(
+        attempts = attemptDao.getAllAttempts().first().map { it.toDomain() },
+        progressRows = letterProgressDao.getAll(),
+        sessions = sessionResultDao.getAll()
+    )
+
+    suspend fun getAllLetterDashboardProgress(): List<ParentLetterProgress> = getParentDashboard().letters
+
+    suspend fun getCompletedSessionCount(): Int = getParentDashboard().completedSessions
+
+    suspend fun getOverallAccuracyPercent(): Int = getParentDashboard().overallAccuracyPercent
+
+    suspend fun getMasteredLetterCount(): Int = getParentDashboard().masteredLetters
 
     private fun buildSummary(
         result: SessionResultEntity,

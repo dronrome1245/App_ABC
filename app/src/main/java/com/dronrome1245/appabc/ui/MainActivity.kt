@@ -29,6 +29,8 @@ import com.dronrome1245.appabc.ui.exercise.ExerciseScreen
 import com.dronrome1245.appabc.ui.exercise.ExerciseViewModel
 import com.dronrome1245.appabc.ui.home.HomeScreen
 import com.dronrome1245.appabc.ui.home.HomeViewModel
+import com.dronrome1245.appabc.ui.parent.ParentDashboardScreen
+import com.dronrome1245.appabc.ui.parent.ParentDashboardViewModel
 import com.dronrome1245.appabc.ui.result.ResultScreen
 import com.dronrome1245.appabc.ui.result.ResultViewModel
 import kotlinx.coroutines.MainScope
@@ -72,11 +74,26 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(repository: AppRepositoryImpl, progressRepository: ProgressRepository, progressionStore: LevelProgressionStore, audioPlayer: AudioPlayer) {
+fun AppNavigation(
+    repository: AppRepositoryImpl,
+    progressRepository: ProgressRepository,
+    progressionStore: LevelProgressionStore,
+    audioPlayer: AudioPlayer
+) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            HomeScreen(onStartClick = { levelId -> navController.navigate("exercise/$levelId") }, viewModel = viewModel { HomeViewModel(progressionStore) })
+            HomeScreen(
+                onStartClick = { levelId -> navController.navigate("exercise/$levelId") },
+                onParentClick = { navController.navigate("parent-dashboard") },
+                viewModel = viewModel { HomeViewModel(progressionStore) }
+            )
+        }
+        composable("parent-dashboard") {
+            ParentDashboardScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel { ParentDashboardViewModel(progressRepository) }
+            )
         }
         composable("exercise/{levelId}", arguments = listOf(navArgument("levelId") { type = NavType.IntType })) { backStackEntry ->
             val levelId = backStackEntry.arguments?.getInt("levelId") ?: 1

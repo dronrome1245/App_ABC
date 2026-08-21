@@ -1,74 +1,39 @@
-# NEXT_TASK.md — Milestone 3 Kickoff
+# NEXT_TASK.md — M3.2 Full Curriculum Runtime Expansion
 
 ## Единственная следующая задача
 
-**Milestone 3 Kickoff: спланировать и зафиксировать архитектурный scope Parent Dashboard/родительской статистики, подготовить versioned план расширения Curriculum до полного русского алфавита и спроектировать долгосрочное spaced repetition между днями/сессиями.**
+**Этап M3.2: расширение Curriculum в коде до Уровней 4–8 и добавление 27 аудио-файлов букв в `res/raw`.**
 
-## Статус перед стартом
+## Перед стартом
 
-- Milestone 1: DONE (100%).
-- Milestone 2: DONE (100%) / OWNER ACCEPTED.
-- M2.5 Closure Evidence Audit: PASS — 7/7.
-- LearningPolicy v3: accepted.
-- Curriculum v2: accepted.
-- Room schema: 2.
+M3.2 начинается только после завершения M3.1 и зелёного CI.
 
-## Scope M3 Kickoff — только планирование и архитектура
+Обязательный preflight:
 
-1. Parent Dashboard / родительский профиль:
-   - определить экраны и navigation boundary;
-   - определить, какие метрики показываются родителю;
-   - recent accuracy, response time, mastery state, confusion matrix, слабые буквы, история сессий;
-   - определить ручной выбор букв, настройки и reset flow;
-   - не загромождать детский training flow.
-2. Data architecture статистики:
-   - определить, какие данные читаются из существующих `Attempt`, `LetterProgressEntity`, `SessionResultEntity`;
-   - определить, нужны ли новые derived views/queries/entities;
-   - не повышать Room schema без отдельной необходимости и migration plan.
-3. Curriculum полного алфавита:
-   - подготовить proposal для versioned Curriculum, включающего все 33 русские буквы;
-   - определить порядок/группы ввода, distractor strategy и визуально похожие пары;
-   - учесть фактическую confusion matrix конкретного ребёнка;
-   - не менять `curriculumVersion = 2` и текущие Levels 1–3 до отдельного owner decision.
-4. Spaced Repetition across days:
-   - спроектировать межсессионные интервалы и retention metrics;
-   - использовать реальные timestamps Attempt, а не искусственные календарные блокировки;
-   - определить правила 6h+/24h+/7d+ и связь с mastery без изменения LearningPolicy v3 до утверждения новой версии;
-   - описать deterministic test strategy для времени/интервалов.
-5. Подготовить архитектурный пакет M3:
-   - proposed scope и out-of-scope;
-   - data-flow Parent Dashboard;
-   - требуемые Decision Log записи;
-   - предполагаемые изменения Room/DataStore/API между слоями;
-   - UX wire-level описание без реализации;
-   - DoD и test plan для M3.
+1. Внести в `docs/CURRICULUM.md` точную owner-approved D024 matrix распределения оставшихся 27 букв между Levels 4–8. Текущий M3.1 task packet сообщает только 8 уровней и полный охват 33 букв, но не содержит буквального состава каждого из Levels 4–8; AI не должен придумывать его.
+2. Зафиксировать новый `curriculumVersion` для фактического runtime-расширения.
+3. Проверить spokenName каждой новой буквы и имена локальных raw resources.
 
-## Decision Firewall
+## Scope M3.2
 
-На этапе Kickoff не кодировать:
+- расширить `ApprovedCurriculum` с Levels 1–3 до Levels 1–8 по D024;
+- сохранить накопленный пул ранее введённых букв;
+- не менять 10 вопросов и unlock `>=80%` / `8 из 10`;
+- добавить 27 локальных OGG/WAV ресурсов для оставшихся букв;
+- расширить mapping `HybridAudioPlayer` на все 33 буквы;
+- сохранить TTS fallback для отсутствующего/ошибочного asset;
+- обновить seed данных букв без destructive migration;
+- добавить deterministic curriculum tests для состава уровней, накопленного пула и distractor invariant;
+- прогнать JVM tests, `assembleDebug`, CI и затем owner smoke новых уровней/озвучки.
 
-- полный алфавит;
-- новый LearningPolicy;
-- новые mastery thresholds;
-- новые Room tables;
-- Parent Dashboard UI.
+## Не менять в M3.2
 
-Сначала должны быть утверждены M3 architecture/scope и все новые продуктовые параметры. Полный порядок 33 букв и long-term spacing policy нельзя считать утверждёнными только на основании этого planning task.
-
-## Нельзя менять без нового owner decision
-
-- LearningPolicy v3;
-- mastery states `INTRODUCED / PRACTICING / MASTERED`;
-- Curriculum v2 Levels 1–3;
-- 10 вопросов на сессию;
-- unlock `>=80%` / 8 из 10;
-- local-audio-first + TTS fallback;
-- Room schema 2.
-
-## Результат Kickoff
-
-Следующий implementation task packet должен появиться только после утверждения владельцем архитектуры M3 и новых versioned решений по Curriculum/Spaced Repetition, если они действительно меняются.
+- Room schema 2 без отдельной необходимости;
+- LearningPolicy v3 и mastery thresholds;
+- D025 7-day decay до отдельного implementation task/version decision;
+- Parent Dashboard M3.1 без необходимости;
+- внешние analytics/ads/backend.
 
 ## Android Studio Agent
 
-Не нужен для Kickoff. Это repository/product architecture task без Android runtime debugging.
+Не нужен по умолчанию. Подключать только при конкретной локальной audio/runtime проблеме на устройстве.
