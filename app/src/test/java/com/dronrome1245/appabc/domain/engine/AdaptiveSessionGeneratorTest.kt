@@ -76,7 +76,12 @@ class AdaptiveSessionGeneratorTest {
             add(attempt("М", false, 24))
             add(attempt("М", true, 25))
         }
-        val generator = AdaptiveSessionGenerator(letters, history, Random(1234))
+        val generator = AdaptiveSessionGenerator(
+            availableLetters = letters,
+            history = history,
+            random = Random(1234),
+            currentTimeMillisProvider = { 2_000L }
+        )
         val counts = mutableMapOf("А" to 0, "М" to 0)
 
         repeat(500) {
@@ -86,6 +91,31 @@ class AdaptiveSessionGeneratorTest {
 
         assertTrue("counts=$counts", counts.getValue("М") > counts.getValue("А"))
         assertTrue(counts.getValue("А") > 0)
+    }
+
+    @Test
+    fun `decayed mastered letter gets priority weight two`() {
+        val letters = ApprovedCurriculum.level1.introducedLetters
+        val now = T0 + 8 * DAY_MILLIS
+        val history = buildList {
+            repeat(5) { index -> add(attemptAt("А", true, T0 + index * 1_000L)) }
+            repeat(5) { index -> add(attemptAt("М", true, now - 10_000L + index * 1_000L)) }
+        }
+        val generator = AdaptiveSessionGenerator(
+            availableLetters = letters,
+            history = history,
+            random = Random(1234),
+            currentTimeMillisProvider = { now }
+        )
+        val counts = mutableMapOf("А" to 0, "М" to 0)
+
+        repeat(500) {
+            val target = generator.nextTask().target.symbol
+            counts[target] = counts.getValue(target) + 1
+        }
+
+        assertTrue("counts=$counts", counts.getValue("А") > counts.getValue("М"))
+        assertTrue(counts.getValue("М") > 0)
     }
 
     @Test
@@ -117,14 +147,25 @@ class AdaptiveSessionGeneratorTest {
 
     private fun level2Letters(): List<Letter> = ApprovedCurriculum.curriculum.lettersAvailableAt(2)
 
-    private fun attempt(symbol: String, correct: Boolean, order: Long) = Attempt(
+    private fun attempt(symbol: String, correct: Boolean, order: Long) = attemptAt(
+        symbol = symbol,
+        correct = correct,
+        timestampMillis = 1_000 + order
+    )
+
+    private fun attemptAt(symbol: String, correct: Boolean, timestampMillis: Long) = Attempt(
         targetLetter = symbol,
         selectedLetter = if (correct) symbol else if (symbol == "А") "М" else "А",
         isCorrect = correct,
         responseTimeMs = 400,
-        timestamp = Instant.ofEpochMilli(1_000 + order),
+        timestamp = Instant.ofEpochMilli(timestampMillis),
         sessionId = "history-$symbol",
         levelId = 1,
         learningPolicyVersion = 2
     )
+
+    private companion object {
+        const val DAY_MILLIS = 24L * 60 * 60 * 1_000
+        const val T0 = 1_700_000_000_000L
+    }
 }

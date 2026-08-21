@@ -34,6 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.dronrome1245.appabc.data.repository.ParentLetterProgress
 import com.dronrome1245.appabc.data.repository.ParentLetterStatus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ParentDashboardScreen(
@@ -86,6 +89,12 @@ fun ParentDashboardScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Статус: ${statusLabel(letter.status)}")
+                    if (letter.requiresReview) {
+                        Text("Требует повторения", fontWeight = FontWeight.Bold)
+                        letter.lastSeenTimestamp?.let { timestamp ->
+                            Text("Последняя тренировка: ${formatLastTrainingDate(timestamp)}")
+                        }
+                    }
                     Text("Показов: ${letter.attemptsCount}")
                     Text("Правильно: ${letter.correctCount}")
                     Text("Точность: ${letter.accuracyPercent}%")
@@ -138,3 +147,6 @@ private fun statusColor(status: ParentLetterStatus): Color = when (status) {
     ParentLetterStatus.PRACTICING -> Color(0xFF90CAF9)
     ParentLetterStatus.MASTERED -> Color(0xFFA5D6A7)
 }
+
+private fun formatLastTrainingDate(timestamp: Long): String =
+    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(timestamp))

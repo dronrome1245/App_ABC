@@ -6,9 +6,11 @@ import com.dronrome1245.appabc.data.repository.ParentDashboardAggregator
 import com.dronrome1245.appabc.data.repository.ParentDashboardSnapshot
 import com.dronrome1245.appabc.data.repository.ParentLetterProgress
 import com.dronrome1245.appabc.data.repository.ParentLetterStatus
+import com.dronrome1245.appabc.domain.learning.LearningPolicyConfig
 import com.dronrome1245.appabc.domain.model.Attempt
 import java.time.Instant
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -76,12 +78,59 @@ class ParentDashboardViewModelTest {
             )
         )
 
-        val snapshot = ParentDashboardAggregator.calculate(attempts, progressRows, sessions)
+        val snapshot = ParentDashboardAggregator.calculate(
+            attempts = attempts,
+            progressRows = progressRows,
+            sessions = sessions,
+            currentTimeMillis = 5_000
+        )
 
         assertEquals(33, snapshot.letters.size)
         assertEquals(ParentLetterStatus.MASTERED, snapshot.letters.first { it.letter == "А" }.status)
+        assertFalse(snapshot.letters.first { it.letter == "А" }.requiresReview)
         assertEquals(1, snapshot.masteredLetters)
         assertEquals(1, snapshot.completedSessions)
         assertEquals(80, snapshot.overallAccuracyPercent)
+    }
+
+    @Test
+    fun aggregatorMarksDecayedMasteredLetterAsRequiringReview() {
+        val lastSuccessful = 1_700_000_000_000L
+        val attempts = (1L..5L).map { id ->
+            Attempt(
+                id = id,
+                targetLetter = "А",
+                selectedLetter = "А",
+                isCorrect = true,
+                responseTimeMs = 700,
+                timestamp = Instant.ofEpochMilli(lastSuccessful - (5L - id) * 1_000L),
+                sessionId = "s1",
+                levelId = 1,
+                learningPolicyVersion = 3
+            )
+        }
+        val progressRows = listOf(
+            LetterProgressEntity(
+                letter = "А",
+                attemptsCount = 5,
+                correctCount = 5,
+                lastSeenTimestamp = lastSuccessful,
+                averageResponseTimeMs = 700
+            )
+        )
+        val now = lastSuccessful + LearningPolicyConfig.RETENTION_DECAY_MILLIS + 1_000L
+
+        val snapshot = ParentDashboardAggregator.calculate(
+            attempts = attempts,
+            progressRows = progressRows,
+            sessions = emptyList(),
+            currentTimeMillis = now
+        )
+        val letter = snapshot.letters.first { it.letter == "А" }
+
+        assertEquals(ParentLetterStatus.PRACTICING, letter.status)
+        assertTrue(letter.requiresReview)
+        assertEquals(lastSuccessful, letter.lastSeenTimestamp)
+        assertEquals(0, snapshot.masteredLetters)
     }
 }

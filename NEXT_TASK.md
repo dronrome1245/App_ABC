@@ -1,41 +1,41 @@
-# NEXT_TASK.md — M3.3 Retention Decay
+# NEXT_TASK.md — M3.4 Closure Evidence Audit
 
 ## Единственная следующая задача
 
-**Этап M3.3: реализация алгоритма 7-дневного затухания mastery (Retention Decay по D025) в LearningPolicy v4 и time-based JVM-тесты.**
+**M3.4: Построчный Closure Evidence Audit Milestone 3, запуск PR #9 и подготовка чеклиста Owner Acceptance Smoke Test.**
 
-## Decision source
+## Цель
 
-`OWNER / D025`
+Проверить Milestone 3 по нормативным решениям, фактическому коду и подтверждаемым evidence без автоматического закрытия требований, для которых отсутствует runtime/owner evidence.
 
-Буква в состоянии `MASTERED`, не имеющая успешного подтверждения знания в течение 7 суток, должна снова требовать long-term re-check.
+## Проверить построчно
 
-## Перед стартом
+1. D023 — Parental Gate и Parent Dashboard.
+2. D024 — Curriculum v3: 8 уровней, 33 буквы, неизменный 10-question / 80% unlock.
+3. D025 — LearningPolicy v4: 7-day Retention Decay, deterministic time-based JVM tests, decay weight 2.0, восстановление после успешного re-check.
+4. Room schema остаётся 2; миграция для M3.3 не создавалась.
+5. Исторические `Attempt` не переписываются time-based evaluation.
+6. JVM test suite и `assembleDebug` имеют подтверждаемое зелёное CI evidence на финальном PR head.
+7. Отдельно отметить всё, что требует Owner Acceptance / runtime smoke и не доказывается JVM/CI.
 
-1. Завершить M3.2: зелёный JVM test suite и `assembleDebug` на финальном PR head.
-2. Не менять D024 Curriculum v3 / 8 уровней / 33 буквы.
-3. Зафиксировать точное runtime-поведение decay как LearningPolicy v4 до кодирования: влияет ли истечение 7 суток на mastery state, selection weight или отдельный retention flag.
-4. Использовать детерминированный clock/time source; не привязывать pure domain tests к реальному системному времени.
+## Owner Acceptance Smoke Test — подготовить чеклист
 
-## Scope M3.3
+Чеклист должен как минимум покрыть:
 
-- повысить `learningPolicyVersion` с 3 до 4;
-- реализовать 7-day retention boundary по timestamps Attempt;
-- сохранить отсутствие суточной блокировки приложения;
-- добавить time-based JVM tests для интервалов `<7 дней`, `ровно 7 дней`, `>7 дней`;
-- проверить взаимодействие decay с adaptive weighting, retry queue и MASTERED;
-- не переписывать исторические Attempt;
-- сохранить Room schema 2, если новое состояние может быть вычислено из существующих данных;
-- прогнать весь JVM suite, `assembleDebug` и CI.
+- вход в Parent mode через существующий Parental Gate;
+- отображение всех 33 букв;
+- отображение «Требует повторения» и даты последней тренировки для decay-состояния;
+- прохождение повторной успешной тренировки и возврат буквы в `MASTERED`;
+- отсутствие регрессии Curriculum Levels 1–8;
+- воспроизведение локального аудио / TTS fallback без изменения M3.2 audio strategy.
 
-## Не менять
+## Не менять в M3.4 без нового owner decision
 
-- Curriculum v3 и состав Levels 1–8;
-- 10 вопросов;
-- unlock `>=80%` / `8 из 10`;
-- 33 local letter assets и TTS fallback;
+- Curriculum v3;
+- LearningPolicy v4 thresholds/weights/retention horizon;
+- Room schema 2;
 - Parental Gate;
-- внешние analytics/ads/backend.
+- 10 вопросов и unlock `>=80%` / `8 из 10`.
 
 ## Android Studio Agent
 

@@ -4,15 +4,15 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.2 IMPLEMENTATION_COMPLETE / M3.3 NEXT.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.3 IMPLEMENTATION_COMPLETE / M3.4 NEXT.**
 
-PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`. M3.2 реализован в `feature/m3-curriculum-audio-full` / PR #8.
+PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
+PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
 
 ## Milestone 2 — финальные статусы
 
 - MILESTONE_2_STATUS: DONE (100%)
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
-- LEARNING_POLICY_VERSION: 3
 - DATABASE_SCHEMA_VERSION: 2
 
 ## M3.1
@@ -25,7 +25,9 @@ PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d
 
 ## M3.2 — статусы
 
-- M3_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- M3_2_IMPLEMENTATION_STATUS: COMPLETE / MERGED
+- PR: #8
+- MERGE_SHA: `2c08aff6a49e26810de07734839ef7e73b58fa0f`
 - CURRICULUM_VERSION: 3
 - CURRICULUM_LEVELS: 8
 - CURRICULUM_LETTERS: 33
@@ -37,16 +39,33 @@ PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d
 - AUDIO_STRATEGY: LOCAL_OGG_FIRST / TTS_FALLBACK
 - AUDIO_MAPPING_STATUS: ALL_33_LETTERS
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- LEARNING_POLICY_VERSION: 3 (UNCHANGED)
 - PARENTAL_GATE_STATUS: UNCHANGED
-- CURRICULUM_TEST_STATUS: PASS
-- AUDIO_ASSET_CATALOG_TEST_STATUS: PASS
-- PARENT_DASHBOARD_TEST_STATUS: PASS
-- DEBUG_BUILD_STATUS_M3_2: PASS
-- ANDROID_CI_STATUS_M3_2: PASS — run 32462108198
+- FINAL_ANDROID_CI_M3_2: PASS — run 32462272322
 - M3_2_RUNTIME_AUDIO_STATUS: NOT_TESTED
 
-## D024 normalized matrix
+## M3.3 — Retention Decay
+
+- M3_3_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- POLICY_VERSION: 4
+- LEARNING_POLICY_VERSION: 4
+- DECISION_SOURCE: D025 / OWNER
+- RETENTION_DECAY_MILLIS: 604800000
+- RETENTION_BOUNDARY: DECAY WHEN ELAPSED > 7 DAYS
+- DECAYED_EFFECTIVE_STATE: PRACTICING
+- RETENTION_DECAY_WEIGHT: 2.0
+- RETENTION_ANCHOR: LAST_SUCCESSFUL_ATTEMPT_TIMESTAMP
+- SUCCESSFUL_RECHECK: REFRESHES RETENTION TIMESTAMP / RESTORES MASTERED WHEN BASE CRITERIA HOLD
+- TIME_EVALUATION: READ_ONLY FOR HISTORICAL ATTEMPTS
+- TIME_BASED_JVM_TESTS: ADDED
+- PARENT_DASHBOARD_REVIEW_FLAG: IMPLEMENTED
+- PARENT_DASHBOARD_LAST_TRAINING_DATE: IMPLEMENTED
+- CURRICULUM_VERSION: 3 (UNCHANGED)
+- CURRICULUM_LEVELS: 8 (UNCHANGED)
+- CURRICULUM_LETTERS: 33 (UNCHANGED)
+- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+- PARENTAL_GATE_STATUS: UNCHANGED
+
+## D024 normalized matrix — без изменений
 
 - Level 1: `А М`
 - Level 2 new: `О У`
@@ -57,8 +76,6 @@ PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d
 - Level 7 new: `З Г Е Я`
 - Level 8 new: `Ш Ж Ч Щ Х Ц Э Ю Ё Ы Ь Ъ Й Ф`
 
-Product Lead подтвердил нормализацию Level 8 с добавлением `Й` и `Ф`, чтобы D024 фактически покрывал все 33 буквы.
-
 ## Следующий этап
 
-**M3.3: Retention Decay.** Реализовать D025 как LearningPolicy v4: 7-дневное затухание mastery с детерминированным clock/time source и time-based JVM unit tests. Room schema не повышать без отдельной необходимости.
+**M3.4: Построчный Closure Evidence Audit Milestone 3, запуск PR #9 и подготовка чеклиста Owner Acceptance Smoke Test.**

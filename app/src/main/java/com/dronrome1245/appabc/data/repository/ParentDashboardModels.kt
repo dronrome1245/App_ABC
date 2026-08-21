@@ -21,7 +21,8 @@ data class ParentLetterProgress(
     val correctCount: Int,
     val accuracyPercent: Int,
     val averageResponseTimeMs: Long,
-    val lastSeenTimestamp: Long?
+    val lastSeenTimestamp: Long?,
+    val requiresReview: Boolean = false
 ) {
     companion object {
         fun notStarted(letter: String) = ParentLetterProgress(
@@ -31,7 +32,8 @@ data class ParentLetterProgress(
             correctCount = 0,
             accuracyPercent = 0,
             averageResponseTimeMs = 0,
-            lastSeenTimestamp = null
+            lastSeenTimestamp = null,
+            requiresReview = false
         )
     }
 }
@@ -56,7 +58,8 @@ object ParentDashboardAggregator {
     fun calculate(
         attempts: List<Attempt>,
         progressRows: List<LetterProgressEntity>,
-        sessions: List<SessionResultEntity>
+        sessions: List<SessionResultEntity>,
+        currentTimeMillis: Long = System.currentTimeMillis()
     ): ParentDashboardSnapshot {
         val policy = LearningPolicy()
         val performances = policy.buildPerformances(RussianAlphabet.symbols, attempts)
@@ -68,7 +71,8 @@ object ParentDashboardAggregator {
                 ParentLetterProgress.notStarted(symbol)
             } else {
                 val performance = performances.getValue(symbol)
-                val status = when (policy.masteryState(performance)) {
+                val evaluation = policy.masteryEvaluation(performance, currentTimeMillis)
+                val status = when (evaluation.state) {
                     MasteryState.INTRODUCED -> ParentLetterStatus.INTRODUCED
                     MasteryState.PRACTICING -> ParentLetterStatus.PRACTICING
                     MasteryState.MASTERED -> ParentLetterStatus.MASTERED
@@ -80,7 +84,8 @@ object ParentDashboardAggregator {
                     correctCount = row.correctCount,
                     accuracyPercent = row.correctCount * 100 / row.attemptsCount,
                     averageResponseTimeMs = row.averageResponseTimeMs,
-                    lastSeenTimestamp = row.lastSeenTimestamp
+                    lastSeenTimestamp = row.lastSeenTimestamp,
+                    requiresReview = evaluation.isDecayed
                 )
             }
         }
