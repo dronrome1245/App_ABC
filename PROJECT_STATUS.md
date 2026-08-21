@@ -33,6 +33,24 @@
 
 Production signing keys и store publication не хранятся/не выполняются в рамках закрытия MVP. Это отдельный deployment/Post-MVP шаг.
 
+## Post-MVP active work
+
+### AUDIO-02 — Audio Pack v2 / D027
+
+- AUDIO_02_STATUS: IN PROGRESS / STUDIO ASSETS REQUIRED
+- D027_SCOPE: 33 letter voice assets; existing `correct` / `wrong` / `level_complete` remain unchanged
+- V2_RESOURCE_NAMING: `sound_letter_<token>_v2`
+- AUDIO_RESOLUTION_ORDER: V2 LOCAL -> V1 LOCAL -> TTS
+- BUNDLED_V2_LETTER_ASSETS: 0 / 33
+- BUNDLED_V1_LETTER_ASSETS: 33 / 33
+- SAFE_MISSING_ASSET_FALLBACK: IMPLEMENTED
+- RELEASE_LIFECYCLE: existing `stop()` / idempotent `release()` retained
+- STUDIO_V2_DURATION_TARGET: 400–700 ms per letter, subject to justified articulation exceptions
+- STUDIO_V2_CONTENT_STATUS: PENDING — no new v2 OGG binaries are present in the repository yet
+- DEVICE_AUDIO_SMOKE: PENDING actual v2 assets
+
+AUDIO-02 нельзя переводить в `DONE`, пока реальные студийные v2-ассеты не добавлены и не проверены по длительности/воспроизведению. Технический слой подготовлен так, чтобы v2 автоматически имел приоритет, а при отсутствии конкретного файла приложение безопасно использовало v1 и затем TTS.
+
 ## Merge / CI evidence
 
 - PR #7 / M3.1: merged — `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
