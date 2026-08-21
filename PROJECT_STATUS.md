@@ -4,70 +4,61 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.1 IN_PROGRESS.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.2 IMPLEMENTATION_COMPLETE / M3.3 NEXT.**
 
-M2 остаётся закрытым и owner accepted. M3.1 реализуется в `feature/m3-parent-dashboard-gate` / PR #7: Parental Gate, Parent Dashboard и 33-буквенная сводка построены поверх существующей Room schema 2 без изменения тренировочного цикла.
+PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`. M3.2 реализован в `feature/m3-curriculum-audio-full` / PR #8.
 
 ## Milestone 2 — финальные статусы
 
 - MILESTONE_2_STATUS: DONE (100%)
-- M2_5_CLOSURE_AUDIT_STATUS: PASS — 7/7
-- STATIC_REVIEW_STATUS: PASS
-- TESTS_CI_STATUS: PASS
-- DEBUG_BUILD_STATUS: PASS
-- LOCAL_ANDROID_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
-- PHYSICAL_DEVICE_RUNTIME_STATUS: PASS — OWNER_EVIDENCE
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
-- MIGRATION_1_2_STATUS: AUTOMATED_TEST_PASS
-- MIGRATION_1_2_DEVICE_STATUS: NOT_TESTED
 - LEARNING_POLICY_VERSION: 3
-- RUNTIME_CURRICULUM_VERSION: 2
 - DATABASE_SCHEMA_VERSION: 2
 
-## M3 owner decisions
-
-- D023: Parent mode открывается через случайный арифметический Parental Gate; subtraction не генерирует отрицательный результат.
-- D024: целевой Curriculum содержит 8 уровней и покрывает все 33 русские буквы. Levels 1–3 сохраняют `А/М`, `О/У`, `С/Н`; Levels 4–8 вводят оставшиеся 27 букв. В полученном M3.1 packet отсутствует точная owner-approved матрица распределения этих 27 букв между уровнями, поэтому она не изобреталась и должна быть импортирована перед M3.2.
-- D025: `MASTERED` требует long-term re-check после 7 суток без успешного подтверждения; runtime LearningPolicy v3 в M3.1 пока не меняется.
-
-## M3.1 — статусы
+## M3.1
 
 - M3_1_IMPLEMENTATION_STATUS: COMPLETE
-- DOMAIN_PARENTAL_GATE_STATUS: PASS — CODE/TEST
-- PARENTAL_GATE_NON_NEGATIVE_SUBTRACTION_STATUS: PASS — UNIT_TEST
-- PARENT_DASHBOARD_ROUTE_STATUS: IMPLEMENTED
-- PARENT_DASHBOARD_VIEWMODEL_STATUS: PASS — CODE/TEST
-- ALL_33_LETTERS_MATRIX_STATUS: PASS — CODE/TEST
-- NOT_STARTED_DEFAULT_STATUS: PASS — UNIT_TEST
-- MASTERED_STATUS_SOURCE: LEARNING_POLICY_V3
-- SUMMARY_METRICS_STATUS: PASS — CODE/TEST
-- LETTER_DETAIL_DIALOG_STATUS: IMPLEMENTED
-- HOME_PARENT_ENTRY_STATUS: IMPLEMENTED
-- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
-- TRAINING_SESSION_RULE: 10 QUESTIONS / ADAPTIVE GENERATOR / 80% UNCHANGED
 - JVM_TESTS_STATUS: PASS
 - DEBUG_BUILD_STATUS_M3_1: PASS
-- ANDROID_CI_STATUS: PASS — run 32452734342
 - M3_1_RUNTIME_STATUS: NOT_TESTED
 - M3_1_OWNER_ACCEPTANCE_STATUS: PENDING
 
-## Parent Dashboard data source
+## M3.2 — статусы
 
-Dashboard не создаёт новую таблицу. Используются:
+- M3_2_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- CURRICULUM_VERSION: 3
+- CURRICULUM_LEVELS: 8
+- CURRICULUM_LETTERS: 33
+- LEVEL_POOL_SIZES: 2 / 4 / 6 / 9 / 12 / 15 / 19 / 33
+- SESSION_QUESTION_COUNT: 10 (UNCHANGED)
+- LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
+- AUDIO_ASSETS_COUNT: 33_LETTERS_FULL
+- AUDIO_FEEDBACK_ASSETS_COUNT: 3
+- AUDIO_STRATEGY: LOCAL_OGG_FIRST / TTS_FALLBACK
+- AUDIO_MAPPING_STATUS: ALL_33_LETTERS
+- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+- LEARNING_POLICY_VERSION: 3 (UNCHANGED)
+- PARENTAL_GATE_STATUS: UNCHANGED
+- CURRICULUM_TEST_STATUS: PENDING_FINAL_CI
+- AUDIO_ASSET_CATALOG_TEST_STATUS: PENDING_FINAL_CI
+- PARENT_DASHBOARD_TEST_STATUS: PENDING_FINAL_CI
+- DEBUG_BUILD_STATUS_M3_2: PENDING_FINAL_CI
+- ANDROID_CI_STATUS_M3_2: PENDING_FINAL_CI
+- M3_2_RUNTIME_AUDIO_STATUS: NOT_TESTED
 
-- raw `Attempt` для recent/mastery входа LearningPolicy;
-- `LetterProgressEntity` для persistent attempts/correct/response-time aggregates;
-- `SessionResultEntity` для количества завершённых сессий и общей точности;
-- канонический 33-буквенный `RussianAlphabet` для дополнения отсутствующих строк статусом `NOT_STARTED`.
+## D024 normalized matrix
 
-## Decision/version discipline
+- Level 1: `А М`
+- Level 2 new: `О У`
+- Level 3 new: `С Н`
+- Level 4 new: `И Т К`
+- Level 5 new: `Л Р В`
+- Level 6 new: `Д П Б`
+- Level 7 new: `З Г Е Я`
+- Level 8 new: `Ш Ж Ч Щ Х Ц Э Ю Ё Ы Ь Ъ Й Ф`
 
-- runtime `learningPolicyVersion = 3` до отдельной реализации D025;
-- runtime `curriculumVersion = 2` до M3.2;
-- D024 требует новой Curriculum version только при фактическом кодировании Levels 4–8;
-- Room schema остаётся 2;
-- M3.1 не меняет audio assets и LearningEngine session behavior.
+Product Lead подтвердил нормализацию Level 8 с добавлением `Й` и `Ф`, чтобы D024 фактически покрывал все 33 буквы.
 
-## Следующий шаг после M3.1
+## Следующий этап
 
-M3.2: расширить Curriculum в коде до Levels 4–8 и добавить 27 локальных audio assets. До кодирования состава Levels 4–8 в репозиторий должна быть внесена точная owner-approved матрица D024; отсутствующие параметры не выводить самостоятельно.
+**M3.3: Retention Decay.** Реализовать D025 как LearningPolicy v4: 7-дневное затухание mastery с детерминированным clock/time source и time-based JVM unit tests. Room schema не повышать без отдельной необходимости.
