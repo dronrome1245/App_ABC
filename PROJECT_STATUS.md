@@ -37,19 +37,19 @@ Production signing keys и store publication не хранятся/не выпо
 
 ### AUDIO-02 — Audio Pack v2 / D027
 
-- AUDIO_02_STATUS: IN PROGRESS / STUDIO ASSETS REQUIRED
+- AUDIO_02_STATUS: IN PROGRESS / HOME-ONLY V2 INSTALLED / DEVICE SMOKE PENDING
 - D027_SCOPE: 33 letter voice assets; existing `correct` / `wrong` / `level_complete` remain unchanged
 - V2_RESOURCE_NAMING: `sound_letter_<token>_v2`
 - AUDIO_RESOLUTION_ORDER: V2 LOCAL -> V1 LOCAL -> TTS
-- BUNDLED_V2_LETTER_ASSETS: 0 / 33
+- BUNDLED_V2_LETTER_ASSETS: 33 / 33 (HOME-ONLY GCOMPRIS)
 - BUNDLED_V1_LETTER_ASSETS: 33 / 33
 - SAFE_MISSING_ASSET_FALLBACK: IMPLEMENTED
 - RELEASE_LIFECYCLE: existing `stop()` / idempotent `release()` retained
-- STUDIO_V2_DURATION_TARGET: 400–700 ms per letter, subject to justified articulation exceptions
-- STUDIO_V2_CONTENT_STATUS: PENDING — no new v2 OGG binaries are present in the repository yet
-- DEVICE_AUDIO_SMOKE: PENDING actual v2 assets
+- V2_DURATION_TARGET: 400–700 ms per letter, subject to justified articulation exceptions
+- HOME_ONLY_V2_CONTENT_STATUS: INSTALLED — 33/33 human-recorded GCompris OGGs; distribution remains blocked until replacement/relicensing decision
+- DEVICE_AUDIO_SMOKE: PENDING owner verification of installed HOME-ONLY v2 assets
 
-AUDIO-02 нельзя переводить в `DONE`, пока реальные студийные v2-ассеты не добавлены и не проверены по длительности/воспроизведению. Технический слой подготовлен так, чтобы v2 автоматически имел приоритет, а при отсутствии конкретного файла приложение безопасно использовало v1 и затем TTS.
+Для домашнего использования владелец принял человеческий пакет GCompris: 33/33 v2-ассета установлены и имеют приоритет над v1. AUDIO-02 остаётся `IN PROGRESS` до физического device smoke. Публичное или стороннее распространение сборки заблокировано: перед ним HOME-ONLY пакет должен быть заменён либо должно быть отдельно принято и выполнено лицензионное решение по распространению.
 
 ## Merge / CI evidence
 
