@@ -1,6 +1,10 @@
 package com.dronrome1245.appabc.ui.exercise
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,9 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dronrome1245.appabc.domain.model.Letter
@@ -67,11 +74,11 @@ fun QuestionContent(
     ) {
         Text(text = "Вопрос ${state.currentStep} из ${state.totalSteps}", style = MaterialTheme.typography.bodySmall)
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         Text(text = "Найди букву", style = MaterialTheme.typography.headlineMedium)
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         IconButton(onClick = onRepeatClick, modifier = Modifier.size(64.dp)) {
             Icon(Icons.Default.PlayArrow, contentDescription = "Повторить звук", modifier = Modifier.size(48.dp))
         }
@@ -91,7 +98,7 @@ fun QuestionContent(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.weight(1f))
     }
 }
@@ -108,15 +115,34 @@ fun LetterCard(
         isSelected && isCorrect == false -> Color.Red
         else -> Color.Transparent
     }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = answerCardScaleTarget(isPressed),
+        animationSpec = spring(
+            dampingRatio = 0.55f,
+            stiffness = 500f
+        ),
+        label = "answer-card-scale"
+    )
 
     Card(
         onClick = onClick,
-        modifier = Modifier.size(120.dp),
+        modifier = Modifier
+            .size(120.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .testTag("answer-card-${letter.symbol}"),
         border = if (borderColor != Color.Transparent) BorderStroke(4.dp, borderColor) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        interactionSource = interactionSource
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = letter.symbol, fontSize = 64.sp, style = MaterialTheme.typography.displayLarge)
         }
     }
 }
+
+internal fun answerCardScaleTarget(isPressed: Boolean): Float = if (isPressed) 0.95f else 1f
