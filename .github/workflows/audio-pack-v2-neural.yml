@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 jobs:
-  direct-duration-calibration:
+  full-pack:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,18 +43,36 @@ jobs:
             --extra-index-url https://download.pytorch.org/whl/cpu \
             torch==2.3.1 numpy==1.26.4 scipy librosa huggingface_hub
 
-      - name: Generate direct duration-calibrated preview
+      - name: Generate full Masha neutral pack
         run: |
           python tools/generate_dialogs_ru_direct_v2.py \
-            --letters А,Б,Л,Ф \
             --speaker masha \
             --emotion neutral \
-            --output build/dialogs-ru-direct-v2
+            --output build/dialogs-ru-direct-neutral
 
-      - name: Upload direct neural preview
+      - name: Verify Masha neutral file count
+        run: |
+          count=$(find build/dialogs-ru-direct-neutral/masha-neutral -maxdepth 1 -type f -name 'sound_letter_*_v2.ogg' | wc -l)
+          test "$count" -eq 33
+
+      - name: Generate full Masha happy pack
+        run: |
+          python tools/generate_dialogs_ru_direct_v2.py \
+            --speaker masha \
+            --emotion happy \
+            --output build/dialogs-ru-direct-happy
+
+      - name: Verify Masha happy file count
+        run: |
+          count=$(find build/dialogs-ru-direct-happy/masha-happy -maxdepth 1 -type f -name 'sound_letter_*_v2.ogg' | wc -l)
+          test "$count" -eq 33
+
+      - name: Upload full neural candidates
         uses: actions/upload-artifact@v4
         with:
-          name: dialogs-ru-direct-v2-calibration
-          path: build/dialogs-ru-direct-v2/
+          name: dialogs-ru-v2-full-candidates
+          path: |
+            build/dialogs-ru-direct-neutral/
+            build/dialogs-ru-direct-happy/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
