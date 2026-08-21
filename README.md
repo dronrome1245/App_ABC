@@ -4,13 +4,20 @@
 
 ## Текущий статус
 
-**Milestone 1 — DONE / OWNER ACCEPTED. Milestone 2 — DONE / OWNER ACCEPTED. Milestone 3 — In Planning / Kickoff.**
+| Milestone | Статус |
+| --- | --- |
+| Milestone 1 | DONE / OWNER ACCEPTED |
+| Milestone 2 | DONE / OWNER ACCEPTED |
+| Milestone 3 | DONE / OWNER ACCEPTED |
+| Milestone 4 | In Planning / Kickoff |
 
 M1 принят владельцем на реальном Android-устройстве: Level 1 `А/М`, 10 вопросов, рабочая озвучка, выбор ответа, сохранение истории и основной пользовательский поток.
 
 M2 закрыт после M2.5 Closure Evidence Audit: 7/7 критериев PASS, CI и `assembleDebug` PASS, owner device smoke PASS, owner acceptance ACCEPTED. В M2 реализованы hybrid local-audio-first/TTS-fallback, Curriculum Levels 1–3, per-letter Session Summary/Room persistence, adaptive LearningPolicy v3 с mastery/weighted selection/retry/delayed checks и automated migration 1→2 test.
 
-M3 пока не кодируется. Активен только Kickoff: архитектура Parent Dashboard/родительской статистики, proposal расширения Curriculum до полного русского алфавита и long-term spaced repetition between days. Новые curriculum/policy параметры требуют отдельного owner decision и version update.
+M3 закрыт после M3.4 Closure Evidence Audit: 7/7 критериев PASS, CI/JVM tests/`assembleDebug` PASS, физический smoke-тест на Pixel 7a PASS, owner acceptance ACCEPTED. В M3 реализованы Parental Gate и Parent Dashboard, Curriculum v3 на 8 уровней и все 33 русские буквы, полный набор из 33 letter OGG + 3 UI sounds и LearningPolicy v4 с 7-дневным Retention Decay по D025.
+
+Активен **Milestone 4 — In Planning / Kickoff**. До утверждения scope код M4 не начинается; планирование охватывает UI/UX-полировку, анимации успеха/салют-конфетти в Compose, настройки звука в Parent Dashboard и подготовку ProGuard/R8 release build.
 
 Подробно: [PROJECT_STATUS.md](PROJECT_STATUS.md) и [NEXT_TASK.md](NEXT_TASK.md).
 

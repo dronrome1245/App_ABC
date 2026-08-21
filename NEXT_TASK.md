@@ -1,42 +1,46 @@
-# NEXT_TASK.md — M3.4 Closure Evidence Audit
+# NEXT_TASK.md — Milestone 4 Kickoff
 
 ## Единственная следующая задача
 
-**M3.4: Построчный Closure Evidence Audit Milestone 3, запуск PR #9 и подготовка чеклиста Owner Acceptance Smoke Test.**
+**Milestone 4 Kickoff: архитектурное планирование UI/UX полировки (анимации успеха, салют/конфетти Compose), настроек звука в Parent Dashboard и подготовки ProGuard/R8 релизной сборки. Код M4 не начинать до утверждения скоупа.**
 
-## Цель
+## Статус входа в M4
 
-Проверить Milestone 3 по нормативным решениям, фактическому коду и подтверждаемым evidence без автоматического закрытия требований, для которых отсутствует runtime/owner evidence.
+- Milestone 3: DONE (100%).
+- M3.4 Closure Evidence Audit: PASS — 7/7.
+- Owner Acceptance: ACCEPTED.
+- Physical device smoke: PASS — Pixel 7a.
+- LearningPolicy: v4.
+- Curriculum: v3 / 8 уровней / 33 буквы.
+- Room schema: 2.
 
-## Проверить построчно
+## Цель Kickoff
 
-1. D023 — Parental Gate и Parent Dashboard.
-2. D024 — Curriculum v3: 8 уровней, 33 буквы, неизменный 10-question / 80% unlock.
-3. D025 — LearningPolicy v4: 7-day Retention Decay, deterministic time-based JVM tests, decay weight 2.0, восстановление после успешного re-check.
-4. Room schema остаётся 2; миграция для M3.3 не создавалась.
-5. Исторические `Attempt` не переписываются time-based evaluation.
-6. JVM test suite и `assembleDebug` имеют подтверждаемое зелёное CI evidence на финальном PR head.
-7. Отдельно отметить всё, что требует Owner Acceptance / runtime smoke и не доказывается JVM/CI.
+Подготовить owner-reviewable scope Milestone 4 без реализации production-кода. Зафиксировать границы, UX-поведение, технические варианты, риски и критерии приёмки для следующих направлений:
 
-## Owner Acceptance Smoke Test — подготовить чеклист
+1. UI/UX-полировка детского тренировочного потока.
+2. Анимация успешного ответа и завершения уровня, включая вариант салюта/конфетти на Jetpack Compose.
+3. Настройки звука в Parent Dashboard без изменения существующей local-OGG-first / TTS-fallback архитектуры до отдельного решения.
+4. Подготовка release-конфигурации ProGuard/R8 и перечня обязательных release checks.
 
-Чеклист должен как минимум покрыть:
+## Обязательный результат Kickoff
 
-- вход в Parent mode через существующий Parental Gate;
-- отображение всех 33 букв;
-- отображение «Требует повторения» и даты последней тренировки для decay-состояния;
-- прохождение повторной успешной тренировки и возврат буквы в `MASTERED`;
-- отсутствие регрессии Curriculum Levels 1–8;
-- воспроизведение локального аудио / TTS fallback без изменения M3.2 audio strategy.
+- предложенный scope M4 с разделением MUST / SHOULD / OUT OF SCOPE;
+- архитектурные варианты без внесения кода;
+- список затрагиваемых модулей и файлов;
+- test plan / owner smoke plan для M4;
+- риски и rollback-критерии;
+- отдельный owner decision перед стартом реализации.
 
-## Не менять в M3.4 без нового owner decision
+## Не делать до owner approval
 
-- Curriculum v3;
-- LearningPolicy v4 thresholds/weights/retention horizon;
-- Room schema 2;
-- Parental Gate;
-- 10 вопросов и unlock `>=80%` / `8 из 10`.
+- не начинать код M4;
+- не менять LearningPolicy v4 и Curriculum v3;
+- не менять Room schema 2;
+- не менять Parental Gate;
+- не менять и не заменять существующие аудио-ассеты;
+- не включать release minification/shrinking в production-конфигурацию без утверждённого плана проверки.
 
 ## Android Studio Agent
 
-Не нужен по умолчанию. Подключать только при конкретной Android/runtime проблеме.
+Не нужен для Kickoff. Подключать только после утверждения scope и только при конкретной Android/runtime/Gradle проблеме.

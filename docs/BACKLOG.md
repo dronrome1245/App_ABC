@@ -137,34 +137,96 @@
 - [x] Milestone Closure Evidence Audit без FAIL/UNKNOWN;
 - [x] owner acceptance M2.
 
-## M3 — Статистика и Parent mode
+## M3 — Parent mode, полный Curriculum и long-term retention
 
-Статус: **In Planning / Kickoff — кодирование не начато**.
+Статус: **DONE (100%) / OWNER ACCEPTED**.
 
-Kickoff:
+Ранний предварительный M3 backlog заменён фактически утверждённым owner scope D023–D025. Пункты, которые не вошли в D023–D025, не считаются автоматически реализованными и могут быть возвращены в будущий scope отдельным решением владельца.
 
-- [ ] архитектурный дизайн Parent Dashboard / родительского профиля;
-- [ ] data-flow и query plan для статистики;
-- [ ] versioned proposal расширения Curriculum до полного русского алфавита;
-- [ ] архитектура spaced repetition across days / sessions;
-- [ ] M3 DoD и test plan;
-- [ ] owner approval архитектурного scope до начала реализации.
+### M3.1 — Parent mode / Parent Dashboard — D023
 
-Предварительный implementation backlog после утверждения scope:
+- [x] арифметический Parental Gate;
+- [x] сложение и вычитание без отрицательного результата;
+- [x] Parent Dashboard;
+- [x] сводка по всем 33 буквам с `NOT_STARTED` defaults;
+- [x] карточка/детали буквы и статистика;
+- [x] summary metrics Parent Dashboard;
+- [x] Room schema остаётся 2;
+- [x] JVM tests / `assembleDebug` / CI;
+- [x] runtime smoke на Pixel 7a;
+- [x] owner acceptance.
 
-- [ ] экран прогресса;
-- [ ] статистика буквы;
-- [ ] recent accuracy;
-- [ ] median response time;
-- [ ] confusion matrix;
-- [ ] список трудных;
-- [ ] тренировка трудных;
-- [ ] ручной выбор букв;
-- [ ] Parent mode / Settings;
-- [ ] сброс локального прогресса с подтверждением;
-- [ ] отображение недостатка данных как `недостаточно данных`, а не как плохой результат.
+### M3.2 — Curriculum v3 / полный локальный audio suite — D024
 
-## M4 — Игровая оболочка
+- [x] `curriculumVersion = 3`;
+- [x] 8 уровней;
+- [x] полный набор 33 русских букв;
+- [x] накопленные pool sizes 2 / 4 / 6 / 9 / 12 / 15 / 19 / 33;
+- [x] 10 вопросов на сессию без изменений;
+- [x] level unlock >=80% / 8 из 10 без изменений;
+- [x] 33 letter OGG assets;
+- [x] 3 UI sounds (`correct` / `wrong` / `level_complete`);
+- [x] mapping всех 33 букв;
+- [x] local OGG first / TTS fallback сохранён;
+- [x] Curriculum/audio JVM tests;
+- [x] `assembleDebug` / CI;
+- [x] physical-device smoke на Pixel 7a;
+- [x] owner acceptance.
+
+### M3.3 — LearningPolicy v4 / Retention Decay — D025
+
+- [x] `learningPolicyVersion = 4`;
+- [x] 7-day retention horizon (`604800000 ms`);
+- [x] decay только при elapsed `> 7 days`;
+- [x] decayed `MASTERED` оценивается как effective `PRACTICING`;
+- [x] decayed selection weight = `2.0`;
+- [x] retention anchor = latest successful Attempt timestamp;
+- [x] successful re-check восстанавливает `MASTERED`, если базовые критерии сохраняются;
+- [x] historical Attempt не переписываются;
+- [x] deterministic time-based JVM tests: `<7d`, `=7d`, `>7d`, restore;
+- [x] Parent Dashboard: «Требует повторения» + дата последней тренировки;
+- [x] Room schema остаётся 2;
+- [x] `assembleDebug` / Android CI PASS;
+- [x] physical-device smoke на Pixel 7a;
+- [x] owner acceptance.
+
+### M3.4 — Closure Evidence Audit
+
+Статус: **PASS — 7/7 / OWNER ACCEPTED**.
+
+- [x] D023 evidence — PASS;
+- [x] D024 evidence — PASS;
+- [x] D025 evidence — PASS;
+- [x] Room schema 2 / no M3 migration — PASS;
+- [x] historical Attempt read-only time evaluation — PASS;
+- [x] JVM tests + `assembleDebug` + CI evidence — PASS;
+- [x] Pixel 7a owner smoke / Owner Acceptance — PASS / ACCEPTED.
+
+### Gate M3 → M4
+
+- [x] M3 implementation complete;
+- [x] M3.4 Closure Evidence Audit PASS 7/7;
+- [x] physical device status PASS — Pixel 7a;
+- [x] owner acceptance M3 — ACCEPTED;
+- [x] PR #9 merged to `main`;
+- [x] Milestone 4 moved to Planning / Kickoff.
+
+## M4 — Игровая оболочка / UI polish / release preparation
+
+Статус: **In Planning / Kickoff — код не начинать до owner approval scope**.
+
+Kickoff scope для архитектурного планирования:
+
+- [ ] UI/UX-полировка тренировочного потока;
+- [ ] анимации успешного ответа;
+- [ ] салют/конфетти на Jetpack Compose для завершения/успеха;
+- [ ] настройки звука в Parent Dashboard;
+- [ ] подготовка ProGuard/R8 release build plan и release checks;
+- [ ] определить MUST / SHOULD / OUT OF SCOPE;
+- [ ] подготовить test plan / owner smoke plan;
+- [ ] получить owner approval scope до начала реализации.
+
+Ранее запланированные игровые элементы, которые могут быть рассмотрены при утверждении M4 scope:
 
 - [ ] карта/список уровней;
 - [ ] 1–3 звезды;
@@ -173,19 +235,22 @@ Kickoff:
 - [ ] сессия 3–7 минут + «Ещё потренироваться»;
 - [ ] игровые показатели не подменяют success metrics.
 
-## M5 — Полный алфавит
+## M5 — Полный алфавит / post-M3 curriculum validation
 
-- [ ] согласовать curriculumVersion для 33 букв;
-- [ ] согласовать оставшийся порядок 33 букв;
+Часть прежнего M5 фактически закрыта решением D024 и M3.2:
+
+- [x] `curriculumVersion = 3` для 33 букв;
+- [x] owner-approved порядок/распределение всех 33 букв по 8 уровням;
+- [x] полный локальный audio suite 33 букв;
+
+Остаются будущие продуктовые проверки:
+
 - [ ] проверить визуально похожие группы;
-- [ ] подобрать distractors;
-- [ ] проверить озвучку всех букв;
-- [ ] определить число вариантов ответа по этапам;
+- [ ] уточнить специализированные distractors при необходимости;
+- [ ] определить число вариантов ответа по этапам, если оно будет меняться;
 - [ ] домашнее UX-тестирование;
 - [ ] baseline и продуктовая проверка по `SUCCESS_METRICS.md`;
 - [ ] устранить High-риски полного curriculum.
-
-Примечание: M3 Kickoff может подготовить архитектуру и versioned proposal полного Curriculum, но фактический полный порядок/внедрение 33 букв не считается утверждённым до отдельного owner decision.
 
 ## M6 — Speech recognition experiment
 
