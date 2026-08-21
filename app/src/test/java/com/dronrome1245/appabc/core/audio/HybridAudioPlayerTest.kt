@@ -60,6 +60,25 @@ class HybridAudioPlayerTest {
         player.release()
     }
 
+    @Test
+    fun releaseIsIdempotentAndBlocksPlaybackAfterRelease() {
+        val tts = RecordingTts()
+        val settings = MutableAudioSettings(
+            isVoiceoverEnabledNow = true,
+            isSoundEffectsEnabledNow = true
+        )
+        val player = createPlayer(tts, settings)
+
+        player.release()
+        player.release()
+        player.playLetterSound('А')
+        player.playFeedback(isCorrect = true)
+        player.playLevelComplete()
+
+        assertEquals(1, tts.releaseCount)
+        assertEquals(emptyList<String>(), tts.spoken)
+    }
+
     private fun createPlayer(tts: RecordingTts, settings: AudioSettingsSource): HybridAudioPlayer {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return HybridAudioPlayer(
@@ -78,8 +97,9 @@ class HybridAudioPlayerTest {
 
     private class RecordingTts : TextToSpeechWrapper {
         val spoken = mutableListOf<String>()
+        var releaseCount = 0
         override fun speak(text: String) { spoken += text }
         override fun stop() = Unit
-        override fun release() = Unit
+        override fun release() { releaseCount += 1 }
     }
 }

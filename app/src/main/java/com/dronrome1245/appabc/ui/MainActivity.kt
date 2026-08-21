@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -34,7 +35,6 @@ import com.dronrome1245.appabc.ui.parent.ParentDashboardScreen
 import com.dronrome1245.appabc.ui.parent.ParentDashboardViewModel
 import com.dronrome1245.appabc.ui.result.ResultScreen
 import com.dronrome1245.appabc.ui.result.ResultViewModel
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             spokenNameProvider = { symbol -> ApprovedCurriculum.findLetter(symbol)?.spokenName ?: symbol.toString() },
             settingsSource = settingsRepository
         )
-        MainScope().launch { repository.ensureInitialLetters() }
+        lifecycleScope.launch { repository.ensureInitialLetters() }
         setContent {
             AppABCTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

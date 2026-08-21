@@ -14,36 +14,41 @@ class HybridAudioPlayer(
 ) : AudioPlayer {
     private val appContext = context.applicationContext
     private var activePlayer: MediaPlayer? = null
+    private var released = false
 
     override fun playLetterSound(letter: Char) {
-        if (!settingsSource.isVoiceoverEnabledNow) return
+        if (released || !settingsSource.isVoiceoverEnabledNow) return
         val fallback = { tts.speak(spokenNameProvider(letter)) }
         playRawOrFallback(rawResourceNameProvider(letter), fallback)
     }
 
     override fun playFeedback(isCorrect: Boolean) {
-        if (!settingsSource.isSoundEffectsEnabledNow) return
+        if (released || !settingsSource.isSoundEffectsEnabledNow) return
         val resourceName = if (isCorrect) AudioAssetCatalog.CORRECT_FEEDBACK else AudioAssetCatalog.INCORRECT_FEEDBACK
         val fallback = { tts.speak(if (isCorrect) "Верно" else "Попробуй ещё") }
         playRawOrFallback(resourceName, fallback)
     }
 
     override fun playLevelComplete() {
-        if (!settingsSource.isSoundEffectsEnabledNow) return
+        if (released || !settingsSource.isSoundEffectsEnabledNow) return
         playRawOrFallback(AudioAssetCatalog.LEVEL_COMPLETE) { tts.speak("Уровень завершён") }
     }
 
     override fun stop() {
+        if (released) return
         releaseActivePlayer()
         tts.stop()
     }
 
     override fun release() {
+        if (released) return
+        released = true
         releaseActivePlayer()
         tts.release()
     }
 
     private fun playRawOrFallback(resourceName: String?, fallback: () -> Unit) {
+        if (released) return
         releaseActivePlayer()
         val resourceId = if (resourceName.isNullOrBlank()) 0 else
             appContext.resources.getIdentifier(resourceName, "raw", appContext.packageName)
