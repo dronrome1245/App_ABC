@@ -14,16 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.dronrome1245.appabc.ui.parent.ParentalGateDialog
 
 @Composable
 fun HomeScreen(
     onStartClick: (Int) -> Unit,
+    onParentClick: () -> Unit,
     viewModel: HomeViewModel
 ) {
     val state by viewModel.uiState.collectAsState()
+    var showParentalGate by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -59,5 +65,19 @@ fun HomeScreen(
         Button(onClick = { onStartClick(state.selectedLevel) }) {
             Text(text = "Начать тренировку")
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(onClick = { showParentalGate = true }) {
+            Text("Родителям ⚙️")
+        }
+    }
+
+    if (showParentalGate) {
+        ParentalGateDialog(
+            onDismiss = { showParentalGate = false },
+            onUnlocked = {
+                showParentalGate = false
+                onParentClick()
+            }
+        )
     }
 }
