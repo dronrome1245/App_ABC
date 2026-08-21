@@ -1,4 +1,4 @@
-name: Audio Pack v2 Candidate QC
+name: Audio Pack v2 Human Candidate QC
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
       - "tools/build_audio_pack_v2.py"
       - "tools/probe_commons_spoken_names.py"
       - "tools/probe_gcompris_audio_pack.py"
-      - "tools/probe_dialogs_ru_space.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   pull_request:
     branches:
@@ -17,7 +16,6 @@ on:
       - "tools/build_audio_pack_v2.py"
       - "tools/probe_commons_spoken_names.py"
       - "tools/probe_gcompris_audio_pack.py"
-      - "tools/probe_dialogs_ru_space.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   workflow_dispatch:
 
@@ -38,10 +36,10 @@ jobs:
           ffmpeg -version
           ffprobe -version
 
-      - name: Probe GCompris complete Russian alphabet pack
+      - name: Probe GCompris complete human-recorded Russian alphabet pack
         run: python3 tools/probe_gcompris_audio_pack.py
 
-      - name: Upload GCompris reference probe
+      - name: Upload GCompris human reference probe
         uses: actions/upload-artifact@v4
         with:
           name: gcompris-russian-alphabet-reference
@@ -49,7 +47,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Probe short Commons letter-name recordings
+      - name: Probe human-recorded Commons letter-name files
         run: python3 tools/probe_commons_spoken_names.py
 
       - name: Upload spoken-name probe report
@@ -60,7 +58,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Build Kalaider25 33-letter comparison candidate
+      - name: Build Kalaider25 33-letter human comparison candidate
         run: python3 tools/build_audio_pack_v2.py --output build/audio-pack-v2
 
       - name: Verify comparison candidate file count
@@ -73,19 +71,5 @@ jobs:
         with:
           name: audio-pack-v2-candidate
           path: build/audio-pack-v2/
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Install Gradio client for neural TTS discovery
-        run: python3 -m pip install --disable-pip-version-check gradio_client
-
-      - name: Discover Dialogs-RU expressive TTS API
-        run: python3 tools/probe_dialogs_ru_space.py
-
-      - name: Upload neural TTS API discovery
-        uses: actions/upload-artifact@v4
-        with:
-          name: dialogs-ru-space-api
-          path: build/dialogs-ru-space-api.txt
           if-no-files-found: error
           retention-days: 7
