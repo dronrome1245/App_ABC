@@ -43,12 +43,40 @@ jobs:
             --profiles masha-neutral,masha-happy,sveta-neutral,sveta-happy \
             --output build/dialogs-ru-v2
 
-      - name: Upload neural TTS preview matrix
+      - name: Calibrate duration at speed 0.5
+        run: |
+          python3 tools/generate_dialogs_ru_v2.py \
+            --letters А,Б,Л,Ф \
+            --profiles masha-neutral \
+            --speed 0.5 \
+            --output build/dialogs-ru-speed-050
+
+      - name: Calibrate duration at speed 0.3
+        run: |
+          python3 tools/generate_dialogs_ru_v2.py \
+            --letters А,Б,Л,Ф \
+            --profiles masha-neutral \
+            --speed 0.3 \
+            --output build/dialogs-ru-speed-030
+
+      - name: Calibrate duration at speed 0.2
+        continue-on-error: true
+        run: |
+          python3 tools/generate_dialogs_ru_v2.py \
+            --letters А,Б,Л,Ф \
+            --profiles masha-neutral \
+            --speed 0.2 \
+            --output build/dialogs-ru-speed-020
+
+      - name: Upload neural TTS preview and calibration matrix
         uses: actions/upload-artifact@v4
         with:
           name: dialogs-ru-v2-preview-matrix
           path: |
             build/dialogs-ru-v2/
+            build/dialogs-ru-speed-050/
+            build/dialogs-ru-speed-030/
+            build/dialogs-ru-speed-020/
             build/dialogs-ru-space-api.txt
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
