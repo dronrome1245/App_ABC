@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 jobs:
-  preview-matrix:
+  duration-calibration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,14 +36,15 @@ jobs:
       - name: Discover Dialogs-RU expressive TTS API
         run: python3 tools/probe_dialogs_ru_space.py
 
-      - name: Generate four female voice/style previews
+      - name: Baseline at speed 1.0
         run: |
           python3 tools/generate_dialogs_ru_v2.py \
-            --mode preview \
-            --profiles masha-neutral,masha-happy,sveta-neutral,sveta-happy \
-            --output build/dialogs-ru-v2
+            --letters А,Б,Л,Ф \
+            --profiles masha-neutral \
+            --speed 1.0 \
+            --output build/dialogs-ru-speed-100
 
-      - name: Calibrate duration at speed 0.5
+      - name: Calibrate at speed 0.5
         run: |
           python3 tools/generate_dialogs_ru_v2.py \
             --letters А,Б,Л,Ф \
@@ -51,7 +52,7 @@ jobs:
             --speed 0.5 \
             --output build/dialogs-ru-speed-050
 
-      - name: Calibrate duration at speed 0.3
+      - name: Calibrate at speed 0.3
         run: |
           python3 tools/generate_dialogs_ru_v2.py \
             --letters А,Б,Л,Ф \
@@ -59,7 +60,7 @@ jobs:
             --speed 0.3 \
             --output build/dialogs-ru-speed-030
 
-      - name: Calibrate duration at speed 0.2
+      - name: Calibrate at speed 0.2
         continue-on-error: true
         run: |
           python3 tools/generate_dialogs_ru_v2.py \
@@ -68,12 +69,12 @@ jobs:
             --speed 0.2 \
             --output build/dialogs-ru-speed-020
 
-      - name: Upload neural TTS preview and calibration matrix
+      - name: Upload duration calibration matrix
         uses: actions/upload-artifact@v4
         with:
-          name: dialogs-ru-v2-preview-matrix
+          name: dialogs-ru-v2-duration-calibration
           path: |
-            build/dialogs-ru-v2/
+            build/dialogs-ru-speed-100/
             build/dialogs-ru-speed-050/
             build/dialogs-ru-speed-030/
             build/dialogs-ru-speed-020/
