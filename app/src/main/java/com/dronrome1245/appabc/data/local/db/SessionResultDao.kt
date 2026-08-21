@@ -18,4 +18,7 @@ interface SessionResultDao {
 
     @Query("SELECT * FROM session_results ORDER BY completedAt DESC")
     suspend fun getAll(): List<SessionResultEntity>
+
+    @Query("DELETE FROM session_results")
+    suspend fun clearAll()
 }

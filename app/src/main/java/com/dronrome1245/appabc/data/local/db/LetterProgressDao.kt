@@ -18,4 +18,7 @@ interface LetterProgressDao {
 
     @Query("SELECT * FROM letter_progress ORDER BY letter ASC")
     suspend fun getAll(): List<LetterProgressEntity>
+
+    @Query("DELETE FROM letter_progress")
+    suspend fun clearAll()
 }

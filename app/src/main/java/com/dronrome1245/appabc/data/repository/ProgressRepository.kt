@@ -5,6 +5,7 @@ import com.dronrome1245.appabc.data.local.db.AppDatabase
 import com.dronrome1245.appabc.data.local.db.AttemptEntity
 import com.dronrome1245.appabc.data.local.db.LetterProgressEntity
 import com.dronrome1245.appabc.data.local.db.SessionResultEntity
+import com.dronrome1245.appabc.data.progression.LevelProgressionStore
 import com.dronrome1245.appabc.domain.learning.LevelUnlockPolicy
 import com.dronrome1245.appabc.domain.model.Attempt
 import com.dronrome1245.appabc.domain.session.LetterProgressAccumulator
@@ -30,7 +31,10 @@ data class PersistedSessionSummary(
  * Persists derived progress while keeping Attempt rows as the detailed source of truth.
  * Finalization is idempotent by unique sessionId, so recreating ResultScreen cannot double-count progress.
  */
-class ProgressRepository(private val database: AppDatabase) {
+class ProgressRepository(
+    private val database: AppDatabase,
+    private val progressionStore: LevelProgressionStore? = null
+) {
     private val attemptDao = database.attemptDao()
     private val letterProgressDao = database.letterProgressDao()
     private val sessionResultDao = database.sessionResultDao()
@@ -103,6 +107,17 @@ class ProgressRepository(private val database: AppDatabase) {
     suspend fun getOverallAccuracyPercent(): Int = getParentDashboard().overallAccuracyPercent
 
     suspend fun getMasteredLetterCount(): Int = getParentDashboard().masteredLetters
+
+    suspend fun resetAllProgress() {
+        database.withTransaction {
+            attemptDao.clearAll()
+            letterProgressDao.clearAll()
+            sessionResultDao.clearAll()
+        }
+        requireNotNull(progressionStore) {
+            "LevelProgressionStore is required for resetAllProgress()"
+        }.resetToLevelOne()
+    }
 
     private fun buildSummary(
         result: SessionResultEntity,

@@ -18,4 +18,7 @@ interface AttemptDao {
 
     @Query("SELECT * FROM attempts WHERE targetLetter IN (:letters) ORDER BY timestamp ASC, id ASC")
     suspend fun getAttemptsForLetters(letters: List<String>): List<AttemptEntity>
+
+    @Query("DELETE FROM attempts")
+    suspend fun clearAll()
 }

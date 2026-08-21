@@ -5,29 +5,56 @@ import androidx.lifecycle.viewModelScope
 import com.dronrome1245.appabc.data.repository.ParentDashboardSnapshot
 import com.dronrome1245.appabc.data.repository.ParentLetterProgress
 import com.dronrome1245.appabc.data.repository.ProgressRepository
+import com.dronrome1245.appabc.data.settings.SettingsRepository
 import com.dronrome1245.appabc.domain.curriculum.RussianAlphabet
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class ParentDashboardUiState(
     val letters: List<ParentLetterProgress>,
     val completedSessions: Int,
     val overallAccuracyPercent: Int,
-    val masteredLetters: Int
+    val masteredLetters: Int,
+    val isVoiceoverEnabled: Boolean = true,
+    val isSoundEffectsEnabled: Boolean = true
 )
 
-class ParentDashboardViewModel(repository: ProgressRepository) : ViewModel() {
-    val uiState = repository.observeParentDashboard()
-        .map(::toUiState)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = toUiState(ParentDashboardSnapshot.empty())
-        )
+class ParentDashboardViewModel(
+    private val repository: ProgressRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+    val uiState = combine(
+        repository.observeParentDashboard(),
+        settingsRepository.isVoiceoverEnabled,
+        settingsRepository.isSoundEffectsEnabled
+    ) { snapshot, voiceoverEnabled, soundEffectsEnabled ->
+        toUiState(snapshot, voiceoverEnabled, soundEffectsEnabled)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = toUiState(ParentDashboardSnapshot.empty())
+    )
+
+    fun setVoiceoverEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setVoiceoverEnabled(enabled) }
+    }
+
+    fun setSoundEffectsEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setSoundEffectsEnabled(enabled) }
+    }
+
+    fun resetAllProgress() {
+        viewModelScope.launch { repository.resetAllProgress() }
+    }
 
     companion object {
-        internal fun toUiState(snapshot: ParentDashboardSnapshot): ParentDashboardUiState {
+        internal fun toUiState(
+            snapshot: ParentDashboardSnapshot,
+            voiceoverEnabled: Boolean = true,
+            soundEffectsEnabled: Boolean = true
+        ): ParentDashboardUiState {
             val byLetter = snapshot.letters.associateBy { it.letter.uppercase() }
             return ParentDashboardUiState(
                 letters = RussianAlphabet.symbols.map { symbol ->
@@ -35,7 +62,9 @@ class ParentDashboardViewModel(repository: ProgressRepository) : ViewModel() {
                 },
                 completedSessions = snapshot.completedSessions,
                 overallAccuracyPercent = snapshot.overallAccuracyPercent,
-                masteredLetters = snapshot.masteredLetters
+                masteredLetters = snapshot.masteredLetters,
+                isVoiceoverEnabled = voiceoverEnabled,
+                isSoundEffectsEnabled = soundEffectsEnabled
             )
         }
     }
