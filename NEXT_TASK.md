@@ -4,6 +4,8 @@
 
 **MVP v1.0.0 закрыт и остаётся COMPLETE / OWNER ACCEPTED. Активная Post-MVP работа — D027.**
 
+Документация D028 синхронизирована: текущий домашний аудиопак выбран и установлен; незакрытый gate — только owner device smoke.
+
 ### AUDIO-02 — почти завершено для домашней версии
 
 - GCompris HOME-ONLY Audio Pack v2: **33 / 33 INSTALLED**;
