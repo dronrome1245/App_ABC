@@ -6,12 +6,14 @@ on:
       - feature/audio-pack-v2-d027
     paths:
       - "tools/build_audio_pack_v2.py"
+      - "tools/probe_commons_spoken_names.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   pull_request:
     branches:
       - main
     paths:
       - "tools/build_audio_pack_v2.py"
+      - "tools/probe_commons_spoken_names.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   workflow_dispatch:
 
@@ -32,15 +34,26 @@ jobs:
           ffmpeg -version
           ffprobe -version
 
-      - name: Build 33-letter candidate pack and QC report
+      - name: Probe short Commons letter-name recordings
+        run: python3 tools/probe_commons_spoken_names.py
+
+      - name: Upload spoken-name probe report
+        uses: actions/upload-artifact@v4
+        with:
+          name: commons-spoken-name-probe
+          path: build/commons-spoken-name-probe.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build Kalaider25 33-letter comparison candidate
         run: python3 tools/build_audio_pack_v2.py --output build/audio-pack-v2
 
-      - name: Verify candidate file count
+      - name: Verify comparison candidate file count
         run: |
           count=$(find build/audio-pack-v2 -maxdepth 1 -type f -name 'sound_letter_*_v2.ogg' | wc -l)
           test "$count" -eq 33
 
-      - name: Upload candidate artifact
+      - name: Upload comparison candidate artifact
         uses: actions/upload-artifact@v4
         with:
           name: audio-pack-v2-candidate
