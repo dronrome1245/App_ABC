@@ -1,0 +1,80 @@
+name: Install HOME-ONLY GCompris Audio Pack v2
+
+on:
+  push:
+    branches:
+      - feature/audio-pack-v2-d027
+    paths:
+      - ".github/workflows/audio-pack-v2-home-install.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install-home-only-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/audio-pack-v2-d027
+          fetch-depth: 0
+
+      - name: Download 33 human-recorded GCompris Russian letter files
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+
+          base = "https://raw.githubusercontent.com/gcompris/GCompris-data/master/voices/ru/alphabet"
+          out = Path("app/src/main/res/raw")
+          out.mkdir(parents=True, exist_ok=True)
+
+          letters = [
+              ("А", "a"), ("Б", "b"), ("В", "v"), ("Г", "g"), ("Д", "d"),
+              ("Е", "e"), ("Ё", "yo"), ("Ж", "zh"), ("З", "z"), ("И", "i"),
+              ("Й", "short_i"), ("К", "k"), ("Л", "l"), ("М", "m"), ("Н", "n"),
+              ("О", "o"), ("П", "p"), ("Р", "r"), ("С", "s"), ("Т", "t"),
+              ("У", "u"), ("Ф", "f"), ("Х", "h"), ("Ц", "ts"), ("Ч", "ch"),
+              ("Ш", "sh"), ("Щ", "shch"), ("Ъ", "hard"), ("Ы", "y"),
+              ("Ь", "soft"), ("Э", "eh"), ("Ю", "yu"), ("Я", "ya"),
+          ]
+
+          for letter, token in letters:
+              source = f"U{ord(letter.lower()):04X}.ogg"
+              target = out / f"sound_letter_{token}_v2.ogg"
+              req = Request(f"{base}/{source}", headers={"User-Agent": "App_ABC-HOME-ONLY-AUDIO-02/1.0"})
+              with urlopen(req, timeout=60) as response:
+                  data = response.read()
+              if len(data) < 1000:
+                  raise RuntimeError(f"Suspiciously small source for {letter}: {len(data)} bytes")
+              target.write_bytes(data)
+              print(f"{letter}: {source} -> {target.name} ({len(data)} bytes)")
+
+          generated = sorted(out.glob("sound_letter_*_v2.ogg"))
+          if len(generated) != 33:
+              raise RuntimeError(f"Expected 33 v2 OGG files, got {len(generated)}")
+          print("HOME-ONLY GCompris Audio Pack v2: 33/33 installed")
+          PY
+
+      - name: Verify OGG files
+        shell: bash
+        run: |
+          count=$(find app/src/main/res/raw -maxdepth 1 -type f -name 'sound_letter_*_v2.ogg' | wc -l)
+          test "$count" -eq 33
+          file app/src/main/res/raw/sound_letter_*_v2.ogg | grep -c 'Ogg data' | grep -qx '33'
+
+      - name: Commit HOME-ONLY audio assets to private branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- app/src/main/res/raw/sound_letter_*_v2.ogg
+          if git diff --cached --quiet; then
+            echo "No audio changes to commit"
+            exit 0
+          fi
+          git commit -m "feat(audio): add HOME-ONLY GCompris Audio Pack v2"
+          git push origin HEAD:feature/audio-pack-v2-d027
