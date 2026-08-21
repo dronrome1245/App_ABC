@@ -4,10 +4,11 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — M3.3 IMPLEMENTATION_COMPLETE / M3.4 NEXT.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — In Planning / Kickoff.**
 
 PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
 PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
+PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
 
 ## Milestone 2 — финальные статусы
 
@@ -15,15 +16,43 @@ PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de0773
 - OWNER_ACCEPTANCE_STATUS: ACCEPTED
 - DATABASE_SCHEMA_VERSION: 2
 
-## M3.1
+## Milestone 3 — финальные статусы
 
-- M3_1_IMPLEMENTATION_STATUS: COMPLETE
-- JVM_TESTS_STATUS: PASS
-- DEBUG_BUILD_STATUS_M3_1: PASS
-- M3_1_RUNTIME_STATUS: NOT_TESTED
-- M3_1_OWNER_ACCEPTANCE_STATUS: PENDING
+- MILESTONE_3_STATUS: DONE (100%)
+- M3_4_CLOSURE_EVIDENCE_AUDIT_STATUS: PASS — 7/7
+- STATIC_REVIEW_STATUS: PASS
+- TESTS_CI_STATUS: PASS
+- LOCAL_BUILD_STATUS: PASS
+- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+- LEARNING_POLICY_VERSION: 4
+- CURRICULUM_VERSION: 3
+- CURRICULUM_LEVELS: 8
+- CURRICULUM_LETTERS: 33
+- AUDIO_ASSETS: 33 letter OGGs + 3 UI sounds
+- DATABASE_SCHEMA_VERSION: 2 (UNCHANGED)
+- PARENTAL_GATE_STATUS: PASS / UNCHANGED
 
-## M3.2 — статусы
+### M3.4 Closure Evidence Audit — 7/7
+
+1. D023 — Parental Gate и Parent Dashboard: PASS.
+2. D024 — Curriculum v3, 8 уровней, 33 буквы, 10 вопросов / unlock >=80%: PASS.
+3. D025 — LearningPolicy v4, 7-day Retention Decay, deterministic time-based JVM tests, decay weight 2.0 и successful re-check: PASS.
+4. Room schema остаётся 2, новая migration для M3 не требуется: PASS.
+5. Historical `Attempt` остаются read-only при time-based evaluation: PASS.
+6. JVM test suite, `assembleDebug` и CI на финальном PR #9 head: PASS.
+7. Owner Acceptance / physical-device smoke на Pixel 7a: PASS / ACCEPTED.
+
+## M3.1 — Parent mode / Dashboard
+
+- M3_1_IMPLEMENTATION_STATUS: COMPLETE / MERGED
+- PARENTAL_GATE_STATUS: PASS
+- PARENT_DASHBOARD_STATUS: PASS
+- ALL_33_LETTERS_DASHBOARD_STATUS: PASS
+- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
+- OWNER_ACCEPTANCE_STATUS: ACCEPTED
+
+## M3.2 — Curriculum v3 / full audio
 
 - M3_2_IMPLEMENTATION_STATUS: COMPLETE / MERGED
 - PR: #8
@@ -34,18 +63,19 @@ PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de0773
 - LEVEL_POOL_SIZES: 2 / 4 / 6 / 9 / 12 / 15 / 19 / 33
 - SESSION_QUESTION_COUNT: 10 (UNCHANGED)
 - LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
-- AUDIO_ASSETS_COUNT: 33_LETTERS_FULL
+- AUDIO_ASSETS_COUNT: 33_LETTER_OGGS
 - AUDIO_FEEDBACK_ASSETS_COUNT: 3
 - AUDIO_STRATEGY: LOCAL_OGG_FIRST / TTS_FALLBACK
 - AUDIO_MAPPING_STATUS: ALL_33_LETTERS
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
-- PARENTAL_GATE_STATUS: UNCHANGED
 - FINAL_ANDROID_CI_M3_2: PASS — run 32462272322
-- M3_2_RUNTIME_AUDIO_STATUS: NOT_TESTED
+- PHYSICAL_DEVICE_STATUS: PASS — Pixel 7a
 
-## M3.3 — Retention Decay
+## M3.3 — Retention Decay / LearningPolicy v4
 
-- M3_3_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- M3_3_IMPLEMENTATION_STATUS: COMPLETE / MERGED
+- PR: #9
+- MERGE_SHA: `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`
 - POLICY_VERSION: 4
 - LEARNING_POLICY_VERSION: 4
 - DECISION_SOURCE: D025 / OWNER
@@ -56,12 +86,10 @@ PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de0773
 - RETENTION_ANCHOR: LAST_SUCCESSFUL_ATTEMPT_TIMESTAMP
 - SUCCESSFUL_RECHECK: REFRESHES RETENTION TIMESTAMP / RESTORES MASTERED WHEN BASE CRITERIA HOLD
 - TIME_EVALUATION: READ_ONLY FOR HISTORICAL ATTEMPTS
-- TIME_BASED_JVM_TESTS: ADDED
-- PARENT_DASHBOARD_REVIEW_FLAG: IMPLEMENTED
-- PARENT_DASHBOARD_LAST_TRAINING_DATE: IMPLEMENTED
-- CURRICULUM_VERSION: 3 (UNCHANGED)
-- CURRICULUM_LEVELS: 8 (UNCHANGED)
-- CURRICULUM_LETTERS: 33 (UNCHANGED)
+- TIME_BASED_JVM_TESTS: PASS
+- PARENT_DASHBOARD_REVIEW_FLAG: PASS
+- PARENT_DASHBOARD_LAST_TRAINING_DATE: PASS
+- FINAL_ANDROID_CI_M3_3: PASS — run 32464698415
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
 - PARENTAL_GATE_STATUS: UNCHANGED
 
@@ -78,4 +106,4 @@ PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de0773
 
 ## Следующий этап
 
-**M3.4: Построчный Closure Evidence Audit Milestone 3, запуск PR #9 и подготовка чеклиста Owner Acceptance Smoke Test.**
+**Milestone 4 — In Planning / Kickoff.** Архитектурно спланировать UI/UX-полировку, настройки звука в Parent Dashboard и подготовку ProGuard/R8 release build. Код M4 не начинать до отдельного утверждения scope владельцем.
