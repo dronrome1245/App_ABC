@@ -94,7 +94,7 @@ def predict_with_retry(client: Client, spoken_name: str, speaker: str, emotion: 
             if not isinstance(result, (tuple, list)) or len(result) != 2:
                 raise RuntimeError(f"Unexpected /generate result: {result!r}")
             return generated_path(result[0]), str(result[1])
-        except Exception as error:  # network/queue failures are retried conservatively
+        except Exception as error:
             last_error = error
     raise RuntimeError(f"Dialogs-RU generation failed for {spoken_name!r}") from last_error
 
@@ -110,9 +110,24 @@ def transcode(source: Path, destination: Path) -> None:
     )
 
 
+def select_letters(mode: str, letters_arg: str | None) -> list[tuple[str, str, str]]:
+    if letters_arg:
+        requested = [item.strip().upper() for item in letters_arg.split(",") if item.strip()]
+        known = {letter for letter, _, _ in LETTERS}
+        unknown = set(requested) - known
+        if unknown:
+            raise ValueError(f"Unknown letters: {sorted(unknown)}")
+        requested_set = set(requested)
+        return [item for item in LETTERS if item[0] in requested_set]
+    if mode == "full":
+        return LETTERS
+    return [item for item in LETTERS if item[0] in PREVIEW_LETTERS]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("preview", "full"), default="preview")
+    parser.add_argument("--letters", help="Optional comma-separated Cyrillic letters, e.g. А,Б,Л")
     parser.add_argument("--profiles", default=",".join(PROFILES.keys()))
     parser.add_argument("--output", type=Path, default=Path("build/dialogs-ru-v2"))
     parser.add_argument("--speed", type=float, default=1.0)
@@ -127,7 +142,7 @@ def main() -> None:
     if unknown:
         raise ValueError(f"Unknown profiles: {sorted(unknown)}")
 
-    selected_letters = LETTERS if args.mode == "full" else [x for x in LETTERS if x[0] in PREVIEW_LETTERS]
+    selected_letters = select_letters(args.mode, args.letters)
     client = Client(SPACE, verbose=False)
     all_reports = []
 
@@ -156,7 +171,8 @@ def main() -> None:
             }
             records.append(record)
             print(
-                f"{profile} {letter} {spoken_name!r}: {duration_ms}ms [{status}] model={normalized!r}",
+                f"{profile} speed={args.speed:g} {letter} {spoken_name!r}: "
+                f"{duration_ms}ms [{status}] model={normalized!r}",
                 flush=True,
             )
 
@@ -175,6 +191,7 @@ def main() -> None:
             "decision": "D027",
             "task": "AUDIO-02",
             "mode": args.mode,
+            "explicit_letters": args.letters,
             "source": SPACE,
             "model": "frappuccino/dialogs-ru-vits2",
             "model_license": "OpenRAIL (verify/retain license terms for production release)",
