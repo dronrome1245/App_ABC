@@ -1,0 +1,35 @@
+name: Audio Pack v2 Neural Experiment
+
+on:
+  push:
+    branches:
+      - feature/audio-pack-v2-d027
+    paths:
+      - "tools/probe_dialogs_ru_space.py"
+      - "tools/generate_dialogs_ru_v2.py"
+      - ".github/workflows/audio-pack-v2-neural.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Gradio client
+        run: python3 -m pip install --disable-pip-version-check gradio_client
+
+      - name: Discover Dialogs-RU expressive TTS API
+        run: python3 tools/probe_dialogs_ru_space.py
+
+      - name: Upload API discovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: dialogs-ru-space-api
+          path: build/dialogs-ru-space-api.txt
+          if-no-files-found: error
+          retention-days: 7
