@@ -1,0 +1,62 @@
+name: Audio Pack v2 Vosk Russian Audition
+
+on:
+  push:
+    branches:
+      - feature/audio-pack-v2-d027
+    paths:
+      - "tools/generate_vosk_ru_audition.py"
+      - ".github/workflows/audio-pack-v2-vosk-audition.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/generate_vosk_ru_audition.py"
+      - ".github/workflows/audio-pack-v2-vosk-audition.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vosk-russian-audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Vosk TTS and audio tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install vosk-tts==0.3.59
+
+      - name: Generate all 33 letters with three native Russian female voices
+        run: |
+          python tools/generate_vosk_ru_audition.py \
+            --model vosk-model-tts-ru-0.9-multi \
+            --speech-rate 1.0 \
+            --output build/vosk-ru-audition
+
+      - name: Verify file counts
+        run: |
+          for speaker in F01 F02 F03; do
+            count=$(find "build/vosk-ru-audition/$speaker" -maxdepth 1 -type f -name 'sound_letter_*_v2.ogg' | wc -l)
+            echo "$speaker OGG count: $count"
+            test "$count" -eq 33
+          done
+
+      - name: Upload Russian audition packs
+        uses: actions/upload-artifact@v4
+        with:
+          name: vosk-ru-v2-audition
+          path: build/vosk-ru-audition/
+          if-no-files-found: error
+          retention-days: 14
