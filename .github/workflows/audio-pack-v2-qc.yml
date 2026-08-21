@@ -7,6 +7,8 @@ on:
     paths:
       - "tools/build_audio_pack_v2.py"
       - "tools/probe_commons_spoken_names.py"
+      - "tools/probe_gcompris_audio_pack.py"
+      - "tools/probe_dialogs_ru_space.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   pull_request:
     branches:
@@ -14,6 +16,8 @@ on:
     paths:
       - "tools/build_audio_pack_v2.py"
       - "tools/probe_commons_spoken_names.py"
+      - "tools/probe_gcompris_audio_pack.py"
+      - "tools/probe_dialogs_ru_space.py"
       - ".github/workflows/audio-pack-v2-qc.yml"
   workflow_dispatch:
 
@@ -33,6 +37,17 @@ jobs:
           sudo apt-get install -y ffmpeg
           ffmpeg -version
           ffprobe -version
+
+      - name: Probe GCompris complete Russian alphabet pack
+        run: python3 tools/probe_gcompris_audio_pack.py
+
+      - name: Upload GCompris reference probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: gcompris-russian-alphabet-reference
+          path: build/gcompris-audio-probe/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Probe short Commons letter-name recordings
         run: python3 tools/probe_commons_spoken_names.py
@@ -58,5 +73,19 @@ jobs:
         with:
           name: audio-pack-v2-candidate
           path: build/audio-pack-v2/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Install Gradio client for neural TTS discovery
+        run: python3 -m pip install --disable-pip-version-check gradio_client
+
+      - name: Discover Dialogs-RU expressive TTS API
+        run: python3 tools/probe_dialogs_ru_space.py
+
+      - name: Upload neural TTS API discovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: dialogs-ru-space-api
+          path: build/dialogs-ru-space-api.txt
           if-no-files-found: error
           retention-days: 7
