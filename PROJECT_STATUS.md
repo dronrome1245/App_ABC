@@ -4,11 +4,12 @@
 
 ## Текущий этап
 
-**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — In Planning / Kickoff.**
+**Milestone 1 — DONE (100%). Milestone 2 — DONE (100%). Milestone 3 — DONE (100%) / OWNER ACCEPTED. Milestone 4 — M4.1 IMPLEMENTATION_COMPLETE / M4.2 NEXT.**
 
 PR #7 с M3.1 слит в `main` merge-коммитом `73b62801c39dd0ccf859f1d3bdaeefa2e8c89b52`.
 PR #8 с M3.2 слит в `main` merge-коммитом `2c08aff6a49e26810de07734839ef7e73b58fa0f`.
 PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9c40c874ac2b7eb74f`.
+PR #11 с Home level selector hotfix слит в `main` merge-коммитом `4d8320053770371ddde065fe90ed9a4402cae593`.
 
 ## Milestone 2 — финальные статусы
 
@@ -106,6 +107,25 @@ PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9
 - ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
 - COMPOSE_UI_TEST: ADDED
 
+## M4.1 — UI Delight / native Compose animations
+
+- M4_1_IMPLEMENTATION_STATUS: IMPLEMENTATION_COMPLETE
+- DECISION_SOURCE: `docs/PRODUCT_SPEC.md` / `docs/UX_GAME_DESIGN.md` / OWNER task
+- RESULT_CELEBRATION_TRIGGER: EXISTING `passed == true` STATE
+- RESULT_CELEBRATION_EFFECT: NATIVE COMPOSE CANVAS
+- RESULT_CELEBRATION_PARTICLES: 36
+- RESULT_CELEBRATION_DURATION: 2800 ms
+- RESULT_CELEBRATION_AUTO_STOP: YES
+- EXTERNAL_ANIMATION_LIBRARIES: NONE
+- ANSWER_CARD_PRESS_SCALE: 0.95 -> 1.0
+- ANSWER_CARD_ANIMATION: `animateFloatAsState` + spring
+- RESULT_COMPOSE_UI_TESTS: VICTORY / FAILURE STATES
+- ANSWER_CARD_TESTS: SCALE TARGETS / CLICK INTERACTION
+- LEVEL_UNLOCK_THRESHOLD: >=80% / 8 OF 10 (UNCHANGED)
+- LEARNING_POLICY_VERSION: 4 (UNCHANGED)
+- CURRICULUM_VERSION: 3 (UNCHANGED)
+- ROOM_SCHEMA_VERSION: 2 (UNCHANGED)
+
 ## D024 normalized matrix — без изменений
 
 - Level 1: `А М`
@@ -119,4 +139,4 @@ PR #9 с M3.3 слит в `main` merge-коммитом `3b61d21ef0fb923b9ac2cd9
 
 ## Следующий этап
 
-**Milestone 4 — In Planning / Kickoff.** Архитектурно спланировать UI/UX-полировку, настройки звука в Parent Dashboard и подготовку ProGuard/R8 release build. Код M4 не начинать до отдельного утверждения scope владельцем.
+**Этап M4.2: Настройки звука и безопасный сброс прогресса в Parent Dashboard (DataStore).**

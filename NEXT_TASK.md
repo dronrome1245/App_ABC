@@ -1,46 +1,38 @@
-# NEXT_TASK.md — Milestone 4 Kickoff
+# NEXT_TASK.md — M4.2 Parent Dashboard sound settings + safe reset
 
 ## Единственная следующая задача
 
-**Milestone 4 Kickoff: архитектурное планирование UI/UX полировки (анимации успеха, салют/конфетти Compose), настроек звука в Parent Dashboard и подготовки ProGuard/R8 релизной сборки. Код M4 не начинать до утверждения скоупа.**
+**Этап M4.2: Настройки звука и безопасный сброс прогресса в Parent Dashboard (DataStore).**
 
-## Статус входа в M4
+## Статус входа
 
-- Milestone 3: DONE (100%).
-- M3.4 Closure Evidence Audit: PASS — 7/7.
-- Owner Acceptance: ACCEPTED.
-- Physical device smoke: PASS — Pixel 7a.
+- Milestone 3: DONE (100%) / OWNER ACCEPTED.
+- Home level selector hotfix: merged to `main` via PR #11.
+- M4.1 UI Delight: IMPLEMENTATION_COMPLETE.
 - LearningPolicy: v4.
 - Curriculum: v3 / 8 уровней / 33 буквы.
 - Room schema: 2.
 
-## Цель Kickoff
+## Scope M4.2
 
-Подготовить owner-reviewable scope Milestone 4 без реализации production-кода. Зафиксировать границы, UX-поведение, технические варианты, риски и критерии приёмки для следующих направлений:
+Следующий task packet должен отдельно зафиксировать UX и техническую семантику:
 
-1. UI/UX-полировка детского тренировочного потока.
-2. Анимация успешного ответа и завершения уровня, включая вариант салюта/конфетти на Jetpack Compose.
-3. Настройки звука в Parent Dashboard без изменения существующей local-OGG-first / TTS-fallback архитектуры до отдельного решения.
-4. Подготовка release-конфигурации ProGuard/R8 и перечня обязательных release checks.
+1. настроек звука в Parent Dashboard и их хранения в DataStore;
+2. безопасного сброса прогресса с явным подтверждением пользователя;
+3. точного перечня данных, затрагиваемых сбросом, до внесения изменений в Room/DataStore;
+4. тестов persistence/reset и owner smoke для Parent Dashboard.
 
-## Обязательный результат Kickoff
+## Guardrails
 
-- предложенный scope M4 с разделением MUST / SHOULD / OUT OF SCOPE;
-- архитектурные варианты без внесения кода;
-- список затрагиваемых модулей и файлов;
-- test plan / owner smoke plan для M4;
-- риски и rollback-критерии;
-- отдельный owner decision перед стартом реализации.
+До отдельного M4.2 owner-approved task packet:
 
-## Не делать до owner approval
-
-- не начинать код M4;
-- не менять LearningPolicy v4 и Curriculum v3;
+- не менять LearningPolicy v4;
+- не менять Curriculum v3;
 - не менять Room schema 2;
-- не менять Parental Gate;
-- не менять и не заменять существующие аудио-ассеты;
-- не включать release minification/shrinking в production-конфигурацию без утверждённого плана проверки.
+- не менять существующие 33 letter OGGs + 3 UI sounds;
+- не вводить backend/analytics/ads;
+- не трактовать «сброс прогресса» как разрешение на изменение схемы БД.
 
 ## Android Studio Agent
 
-Не нужен для Kickoff. Подключать только после утверждения scope и только при конкретной Android/runtime/Gradle проблеме.
+Не нужен по умолчанию. Подключать только при конкретной Android/runtime/Gradle проблеме.
