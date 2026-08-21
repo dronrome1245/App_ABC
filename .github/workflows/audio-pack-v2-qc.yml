@@ -25,8 +25,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify ffmpeg
+      - name: Install ffmpeg
         run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
           ffmpeg -version
           ffprobe -version
 
